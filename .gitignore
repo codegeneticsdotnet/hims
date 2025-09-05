@@ -1,0 +1,53 @@
+# CodeIgniter specific files
+application/logs/*
+application/cache/*
+!application/logs/index.html
+!application/cache/index.html
+
+# Environment files
+.env
+.env.*
+
+# Database configuration (if contains sensitive info)
+# application/config/database.php
+
+# User uploaded files
+public/patient_attachment/*
+public/patient_picture/*
+public/user_picture/*
+!public/patient_attachment/.gitkeep
+!public/patient_picture/.gitkeep
+!public/user_picture/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+
+# Node modules (if any)
+node_modules/
+
+# Composer vendor (if any)
+vendor/
+
+# XAMPP specific
+*.pid
+*.lock

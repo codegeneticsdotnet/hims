@@ -1,0 +1,46 @@
+CHRIST BEARER INFIRMARY HOSPITAL 			
+Healthcare Management Information System
+System Specification
+	* Patient Information Management
+		✓ Patient Entry
+		✓ In Patient (Admission) 
+		✓ Out Patient 
+		EMR Sheet
+		Patient Progress Monitoring
+	
+	* Inventory Management 						(TO CODE NEW MODULE)
+		Pharmacy Point of Sales					strategy - separate module to be integrated in billing if IP
+		Pharmacy Sales Report					coverage - inventory in (with ref no) to returns (sales return & pullout) 
+		Stock Management
+			Item Management
+			Stock Location
+		Inventory Report
+		Purchase Order
+		Receiving Inventory
+		Admin Inventory Adjustments
+		
+	* Billing Management 
+		Patient Billing consolidation
+		Billing Summary
+		Collection Summary
+		Philhealth Billing Management 			(TO CODE)
+		Billing Adjustments						(TO CODE)
+		Laboratory and Other Rates Management
+	
+	* Room Management 
+		✓ Room Master
+		✓ Room Inquiry
+		✓ Room Category
+		✓ Room Bed Master
+		
+	* User Management
+		✓ User Roles and Priviledges
+		✓ User Masterlist
+		✓ User Profile
+
+	* Report Generation
+		Patient Report
+		Patient Masterlist
+		Sales Report
+		Admitted Patient / Discharge
+		Patient Report
