@@ -1,0 +1,31 @@
+# Tasks
+
+- [ ] Create Database Tables
+    - [ ] Create `lab_service_request` table.
+    - [ ] Create `lab_service_request_details` table.
+- [ ] Create Controller `Lab_services`
+    - [ ] Create file `application/controllers/app/lab_services.php`.
+    - [ ] Implement `__construct` (load models).
+    - [ ] Implement `index` (dashboard).
+    - [ ] Implement `service_request` (list view).
+    - [ ] Implement `add_request` (create form).
+    - [ ] Implement `save_request` (POST handler).
+    - [ ] Implement `get_patient_autocomplete` (AJAX).
+    - [ ] Implement `get_service_autocomplete` (AJAX).
+    - [ ] Implement `update_status` (AJAX).
+    - [ ] Implement `print_list` (view).
+    - [ ] Implement `export_excel` (download).
+- [ ] Create Model `Lab_services_model`
+    - [ ] Create file `application/models/app/Lab_services_model.php`.
+    - [ ] Implement `getRequests` (with filters).
+    - [ ] Implement `saveRequest` (transactional).
+    - [ ] Implement `generateRequestNo` (auto-increment logic).
+    - [ ] Implement `getParticulars` (search logic).
+- [ ] Create Views
+    - [ ] Create folder `application/views/app/lab_services`.
+    - [ ] Create `dashboard.php` (links to sub-modules).
+    - [ ] Create `service_request_index.php` (table + filters).
+    - [ ] Create `add_request.php` (form).
+    - [ ] Create `print_request_list.php` (print layout).
+- [ ] Update Navigation
+    - [ ] Add link to `Lab Services` in `application/views/include/sidebar.php`.

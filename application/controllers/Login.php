@@ -52,12 +52,17 @@ class Login extends General{
 		if($this->form_validation->run()){
 			
 			$user_info = $this->general_model->getUserLoggedIn($this->input->post('username'));
+			$branch = $this->input->post('branch');
+			$branch_name = ($branch == 'CBH') ? 'Christ Bearer Hospital - San Carlos' : 'Christ Bearer Clinic - Pagal';
+			
 			$this->data = $this->session->set_userdata(array(
                     'username'          =>          $this->input->post('username'),
                     'user_role'         =>          $user_info->user_role,
                     'is_logged_in'      =>          true,
 					'user_id'			=>			$user_info->user_id,
-					'department'		=>			$user_info->department_id     
+					'department'		=>			$user_info->department_id,
+					'branch_code'       =>          $branch,
+					'branch_name'       =>          $branch_name
              )); 
 			 
 			 $userModule = $this->login_model->getMyModule($this->session->userdata('user_id'));

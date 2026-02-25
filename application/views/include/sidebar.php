@@ -426,6 +426,20 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         
                         
                         
+                        <!--START OF Lab Services-->
+                        <li class="treeview">
+                            <a href="#">
+                                <i class="fa fa-flask"></i> <span>Lab / X-ray / Ultrasound</span>
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="<?php echo base_url()?>app/lab_services/dashboard"><i class="fa fa-angle-double-right"></i>Dashboard</a></li>
+                                <li><a href="<?php echo base_url()?>app/lab_services/service_request"><i class="fa fa-angle-double-right"></i>Service Request</a></li>
+                                <li><a href="<?php echo base_url()?>app/lab_services/add_request"><i class="fa fa-angle-double-right"></i>Create Request</a></li>
+                            </ul>
+                        </li>
+                        <!--END OF Lab Services-->
+                        
                         <!--START OF Billing Module-->
                         <?php if($hasAccesstoReport){?>
                         <li class="treeview <?php echo $reports;?>">
