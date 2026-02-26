@@ -386,13 +386,33 @@ class General_model extends CI_Model{
 		return $query->result();
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
+	// Permission methods
+	public function hasAccesstoPatient($role_id){
+		return true; // Placeholder, assuming all logged in users have access for now
+	}
+	public function hasAccesstoBilling($role_id){
+		return true; 
+	}
+	public function hasAccesstoRooms($role_id){
+		return true; 
+	}
+	public function hasAccesstoNurse($role_id){
+		return true; 
+	}
+	public function hasAccesstoDoctor($role_id){
+		return true; 
+	}
+	public function hasAccesstoEMR($role_id){
+		return true; 
+	}
+	public function hasAccesstoUsers($role_id){
+		return true; 
+	}
+	public function hasAccesstoAdmin($role_id){
+		return true; 
+	}
+	public function hasAccesstoReport($role_id){
+		return true; 
+	}
 	
 }

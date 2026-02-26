@@ -2,15 +2,14 @@
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
                     <h1>Patient Registration</h1>
-                    <ol class="breadcrumb">
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">Patient Management</a></li>
                         <li class="active">Patient Registration</li>
                     </ol>
-                </section>
-
-                <!-- Main content -->
-                <section class="content">
                  
                  <script language="javascript">
                  function validate(){
@@ -76,10 +75,11 @@
                                                     	<td width="12%">Patient ID</td>
                                                         <td width="88%" colspan="3"><input class="form-control input-sm" name="patientID" id="patientID" type="text" style="width: 100px;" required readonly value="<?php echo $userID;?>"></td>
                                                     </tr>
-													<tr>
+													<!--
+                                                    <tr>
                                                     	<td width="12%">Title <font color="#FF0000">*</font></td>
                                                         <td width="88%"  colspan="3">
-                                                        	<select name="title" id="title" class="form-control input-sm" style="width: 100px;" required>
+                                                        	<select name="title" id="title" class="form-control input-sm" style="width: 100px;">
                                                             	<option value="">- Title -</option>
 																<?php 
 																foreach($UserTitles as $UserTitles){
@@ -94,6 +94,8 @@
                                                             </select>
                                                         </td>
                                                     </tr>
+                                                    -->
+                                                    <input type="hidden" name="title" value="">
 
                                                     <tr>
                                                     	<td width="12%"><?php echo $this->lang->line("lastname")?>Full Name <font color="#FF0000">*</font></td>
@@ -121,7 +123,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td>Birth Place <font color="#FF0000">*</font></td>
+                                                    	<td>Birth Place </td>
                                                         <td colspan="3">
                                                         <?php echo form_input('birthplace',set_value('birthplace'),'id="birthplace" class="form-control input-sm" placeholder="Birth Place" style="width: 150px;"');?>
                                                         </td>
@@ -133,7 +135,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="14%">Phone No (Mobile)  <font color="#FF0000">*</font></td>
+                                                    	<td width="14%">Phone No (Mobile) </td>
                                                         <td width="86%" colspan="3"> 
                                                         <?php echo form_input('mobile',set_value('mobile'),'id="mobile" class="form-control input-sm" placeholder="Phone No (Mobile)" style="width: 150px;"');?>
                                                         </td>
@@ -144,68 +146,68 @@
                                                         	<select name="gender" id="gender" class="form-control input-sm" required style="width: 150px;">
                                                             	<option value="">- Gender -</option>
                                                                 <?php 
-																foreach($gender as $gender){
-																if($_POST['gender'] == $gender->param_id){
-																	$selected = "selected='selected'";
-																}else{
-																	$selected = "";
-																}
-																?>
-                                                            	<option value="<?php echo $gender->param_id;?>" <?php echo $selected;?>><?php echo $gender->cValue;?></option>
+                                                                foreach($gender as $gender){
+                                                                if($_POST['gender'] == $gender->param_id){
+                                                                    $selected = "selected='selected'";
+                                                                }else{
+                                                                    $selected = "";
+                                                                }
+                                                                ?>
+                                                                <option value="<?php echo $gender->param_id;?>" <?php echo $selected;?>><?php echo $gender->cValue;?></option>
                                                                 <?php }?>
                                                             </select>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="12%">Civil Status <font color="#FF0000">*</font></td>
+                                                    	<td width="12%">Civil Status </td>
                                                         <td width="88%" colspan="3">
-                                                        	<select name="civil_status" id="civil_status" class="form-control input-sm" required style="width: 150px;">
+                                                        	<select name="civil_status" id="civil_status" class="form-control input-sm" style="width: 150px;">
                                                             	<option value="">- Civil Status -</option>
                                                                 <?php 
-																foreach($civilStatus as $civilStatus){
-																if($_POST['civil_status'] == $civilStatus->param_id){
-																	$selected = "selected='selected'";
-																}else{
-																	$selected = "";
-																}
-																?>
-                                                            	<option value="<?php echo $civilStatus->param_id;?>" <?php echo $selected;?>><?php echo $civilStatus->cValue;?></option>
+                                                                foreach($civilStatus as $civilStatus){
+                                                                if($_POST['civil_status'] == $civilStatus->param_id){
+                                                                    $selected = "selected='selected'";
+                                                                }else{
+                                                                    $selected = "";
+                                                                }
+                                                                ?>
+                                                                <option value="<?php echo $civilStatus->param_id;?>" <?php echo $selected;?>><?php echo $civilStatus->cValue;?></option>
                                                                 <?php }?>
                                                             </select>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="12%">Religion <font color="#FF0000">*</font></td>
+                                                    	<td width="12%">Religion </td>
                                                         <td width="88%" colspan="3">
-                                                        	<select name="religion" id="religion" class="form-control input-sm" required style="width: 150px;">
+                                                        	<select name="religion" id="religion" class="form-control input-sm" style="width: 150px;">
                                                             	<option value="">- Religion -</option>
                                                                 <?php 
-																foreach($religionList as $religion){
-																if($_POST['religion'] == $religion->param_id){
-																	$selected = "selected='selected'";
-																}else{
-																	$selected = "";
-																}
-																?>
-                                                            	<option value="<?php echo $religion->param_id;?>" <?php echo $selected;?>><?php echo $religion->cValue;?></option>
+                                                                foreach($religionList as $religion){
+                                                                if($_POST['religion'] == $religion->param_id){
+                                                                    $selected = "selected='selected'";
+                                                                }else{
+                                                                    $selected = "";
+                                                                }
+                                                                ?>
+                                                                <option value="<?php echo $religion->param_id;?>" <?php echo $selected;?>><?php echo $religion->cValue;?></option>
                                                                 <?php }?>
                                                             </select>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="12%">Blood Group <font color="#FF0000">*</font> </td>
+                                                    	<td width="12%">Blood Group </td>
                                                         <td width="88%" colspan="3">
-                                                        	<select name="bloodGroup" id="bloodGroup" class="form-control input-sm" required style="width: 150px;">
+                                                        	<select name="bloodGroup" id="bloodGroup" class="form-control input-sm" style="width: 150px;">
                                                             	<option value="">- Blood Group -</option>
                                                             	<?php 
-																foreach($bloodGroup as $bloodGroup){
-																if($_POST['bloodGroup'] == $bloodGroup->param_id){
-																	$selected = "selected='selected'";
-																}else{
-																	$selected = "";
-																}
-																?>
-                                                            	<option value="<?php echo $bloodGroup->param_id;?>" <?php echo $selected;?>><?php echo $bloodGroup->cValue;?></option>
+                                                                foreach($bloodGroup as $bloodGroup){
+                                                                if($_POST['bloodGroup'] == $bloodGroup->param_id){
+                                                                    $selected = "selected='selected'";
+                                                                }else{
+                                                                    $selected = "";
+                                                                }
+                                                                ?>
+                                                                <option value="<?php echo $bloodGroup->param_id;?>" <?php echo $selected;?>><?php echo $bloodGroup->cValue;?></option>
                                                                 <?php }?>
                                                             </select>
                                                         </td>

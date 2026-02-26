@@ -6,6 +6,104 @@ class Opd_model extends CI_Model{
 		parent::__construct();	
 	}
 	
+	public function search_patient_json($query){
+		$this->db->select("
+			patient_no,
+			concat(firstname,' ',middlename,' ',lastname) as 'name'
+		",false);
+		$where = "(
+				lastname like '%".$query."%' or 
+				firstname like '%".$query."%' or 
+				patient_no like '%".$query."%'
+				) 
+				and InActive = 0";
+		$this->db->where($where);
+		$this->db->order_by('lastname','asc');
+		$this->db->limit(10);
+		$query = $this->db->get("patient_personal_info");
+		return $query->result();
+	}
+	
+	public function get_opd_counts(){
+		$today = date("Y-m-d");
+		
+		// OPD Doctors Patients (Today) - Count only "- OUT PATIENT DEPARTMENT -"
+		$this->db->select("COUNT(*) as doctor_patients");
+		$this->db->join("department D", "D.department_id = A.department_id", "left");
+		$this->db->where("A.patient_type", "OPD");
+		$this->db->where("A.date_visit", $today);
+		$this->db->where("A.doctor_id !=", 0);
+		$this->db->where("A.InActive", 0);
+		$this->db->where("D.dept_name", "- OUT PATIENT DEPARTMENT -");
+		$query1 = $this->db->get("patient_details_iop A");
+		$doctor_patients = $query1->row()->doctor_patients;
+		
+		// OPD Lab Requests (Today) - Count only "LABORATORY"
+		// Assuming we count visits to LABORATORY department
+		$this->db->select("COUNT(*) as lab_requests");
+		$this->db->join("department D", "D.department_id = A.department_id", "left");
+		$this->db->where("A.patient_type", "OPD");
+		$this->db->where("A.date_visit", $today);
+		$this->db->where("A.InActive", 0);
+		$this->db->where("D.dept_name", "LABORATORY");
+		$query2 = $this->db->get("patient_details_iop A");
+		$lab_requests = $query2->row()->lab_requests;
+		
+		// OPD X-RAY Requests (Today)
+		$this->db->select("COUNT(*) as xray_requests");
+		$this->db->join("department D", "D.department_id = A.department_id", "left");
+		$this->db->where("A.patient_type", "OPD");
+		$this->db->where("A.date_visit", $today);
+		$this->db->where("A.InActive", 0);
+		$this->db->where("D.dept_name", "X-RAY");
+		$query3 = $this->db->get("patient_details_iop A");
+		$xray_requests = $query3->row()->xray_requests;
+		
+		// OPD ULTRASOUND Requests (Today)
+		$this->db->select("COUNT(*) as ultrasound_requests");
+		$this->db->join("department D", "D.department_id = A.department_id", "left");
+		$this->db->where("A.patient_type", "OPD");
+		$this->db->where("A.date_visit", $today);
+		$this->db->where("A.InActive", 0);
+		$this->db->where("D.dept_name", "ULTRASOUND");
+		$query4 = $this->db->get("patient_details_iop A");
+		$ultrasound_requests = $query4->row()->ultrasound_requests;
+		
+		return array(
+			'doctor_patients' => $doctor_patients,
+			'lab_requests' => $lab_requests,
+			'xray_requests' => $xray_requests,
+			'ultrasound_requests' => $ultrasound_requests
+		);
+	}
+	
+	public function get_opd_queue(){
+		$today = date("Y-m-d");
+		$this->db->select("
+			A.IO_ID,
+			A.patient_no,
+			concat(B.firstname,' ',B.middlename,' ',B.lastname) as patient_name,
+			A.date_visit,
+			A.time_visit,
+			D.dept_name,
+			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as doctor,
+			A.nStatus
+		", false);
+		$this->db->from("patient_details_iop A");
+		$this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+		// $this->db->join("system_parameters C", "C.param_id = B.title", "left");
+		$this->db->join("department D", "D.department_id = A.department_id", "left");
+		$this->db->join("users E", "E.user_id = A.doctor_id", "left");
+		$this->db->join("system_parameters F", "F.param_id = E.title", "left");
+		$this->db->where("A.patient_type", "OPD");
+		$this->db->where("A.nStatus", "Pending");
+		$this->db->where("A.date_visit", $today);
+		$this->db->where("A.InActive", 0);
+		$this->db->order_by("A.time_visit", "DESC");
+		$query = $this->db->get();
+		return $query->result();
+	}
+	
 	public function getAll($limit = 10, $offset = 0){
 		if($this->input->post("cFrom") == ""){
 			$cFrom = date("Y-m-d");	
@@ -22,7 +120,7 @@ class Opd_model extends CI_Model{
 		$this->db->select("
 			A.IO_ID,
 			B.patient_no,
-			concat(C.cValue,' ',B.firstname,' ',B.middlename,' ',B.lastname) as 'name',
+			concat(B.firstname,' ',B.middlename,' ',B.lastname) as 'name',
 			B.age,
 			A.date_visit,
 			A.time_visit,
@@ -45,7 +143,7 @@ class Opd_model extends CI_Model{
 		$this->db->where($where);
 		$this->db->order_by('B.patient_no','asc');
 		$this->db->join("patient_personal_info B","B.patient_no = A.patient_no","left outer");
-		$this->db->join("system_parameters C","C.param_id = B.title","left outer");
+		// $this->db->join("system_parameters C","C.param_id = B.title","left outer");
 		$this->db->join("department D","D.department_id = A.department_id","left outer");
 		$this->db->join("users E","E.user_id = A.doctor_id","left outer");
 		$this->db->join("system_parameters F","F.param_id = E.title","left outer");

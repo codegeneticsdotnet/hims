@@ -237,48 +237,43 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         
                         <!--START OF Patient Management-->
                         <?php if($hasAccesstoPatient){?>
-                            <li class="treeview <?php echo $patient;?>">
-                            <a href="#">
-                                <i class="fa fa fa-user-md"></i> <span>Patient Management</span>
-                                <i class="fa fa-angle-left pull-right"></i>
-                            </a>
-                            <ul class="treeview-menu">
-                                <!--
-                                <?php if($hasAccesstoAddPatient){?><li <?php echo $addNew_patient_mode;?>><a href="<?php echo base_url()?>app/patient/addPatient"><i class="fa fa-angle-double-right"></i>Add New Patient</a></li> <?php }?>
-                                -->
-                                <?php if($hasAccesstoPatient){?><li <?php echo $patient_master_mode;?>><a href="<?php echo base_url()?>app/patient/index"><i class="fa fa-angle-double-right"></i>Patient Master</a></li><?php }?>
-                            </ul>
-                        </li>
+                            <li class="<?php echo $patient;?>">
+                                <a href="<?php echo base_url()?>app/patient/index">
+                                    <i class="fa fa-user-md"></i> <span>Patient Management</span>
+                                </a>
+                            </li>
+
                             <?php if($hasAccesstoOPDRegistration == TRUE && $hasAccesstoOPDEnquiry == TRUE){?>
-                            <li class="treeview <?php echo $opd;?>">
-                                <a href="#">
+                            <li class="<?php echo $opd;?>">
+                                <a href="<?php echo base_url()?>app/opd/dashboard">
                                     <i class="fa fa-stethoscope"></i><span>Out Patient (OPD)</span>
-                                    <i class="fa fa-angle-left pull-right"></i>
                                 </a>
-                                <ul class="treeview-menu">
-                                    <?php if($hasAccesstoOPDRegistration){?><li <?php echo $opd_registration;?>><a href="<?php echo base_url()?>app/opd/registration"><i class="fa fa-angle-double-right"></i>Out Patient Registration</a></li><?php }?> 
-                                    <?php if($hasAccesstoOPDEnquiry){?><li <?php echo $opd_master;?>><a href="<?php echo base_url()?>app/opd/index"><i class="fa fa-angle-double-right"></i>Out-Patient Inquiry</a></li> <?php }?>
-                                </ul>
                             </li>
                             <?php }?>
+                            
+                            <!--START OF IPD-->
                             <?php if($hasAccesstoIPDRegistration == TRUE && $hasAccesstoIPDEnquiry == TRUE){?>
-                            <li class="treeview <?php echo $ipd;?>">
-                                <a href="#">
+                            <li class="<?php echo $ipd;?>">
+                                <a href="<?php echo base_url()?>app/ipd/dashboard">
                                     <i class="fa fa-wheelchair"></i><span>In Patient (IPD)</span>
-                                    <i class="fa fa-angle-left pull-right"></i>
                                 </a>
-                                <ul class="treeview-menu">
-                                    <?php if($hasAccesstoIPDRegistration){?><li <?php echo $ipd_registration;?>><a href="<?php echo base_url()?>app/ipd/registration"><i class="fa fa-angle-double-right"></i>Admit Patient</a></li> <?php }?>
-                                    <?php if($hasAccesstoIPDEnquiry){?><li <?php echo $ipd_master;?>><a href="<?php echo base_url()?>app/ipd/index"><i class="fa fa-angle-double-right"></i>In-Patient Inquiry</a></li> <?php }?>
-                                </ul>
                             </li>
                             <?php }?>
+                            <!--END OF IPD-->
 
                         <?php }?>
+                        
+                        
+                        <!--START OF Lab Services-->
+                        <li>
+                            <a href="<?php echo base_url()?>app/lab_services/dashboard">
+                                <i class="fa fa-flask"></i> <span>Laboratory</span>
+                            </a>
+                        </li>
+                        <!--END OF Lab Services-->
 
 
-                        <!--START OF POS-->
-                                                
+                        <!--START OF Billing Module-->
                         <?php if($hasAccesstoBilling){?>
                         <li class="treeview <?php echo $billing;?>">
                             <a href="#">
@@ -292,6 +287,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                             </ul>
                         </li>
                         <?php }?>
+                        <!--END OF Billing Module-->
 
                         <!--START OF INVENTORy-->
 						<li>
@@ -302,17 +298,10 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
 						
                         <!--START OF Ward-->
                         <?php if($hasAccesstoRooms){?>
-                        <li class="treeview <?php echo $room_m;?>">
-                            <a href="#">
+                        <li class="<?php echo $room_m;?>">
+                            <a href="<?php echo base_url()?>app/room_management/dashboard">
                                 <i class="fa fa-hospital-o"></i> <span> Room Management</span>
-                                <i class="fa fa-angle-left pull-right"></i>
                             </a>
-                            <ul class="treeview-menu">
-                                <?php if($hasAccesstoRoomsEnquiry){?><li <?php echo $room_enquiry;?>><a href="<?php echo base_url()?>app/room_enquiry">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Room Inquiry</a></li><?php }?>
-                                <?php if($hasAccesstoRooms){?><li <?php echo $sub_room_category_mod;?>><a href="<?php echo base_url()?>app/room_category">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Room Category</a></li><?php }?>
-                                <?php if($hasAccesstoRooms){?><li <?php echo $sub_room_master_mod;?>><a href="<?php echo base_url()?>app/room_master">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Room Master</a></li><?php }?>
-                                <?php if($hasAccesstoRooms){?><li <?php echo $sub_room_bed_mod;?>><a href="<?php echo base_url()?>app/room_bed">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Room Bed Master</a></li><?php }?>
-                            </ul>
                         </li>
                         <?php }?>
                         <!--START OF Ward-->
@@ -340,6 +329,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         <!--START OF Nurse Module-->
                         
                         <!--START OF Doctor-->
+                        <!-- Removed Doctor Module from Sidebar as requested order didn't explicitly include it but kept existing logic -->
                         <?php if($hasAccesstoDoctor){?>
                         <li class="treeview <?php echo $doctor;?>" style="display: <?php echo ($this->session->userdata('user_role') == 1) ? "none" : "block";?>">
                             <a href="#">
@@ -423,22 +413,6 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         </li>
                         <?php }?>
                         
-                        
-                        
-                        
-                        <!--START OF Lab Services-->
-                        <li class="treeview">
-                            <a href="#">
-                                <i class="fa fa-flask"></i> <span>Lab / X-ray / Ultrasound</span>
-                                <i class="fa fa-angle-left pull-right"></i>
-                            </a>
-                            <ul class="treeview-menu">
-                                <li><a href="<?php echo base_url()?>app/lab_services/dashboard"><i class="fa fa-angle-double-right"></i>Dashboard</a></li>
-                                <li><a href="<?php echo base_url()?>app/lab_services/service_request"><i class="fa fa-angle-double-right"></i>Service Request</a></li>
-                                <li><a href="<?php echo base_url()?>app/lab_services/add_request"><i class="fa fa-angle-double-right"></i>Create Request</a></li>
-                            </ul>
-                        </li>
-                        <!--END OF Lab Services-->
                         
                         <!--START OF Billing Module-->
                         <?php if($hasAccesstoReport){?>

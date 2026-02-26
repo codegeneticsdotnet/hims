@@ -22,6 +22,11 @@ class Lab_services extends General {
     public function dashboard(){
         // Get recent requests (last 10)
         $this->data['recent_requests'] = $this->lab_services_model->getRequests(10, 0);
+        
+        // Re-using OPD counts logic for consistency
+        $this->load->model('app/opd_model');
+        $this->data['opd_counts'] = $this->opd_model->get_opd_counts();
+        
         $this->load->view('app/lab_services/dashboard', $this->data);
     }
 
@@ -59,6 +64,10 @@ class Lab_services extends General {
     }
 
     public function add_request(){
+        // Get 'request' param from GET if available (X, L, U)
+        $req_type = $this->input->get('request');
+        $this->data['request_type'] = $req_type;
+        
         $this->data['request_no'] = ''; // Will be populated via AJAX based on category selection
         $this->load->view('app/lab_services/add_request', $this->data);
     }
@@ -107,6 +116,42 @@ class Lab_services extends General {
         $this->data['header'] = $this->lab_services_model->getRequestHeader($id);
         $this->data['details'] = $this->lab_services_model->getRequestDetails($id);
         $this->load->view('app/lab_services/print_request', $this->data);
+    }
+
+    public function patient_autocomplete_active(){
+        $search = $this->input->post('search');
+        
+        // Find patients who have an active OPD record (status not 'Discharged' or 'Discharge')
+        // AND match the search term
+        
+        $this->db->select('A.patient_no, A.firstname, A.lastname, B.IO_ID, B.nStatus');
+        $this->db->from('patient_personal_info A');
+        $this->db->join('patient_details_iop B', 'B.patient_no = A.patient_no');
+        
+        // Search Condition
+        $this->db->group_start();
+        $this->db->like('A.lastname', $search);
+        $this->db->or_like('A.firstname', $search);
+        $this->db->or_like('A.patient_no', $search);
+        $this->db->group_end();
+        
+        // Active OPD Condition
+        $this->db->where('B.patient_type', 'OPD');
+        $this->db->where_not_in('B.nStatus', array('Discharge', 'Discharged', 'Cancelled'));
+        $this->db->where('B.InActive', 0);
+        
+        $this->db->limit(10);
+        $query = $this->db->get();
+        
+        $result = array();
+        foreach($query->result() as $row){
+            $result[] = array(
+                'id' => $row->patient_no,
+                'value' => $row->patient_no . ' - ' . $row->firstname . ' ' . $row->lastname,
+                'label' => $row->patient_no . ' - ' . $row->firstname . ' ' . $row->lastname . ' (' . $row->nStatus . ')'
+            );
+        }
+        echo json_encode($result);
     }
 
     public function patient_autocomplete(){

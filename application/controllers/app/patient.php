@@ -154,6 +154,59 @@ class Patient extends General{
 		}
 	}
 	
+	public function save_quick(){
+		$this->form_validation->set_rules("lastname","Last Name","trim|xss_clean|required");
+		$this->form_validation->set_rules("firstname","First Name","trim|xss_clean|required");
+		
+		if($this->form_validation->run()){
+			// Generate Patient ID
+			$lastPatientID = $this->patient_model->lastPatientID();
+			
+			// Save Data
+			$this->data = array(
+				'patient_no'		=>		$lastPatientID,
+				'title'				=>		0,
+				'lastname'			=>		strtoupper($this->input->post('lastname')),
+				'firstname'			=>		strtoupper($this->input->post('firstname')),
+				'middlename'		=>		strtoupper($this->input->post('middlename')),
+				'gender'			=>		$this->input->post('gender'),
+				'civil_status'		=>		$this->input->post('civil_status'),
+				'birthday'			=>		$this->input->post('birthday'),
+				'birthplace'		=>		'',
+				'fathers_name'		=>		'',
+				'address2'			=>		'',
+				'age'				=>		date_diff(date_create(date("Y-m-d")), date_create($this->input->post('birthday')))->y,
+				'religion'			=>		0,
+				'street'			=>		'',
+				'subd_brgy'			=>		'',
+				'province'			=>		'',
+				'phone_no_office'	=>		'',
+				'phone_no'			=>		'',
+				'mobile_no'			=>		'',
+				'email_address'		=>		'',
+				'date_entry'		=>		date("Y-m-d h:i:s a"),
+				'blood_group'		=>		0,
+				'Insurance_comp'	=>		0,
+				'insurance_no'		=>		'',
+				'id_identifiers'	=>		'',
+				'InActive'			=>		0
+			);
+			$this->db->insert("patient_personal_info",$this->data);
+			
+			// Update Auto Number
+			$this->patient_model->updateAutoNum();
+			
+			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Patient successfully Added!</div>");
+			
+			// Redirect to OPD Registration for the new patient
+			redirect(base_url().'app/opd/opd_reg/'.$lastPatientID);
+			
+		}else{
+			$this->session->set_flashdata('message',"<div class='alert alert-danger alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Error saving patient!</div>");
+			redirect(base_url().'app/opd/registration');
+		}
+	}
+	
 	public function save(){
 		$this->form_validation->set_rules("lastname","Last Name","trim|xss_clean|required|callback_validate_patient");
 		$this->form_validation->set_rules("firstname","First Name","trim|xss_clean|required");		
@@ -224,7 +277,7 @@ class Patient extends General{
 	public function edit_save(){
 		$this->form_validation->set_rules("lastname","Last Name","trim|xss_clean|required|callback_validate_patient_edit");
 		$this->form_validation->set_rules("firstname","First Name","trim|xss_clean|required");	
-		$this->form_validation->set_rules("middlename","Middle Name","trim|xss_clean|required");	
+		//$this->form_validation->set_rules("middlename","Middle Name","trim|xss_clean|required");	
 		//$this->form_validation->set_rules("email","Email Address","trim|xss_clean|valid_email|callback_validate_email_edit");	
 		$this->form_validation->set_error_delimiters("<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>","</div>");
 	

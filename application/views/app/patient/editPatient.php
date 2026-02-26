@@ -2,15 +2,14 @@
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
                     <h1>Modify Patient</h1>
-                    <ol class="breadcrumb">
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">Patient Management</a></li>
                         <li class="active">Modify Patient</li>
                     </ol>
-                </section>
-
-                <!-- Main content -->
-                <section class="content">
                  
                  
                  <div class="row">
@@ -51,10 +50,11 @@
                                                     	<td width="12%">Patient ID</td>
                                                         <td width="88%"><input class="form-control input-sm" name="patientID" id="patientID" type="text" style="width: 100px;" required readonly value="<?php echo $patientInfo->patient_no;?>"></td>
                                                     </tr>
+                                                    <!--
                                                     <tr>
                                                     	<td width="12%">Title <font color="#FF0000">*</font></td>
                                                         <td width="88%">
-                                                        	<select name="title" id="title" class="form-control input-sm" style="width: 100px;" required>
+                                                        	<select name="title" id="title" class="form-control input-sm" style="width: 100px;">
                                                             	<option value="">- Title -</option>
 																<?php 
 																foreach($UserTitles as $UserTitles){
@@ -70,6 +70,8 @@
                                                             
                                                         </td>
                                                     </tr>
+                                                    -->
+                                                    <input type="hidden" name="title" value="<?php echo $patientInfo->title;?>">
                                                     <tr>
                                                     	<td width="12%">Last Name <font color="#FF0000">*</font></td>
                                                         <td width="88%">
@@ -95,15 +97,15 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td>Birth Place</td>
+                                                    	<td>Birth Place </td>
                                                         <td>
                                                         <?php echo form_input('birthplace',set_value('birthplace',$patientInfo->birthplace),'id="birthplace" class="form-control input-sm" placeholder="Birth Place" style="width: 380px;"');?>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="12%">Gender</td>
+                                                    	<td width="12%">Gender  <font color="#FF0000">*</font></td>
                                                         <td width="88%">
-                                                        	<select name="gender" id="gender" class="form-control input-sm" style="width: 100px;">
+                                                        	<select name="gender" id="gender" class="form-control input-sm" required style="width: 100px;">
                                                             	<option value="">- Gender -</option>
                                                                 <?php 
 																foreach($gender as $gender){
@@ -155,9 +157,9 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="12%">Blood Group <font color="#FF0000">*</font></td>
+                                                    	<td width="12%">Blood Group </td>
                                                         <td width="88%">
-                                                        	<select name="bloodGroup" id="bloodGroup" class="form-control input-sm" style="width: 125px;" required>
+                                                        	<select name="bloodGroup" id="bloodGroup" class="form-control input-sm" style="width: 125px;">
                                                             	<option value="">- Blood Group -</option>
                                                             	<?php 
 																foreach($bloodGroup as $bloodGroup){
@@ -217,7 +219,7 @@
                                                     </tr>
                                                     
                                                     <tr>
-                                                    	<td width="14%">Email Address <font color="#FF0000">*</font></td>
+                                                    	<td width="14%">Email Address </td>
                                                         <td width="86%"> 
                                                         <?php echo form_input('email',set_value('email',$patientInfo->email_address),'id="email" class="form-control input-sm" placeholder="Email Address" style="width: 250px;"');?>
                                                         </td>
@@ -296,8 +298,7 @@
             $(document).ready(function () {
                 
                 $('#birthday').datepicker({
-                    //format: "dd/mm/yyyy"
-                  format: "yyyy-mm-dd"
+                    format: "mm/dd/yyyy"
                 });  
             
             });

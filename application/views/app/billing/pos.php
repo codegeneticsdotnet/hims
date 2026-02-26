@@ -168,14 +168,51 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    <?php 
+                                    $i = 1;
+                                    $totalAmount = 0;
+                                    // Fetch pending items including lab requests
+                                    $CI =& get_instance();
+                                    $CI->load->model('app/billing_model');
+                                    $pendingItems = $CI->billing_model->patientMedication($patientInfo->patient_no, $patientInfo->IO_ID);
+                                    
+                                    if(!empty($pendingItems)){
+                                        foreach($pendingItems as $row){
+                                            $amount = $row->nPrice * $row->total_qty;
+                                            $totalAmount += $amount;
+                                    ?>
+                                        <tr>
+                                            <td><?php echo $i;?></td>
+                                            <td>
+                                                <input type="text" style="width:98%; border:none; background:transparent;" name="bill_name<?php echo $i;?>" value="<?php echo $row->drug_name;?>" readonly>
+                                                <input type="hidden" name="isPackage<?php echo $i;?>" value="<?php echo $row->isPackage;?>">
+                                            </td>
+                                            <td><input type="text" style="width:98%; border:none; background:transparent;" name="qty<?php echo $i;?>" value="<?php echo $row->total_qty;?>" readonly></td>
+                                            <td><input type="text" style="width:98%; border:none; background:transparent;" name="rate<?php echo $i;?>" value="<?php echo $row->nPrice;?>" readonly></td>
+                                            <td><input type="text" style="width:98%; border:none; background:transparent;" name="amount<?php echo $i;?>" value="<?php echo $amount;?>" readonly></td>
+                                            <td><input type="text" style="width:98%; border:none; background:transparent;" name="note<?php echo $i;?>" value="" placeholder="Note"></td>
+                                            <td></td>
+                                        </tr>
+                                    <?php 
+                                            $i++;
+                                        }
+                                    }
+                                    ?>
                                     </tbody>
                                     </table>
+                                    <input type="hidden" name="hdnrowcnt" id="hdnrowcnt" value="<?php echo $i-1;?>">
                                     </div>
                                 </div>
                                 <br>
                                 <table width="100%">
                                 <tr>
                                 	<td><hr></td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        <strong>Total Amount: </strong>
+                                        <input type="text" name="nGross" id="nGross" value="<?php echo $totalAmount;?>" readonly style="border:none; background:transparent; font-weight:bold; text-align:right;">
+                                    </td>
                                 </tr>
                                 <tr>
                                 	<td> 
@@ -437,13 +474,23 @@ function showBills(val){
 						var e=a.insertCell(3);
 						var f=a.insertCell(4);
 						var g=a.insertCell(5);
+                        var h=a.insertCell(6);
 						
 						b.innerHTML = lastRow;
 						c.innerHTML = "<input type=\"text\" size = \"7\" style=\"width:98%;\" name=\"category" + lastRow + "\" id=\"category" + lastRow + "\" value=\""+ category + "\" readonly=\"true\">";
 						d.innerHTML = "<input type=\"text\" size = \"7\" style=\"width:98%;\" name=\"particular" + lastRow + "\" id=\"particular" + lastRow + "\" value=\""+ particular + "\" readonly=\"true\">";
 						e.innerHTML = "<input type=\"text\" size = \"7\" style=\"width:98%;\" name=\"qty" + lastRow + "\" id=\"qty" + lastRow + "\" value=\""+ qty + "\" readonly=\"true\">";
 						f.innerHTML = "<input type=\"text\" size = \"7\" style=\"width:98%;\" name=\"rate" + lastRow + "\" id=\"rate" + lastRow + "\" value=\""+ rate + "\" readonly=\"true\">";
-						g.innerHTML = "<input type=\"text\" size = \"7\" style=\"width:98%;\" name=\"note" + lastRow + "\" id=\"note" + lastRow + "\" value=\""+ note + "\" readonly=\"true\">";
+						g.innerHTML = "<input type=\"text\" size = \"7\" style=\"width:98%;\" name=\"amount" + lastRow + "\" id=\"amount" + lastRow + "\" value=\""+ (qty * rate) + "\" readonly=\"true\">";
+                        h.innerHTML = "<input type=\"text\" size = \"7\" style=\"width:98%;\" name=\"note" + lastRow + "\" id=\"note" + lastRow + "\" value=\""+ note + "\" readonly=\"true\">";
+                        
+                        // Update total amount
+                        var currentTotal = parseFloat(document.getElementById('nGross').value) || 0;
+                        var newAmount = parseFloat(qty * rate) || 0;
+                        document.getElementById('nGross').value = (currentTotal + newAmount).toFixed(2);
+                        
+                        // Update row count
+                        document.getElementById('hdnrowcnt').value = lastRow;
 						
 					$('#myModal').modal('hide');
 					return true;	

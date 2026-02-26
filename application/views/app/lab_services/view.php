@@ -135,13 +135,19 @@
                                         $label = 'default';
                                         $status = isset($row->status) ? $row->status : 'Pending';
                                         if($status == 'Pending') $label = 'warning';
+                                        elseif($status == 'Paid') $label = 'info';
                                         elseif($status == 'Active') $label = 'primary';
-                                        elseif($status == 'For Payment') $label = 'info';
                                         elseif($status == 'Done') $label = 'success';
                                         elseif($status == 'Cancelled') $label = 'danger';
                                         else $label = 'default';
                                         ?>
-                                        <span class="label label-<?php echo $label;?>" style="cursor:pointer;" onclick="toggleStatus('<?php echo $row->detail_id;?>', '<?php echo $status;?>')"><?php echo $status;?></span>
+                                        <?php if($status == 'Paid'): ?>
+                                            <span class="label label-<?php echo $label;?>" style="cursor:pointer;" onclick="toggleStatus('<?php echo $row->detail_id;?>', '<?php echo $status;?>')"><?php echo $status;?> (Click to Start)</span>
+                                        <?php elseif($status == 'Active'): ?>
+                                            <span class="label label-<?php echo $label;?>" style="cursor:pointer;" onclick="toggleStatus('<?php echo $row->detail_id;?>', '<?php echo $status;?>')"><?php echo $status;?> (Click to Complete)</span>
+                                        <?php else: ?>
+                                            <span class="label label-<?php echo $label;?>"><?php echo $status;?></span>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?php echo isset($row->result_remarks) ? $row->result_remarks : '';?></td>
                                 </tr>
@@ -213,16 +219,14 @@ $(document).ready(function(){
 
 function toggleStatus(id, currentStatus){
     var newStatus = '';
-    if(currentStatus == 'Pending'){
+    
+    // Only allow flow: Paid -> Active -> Done
+    if(currentStatus == 'Paid'){
         newStatus = 'Active';
     } else if(currentStatus == 'Active'){
         newStatus = 'Done';
-    } else if(currentStatus == 'Done'){
-        return; // No further action if Done
-    } else if(currentStatus == 'Cancelled'){
-        newStatus = 'Pending';
     } else {
-        newStatus = 'Active';
+        return; // Pending or Cancelled cannot be moved manually here (Pending needs payment)
     }
     
     if(newStatus != '' && confirm('Change status from ' + currentStatus + ' to ' + newStatus + '?')){

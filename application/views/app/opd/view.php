@@ -3,24 +3,27 @@
                 <section class="content-header">
                    <?php if($this->session->userdata('emr_viewing') == "opd_emr_viewing"){?>	
                    <h1>OPD Patient Information</h1>
-                   <ol class="breadcrumb">
+                    <?php }else{?>
+                    <h1>OPD Patient Information</h1>
+                    <?php }?>
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <?php if($this->session->userdata('emr_viewing') == "opd_emr_viewing"){?>	
+                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">EMR sheet</a></li>
                         <li><a href="<?php echo base_url()?>app/emr/opd">Out-Patient Master</a></li>
+                        <li class="active">OPD Patient Information</li>
                     </ol>
                     <?php }else{?>
-                    <h1>OPD Patient Information</h1>
-                   <ol class="breadcrumb">
+                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">Doctor Module</a></li>
                         <li><a href="<?php echo base_url()?>app/doctor/opd">Out-Patient Master</a></li>
                         <li class="active">OPD Patient Information</li>
-                    </ol>
+                    </ol><br />
                     <?php }?>
-                </section>
-
-                <!-- Main content -->
-                <section class="content">
                  
         
                  

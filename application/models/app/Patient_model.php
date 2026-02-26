@@ -8,10 +8,9 @@ class Patient_model extends CI_Model{
 	
 	public function getAll($limit = 10, $offset = 0){
 		
-
 		$this->db->select("
 			A.patient_no,
-			concat(B.cValue,' ',A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
+			concat(A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
 			C.cValue as 'gender',
 			D.cValue as 'civil_status',
 			A.age,
@@ -27,7 +26,7 @@ class Patient_model extends CI_Model{
 				and A.InActive = 0";
 		$this->db->where($where);
 		$this->db->order_by('lastname','asc');
-		$this->db->join("system_parameters B","B.param_id = A.title","left outer");
+		// $this->db->join("system_parameters B","B.param_id = A.title","left outer");
 		$this->db->join("system_parameters C","C.param_id = A.gender","left outer");
 		$this->db->join("system_parameters D","D.param_id = A.civil_status","left outer");
 		$query = $this->db->get("patient_personal_info A", $limit, $offset);
@@ -37,7 +36,7 @@ class Patient_model extends CI_Model{
 	public function count_all(){
 		$this->db->select("
 			A.patient_no,
-			concat(B.cValue,' ',A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
+			concat(A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
 			C.cValue,
 			D.cValue,
 			A.age,
@@ -53,7 +52,7 @@ class Patient_model extends CI_Model{
 				and A.InActive = 0";
 		$this->db->where($where);
 		$this->db->order_by('lastname','asc');
-		$this->db->join("system_parameters B","B.param_id = A.title","left outer");
+		// $this->db->join("system_parameters B","B.param_id = A.title","left outer");
 		$this->db->join("system_parameters C","C.param_id = A.gender","left outer");
 		$this->db->join("system_parameters D","D.param_id = A.civil_status","left outer");
 		$query = $this->db->get("patient_personal_info A");
@@ -103,30 +102,38 @@ class Patient_model extends CI_Model{
 		$dob = strtotime(str_replace("-", "/", $timestamp));
 		$age = date_diff(date_create(date("Y-m-d")), date_create(date("Y-m-d", $dob)))->y;
 		$birthdate = date('Y-m-d', strtotime(str_replace('-', '/', $timestamp)));
+		
+		// Handle optional fields that might be empty string but need integer/null for DB
+		$title = $this->input->post('title');
+		$civil_status = $this->input->post('civil_status');
+		$religion = $this->input->post('religion');
+		$bloodGroup = $this->input->post('bloodGroup');
+		$insurance_comp = $this->input->post('insurance_comp');
+		
 		$this->data = array(
 			'patient_no'		=>		$this->input->post('patientID'),
-			'title'				=>		$this->input->post('title'),
-			'lastname'			=>		$this->input->post('lastname'),
-			'firstname'			=>		$this->input->post('firstname'),
-			'middlename'		=>		$this->input->post('middlename'),
+			'title'				=>		empty($title) ? 0 : $title,
+			'lastname'			=>		strtoupper($this->input->post('lastname')),
+			'firstname'			=>		strtoupper($this->input->post('firstname')),
+			'middlename'		=>		strtoupper($this->input->post('middlename')),
 			'gender'			=>		$this->input->post('gender'),
-			'civil_status'		=>		$this->input->post('civil_status'),
+			'civil_status'		=>		empty($civil_status) ? 0 : $civil_status,
 			'birthday'			=>		$birthdate,
-			'birthplace'		=>		$this->input->post('birthplace'),
-			'fathers_name'		=>		$this->input->post('fathers_name'),
-			'address2'			=>		$this->input->post('address2'),
+			'birthplace'		=>		strtoupper($this->input->post('birthplace')),
+			'fathers_name'		=>		strtoupper($this->input->post('fathers_name')),
+			'address2'			=>		strtoupper($this->input->post('address2')),
 			'age'				=>		$age,
-			'religion'			=>		$this->input->post('religion'),
-			'street'			=>		$this->input->post('noofhouse'),
-			'subd_brgy'			=>		$this->input->post('brgy'),
-			'province'			=>		$this->input->post('province'),
+			'religion'			=>		empty($religion) ? 0 : $religion,
+			'street'			=>		strtoupper($this->input->post('noofhouse')),
+			'subd_brgy'			=>		strtoupper($this->input->post('brgy')),
+			'province'			=>		strtoupper($this->input->post('province')),
 			'phone_no_office'	=>		$this->input->post('phone_office'),
 			'phone_no'			=>		$this->input->post('phone'),
 			'mobile_no'			=>		$this->input->post('mobile'),
 			'email_address'		=>		$this->input->post('email'),
-			'date_entry'		=>		date("Y-m-d h:i:s a"),
-			'blood_group'		=>		$this->input->post('bloodGroup'),
-			'Insurance_comp'	=>		$this->input->post('insurance_comp'),
+			'date_entry'		=>		date("Y-m-d H:i:s"),
+			'blood_group'		=>		empty($bloodGroup) ? 0 : $bloodGroup,
+			'Insurance_comp'	=>		empty($insurance_comp) ? 0 : $insurance_comp,
 			'insurance_no'		=>		$this->input->post('insurance_id'),
 			'id_identifiers'	=>		$this->input->post('patient_iden'),
 			'InActive'			=>		0
@@ -188,26 +195,33 @@ class Patient_model extends CI_Model{
                 ++$age;
         }
 		
+		// Handle optional fields that might be empty string but need integer/null for DB
+		$title = $this->input->post('title');
+		$civil_status = $this->input->post('civil_status');
+		$religion = $this->input->post('religion');
+		$bloodGroup = $this->input->post('bloodGroup');
+		$insurance_comp = $this->input->post('insurance_comp');
+		
 		$this->data = array(
-			'title'				=>		$this->input->post('title'),
-			'lastname'			=>		$this->input->post('lastname'),
-			'firstname'			=>		$this->input->post('firstname'),
-			'middlename'		=>		$this->input->post('middlename'),
+			'title'				=>		empty($title) ? 0 : $title,
+			'lastname'			=>		strtoupper($this->input->post('lastname')),
+			'firstname'			=>		strtoupper($this->input->post('firstname')),
+			'middlename'		=>		strtoupper($this->input->post('middlename')),
 			'gender'			=>		$this->input->post('gender'),
-			'civil_status'		=>		$this->input->post('civil_status'),
+			'civil_status'		=>		empty($civil_status) ? 0 : $civil_status,
 			'birthday'			=>		$this->input->post('birthday'),
-			'birthplace'		=>		$this->input->post('birthplace'),
+			'birthplace'		=>		strtoupper($this->input->post('birthplace')),
 			'age'				=>		$age,
-			'religion'			=>		$this->input->post('religion'),
-			'street'			=>		$this->input->post('noofhouse'),
-			'subd_brgy'			=>		$this->input->post('brgy'),
-			'province'			=>		$this->input->post('province'),
+			'religion'			=>		empty($religion) ? 0 : $religion,
+			'street'			=>		strtoupper($this->input->post('noofhouse')),
+			'subd_brgy'			=>		strtoupper($this->input->post('brgy')),
+			'province'			=>		strtoupper($this->input->post('province')),
 			'phone_no_office'	=>		$this->input->post('phone_office'),
 			'phone_no'			=>		$this->input->post('phone'),
 			'mobile_no'			=>		$this->input->post('mobile'),
 			'email_address'		=>		$this->input->post('email'),
-			'blood_group'		=>		$this->input->post('bloodGroup'),
-			'Insurance_comp'	=>		$this->input->post('insurance_comp'),
+			'blood_group'		=>		empty($bloodGroup) ? 0 : $bloodGroup,
+			'Insurance_comp'	=>		empty($insurance_comp) ? 0 : $insurance_comp,
 			'insurance_no'		=>		$this->input->post('insurance_id'),
 			'id_identifiers'	=>		$this->input->post('patient_iden')
 		);
@@ -274,7 +288,7 @@ class Patient_model extends CI_Model{
 	public function getPatientInfo($id){
 		$this->db->select("
 			A.patient_no,
-			concat(B.cValue,' ',A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
+			concat(A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
 			A.picture,
 			A.age,
 			A.street,
@@ -306,7 +320,7 @@ class Patient_model extends CI_Model{
 		",false);
 		$this->db->where("A.patient_no",$id);
 		$this->db->order_by('lastname','asc');
-		$this->db->join("system_parameters B","B.param_id = A.title","left outer");
+		// $this->db->join("system_parameters B","B.param_id = A.title","left outer");
 		$this->db->join("system_parameters C","C.param_id = A.gender","left outer");
 		$this->db->join("system_parameters D","D.param_id = A.civil_status","left outer");
 		$this->db->join("system_parameters E","E.param_id = A.religion","left outer");

@@ -2,16 +2,15 @@
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
                     <h1>Patient Information Details</h1>
-                    <ol class="breadcrumb">
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">Patient Management</a></li>
                         <li><a href="<?php echo base_url()?>app/patient">Patient Master</a></li>
                         <li class="active">Patient Information Details</li>
                     </ol>
-                </section>
-
-                <!-- Main content -->
-                <section class="content">
                  
                  
                  <div class="row">

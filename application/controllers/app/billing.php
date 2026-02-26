@@ -81,6 +81,18 @@ class Billing extends General{
 		
 		//update invoice series
 		$this->billing_model->updateInvoiceNo();
+        
+        // Update Laboratory Requests to 'Paid'
+        // Logic: Find pending requests for this patient and update them.
+        // Ideally we should match exact items, but for now we assume if patient pays, all pending labs are paid.
+        // Or better, we can check if the billed items correspond to lab items.
+        // Given the current structure, we'll update all 'Pending' lab requests for this patient to 'Paid'
+        $patient_no = $this->input->post('patient_no');
+        
+        // We can filter by date or just all pending. Let's do all pending for this patient.
+        $this->db->where('patient_no', $patient_no);
+        $this->db->where('status', 'Pending');
+        $this->db->update('lab_service_request', array('status' => 'Paid'));
 		
 		$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Transaction successfully Saved!</div>");
 			

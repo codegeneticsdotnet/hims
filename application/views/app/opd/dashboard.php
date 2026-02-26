@@ -4,7 +4,8 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Laboratory Services
+            OPD Dashboard
+            <small>Out Patient Department</small>
         </h1>
     </section>
 
@@ -12,10 +13,52 @@
     <section class="content">
         <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
             <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Lab Services</li>
+            <li class="active">OPD Dashboard</li>
         </ol>
         
         <div class="row">
+            <!-- Add New Patient 
+            <div class="col-lg-3 col-xs-6">
+                <!-- small box -- >
+                <div class="small-box bg-green">
+                    <div class="inner">
+                        <h3>
+                            New
+                        </h3>
+                        <p>
+                            Patient Registration
+                        </p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-person-add"></i>
+                    </div>
+                    <a href="<?php echo base_url()?>app/patient/addPatient" class="small-box-footer">
+                        Register New Patient <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+            
+            <!-- Doctor Patients -->
+            <div class="col-lg-3 col-xs-6">
+                <!-- small box -->
+                <div class="small-box bg-yellow">
+                    <div class="inner">
+                        <h3>
+                            <?php echo $opd_counts['doctor_patients'];?>
+                        </h3>
+                        <p>
+                            Doctor's Patients Today
+                        </p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-stethoscope"></i>
+                    </div>
+                    <a href="<?php echo base_url()?>app/opd/registration" class="small-box-footer">
+                        Add OPD Patient <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+            
             <!-- Lab/Xray -->
             <div class="col-lg-3 col-xs-6">
                 <!-- small box -->
@@ -78,88 +121,56 @@
                     </a>
                 </div>
             </div><!-- ./col -->
-
-            <div class="col-lg-3 col-xs-6">
-                <!-- small box -->
-                <div class="small-box bg-green">
-                    <div class="inner">
-                        <h3>
-                            Reports
-                        </h3>
-                        <p>
-                            Lab Reports
-                        </p>
-                    </div>
-                    <div class="icon">
-                        <i class="ion ion-pie-graph"></i>
-                    </div>
-                    <a href="<?php echo base_url()?>app/lab_services/service_request" class="small-box-footer">
-                        View List / Generate Reports <i class="fa fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div><!-- ./col -->
         </div>
 
         <div class="row">
             <div class="col-md-12">
                 <div class="box box-info">
                     <div class="box-header">
-                        <h3 class="box-title">Recent Service Requests</h3>
+                        <h3 class="box-title">Patients in Queue (Today)</h3>
                         <div class="box-tools pull-right">
-                            <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                            <button class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            <a href="<?php echo base_url()?>app/opd/registration" class="btn btn-success btn-flat pull-right"><i class="fa fa-plus"></i> Add OPD Patient</a>
                         </div>
                     </div><!-- /.box-header -->
                     <div class="box-body">
                         <div class="table-responsive">
-                            <table class="table no-margin">
+                            <table id="example1" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Request No</th>
-                                        <th>Date</th>
-                                        <th>Patient</th>
-                                        <th>Type</th>
-                                        <th>Status</th>
-                                        <th>Total Amount</th>
+                                        <th>Time</th>
+                                        <th>OPD No</th>
+                                        <th>Patient No</th>
+                                        <th>Patient Name</th>
+                                        <th>Department</th>
+                                        <th>Doctor</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if(isset($recent_requests) && !empty($recent_requests)):?>
-                                        <?php foreach($recent_requests as $row):?>
-                                        <tr>
-                                            <td><a href="<?php echo base_url()?>app/lab_services/view/<?php echo $row->request_id;?>"><?php echo $row->request_no;?></a></td>
-                                            <td><?php echo date('M d, Y h:i A', strtotime($row->request_date));?></td>
-                                            <td><?php echo $row->patient_name;?></td>
-                                            <td><?php echo $row->request_type;?></td>
-                                            <td>
-                                                <?php 
-                                                $label = 'default';
-                                                if($row->status == 'Pending') $label = 'warning';
-                                                elseif($row->status == 'Active') $label = 'success';
-                                                elseif($row->status == 'Cancelled') $label = 'danger';
-                                                ?>
-                                                <span class="label label-<?php echo $label;?>"><?php echo $row->status;?></span>
-                                            </td>
-                                            <td><?php echo number_format($row->total_amount, 2);?></td>
-                                            <td>
-                                                <a href="<?php echo base_url()?>app/lab_services/view/<?php echo $row->request_id;?>" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach;?>
-                                    <?php else:?>
-                                        <tr>
-                                            <td colspan="7" class="text-center">No recent requests found.</td>
-                                        </tr>
-                                    <?php endif;?>
+                                    <?php foreach($opd_queue as $row):?>
+                                    <tr>
+                                        <td><?php echo date('h:i A', strtotime($row->time_visit));?></td>
+                                        <td><?php echo $row->IO_ID;?></td>
+                                        <td><?php echo $row->patient_no;?></td>
+                                        <td><?php echo $row->patient_name;?></td>
+                                        <td><?php echo $row->dept_name;?></td>
+                                        <td><?php echo $row->doctor;?></td>
+                                        <td>
+                                            <a href="<?php echo base_url()?>app/opd/view/<?php echo $row->IO_ID;?>/<?php echo $row->patient_no;?>" class="btn btn-primary btn-xs">
+                                                <i class="fa fa-eye"></i> View
+                                            </a>
+                                            <!-- Add OPD Patient Button (Register existing to OPD) -->
+                                            <!-- Usually this means adding another visit or checking them in -->
+                                        </td>
+                                    </tr>
+                                    <?php endforeach;?>
                                 </tbody>
                             </table>
                         </div><!-- /.table-responsive -->
                     </div><!-- /.box-body -->
                     <div class="box-footer clearfix">
-                        <a href="<?php echo base_url()?>app/lab_services/add_request" class="btn btn-sm btn-info btn-flat pull-left">Place New Request</a>
-                        <a href="<?php echo base_url()?>app/lab_services/service_request" class="btn btn-sm btn-default btn-flat pull-right">View All Requests</a>
-                    </div><!-- /.box-footer -->
+
+                     </div><!-- /.box-footer -->
                 </div><!-- /.box -->
             </div><!-- /.col -->
         </div>

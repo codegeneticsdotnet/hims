@@ -7,17 +7,35 @@ class Billing_model extends CI_Model{
 	}
 	
 	public function getOPDPatient(){
+        // Get standard pending OPD patients
 		$this->db->select("
 			A.IO_ID,
 			concat(B.firstname,' ',B.lastname) as patient
 		",false);
-		$this->db->order_by("B.lastname","ASC");
 		$this->db->where(array(
 			'A.nStatus'		=>		'Pending',
 			'A.InActive'	=>		0
 		));
 		$this->db->join("patient_personal_info B","B.patient_no = A.patient_no","left outer");
-		$query = $this->db->get("patient_details_iop A");
+		$query1 = $this->db->get_compiled_select("patient_details_iop A");
+
+        // Get patients with Pending Lab Requests even if not 'Pending' in OPD (e.g. Discharged but returned for lab)
+        $this->db->select("
+            A.IO_ID,
+            concat(B.firstname,' ',B.lastname) as patient
+        ", false);
+        $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left outer");
+        $this->db->join("lab_service_request C", "C.patient_no = A.patient_no", "inner"); // Only those with lab requests
+        $this->db->where(array(
+            'C.status'      => 'Pending',
+            'C.InActive'    => 0,
+            'A.InActive'    => 0
+        ));
+        $this->db->group_by("A.IO_ID"); // Avoid duplicates
+        $query2 = $this->db->get_compiled_select("patient_details_iop A");
+
+        $query = $this->db->query($query1 . " UNION " . $query2 . " ORDER BY patient ASC");
+        
 		return $query->result();	
 	}
 	
@@ -314,8 +332,49 @@ class Billing_model extends CI_Model{
 		$this->db->get("iop_operation_theater A");
 		$query4 = $this->db->last_query();
 		
+		//table laboratory requests (pending) - For OPD payment
+		$this->db->select("A.particular_id, concat('Lab: ', B.particular_name) as particular_name, A.amount as nPrice, A.qty, '0' as isPackage", false);
+		$this->db->from("lab_service_request_details A");
+		$this->db->join("bill_particular B", "B.particular_id = A.particular_id", "left");
+		$this->db->join("lab_service_request C", "C.request_id = A.request_id", "left");
+		$this->db->where(array(
+			'C.patient_no'  => $patientNo,
+			'C.status'      => 'Pending',
+			'A.InActive'    => 0,
+			'C.InActive'    => 0
+		));
+		$this->db->get(); 
+		$query5 = $this->db->last_query();
+        
+        //table laboratory requests (Billed/Active/Done) - For IPD Final Bill
+        // IPD Billing typically pulls everything that is not 'Paid' or explicitly pulls for the admission
+        // Since we are using this function for IPD Billing too (presumably), we need to include IPD lab requests.
+        // IPD Lab requests might have status 'Active', 'Done', or 'Billed' (if we add that status).
+        // Let's assume for IPD, we want to bill items linked to this IOP_ID that are NOT 'Paid'.
+        // But our Lab module links by patient_no mainly. It should link by iop_id if available.
+        // Let's modify the query to include items linked to this IOP_ID specifically.
+        
+        $this->db->select("A.particular_id, concat('Lab: ', B.particular_name) as particular_name, A.amount as nPrice, A.qty, '0' as isPackage", false);
+		$this->db->from("lab_service_request_details A");
+		$this->db->join("bill_particular B", "B.particular_id = A.particular_id", "left");
+		$this->db->join("lab_service_request C", "C.request_id = A.request_id", "left");
+		$this->db->where(array(
+			'C.patient_no'  => $patientNo,
+            'C.iop_id'      => $iopNo, // Must match the admission ID
+			'C.status !='   => 'Pending', // Pending is for OPD/Pre-payment. IPD items are processed then billed.
+            'C.status !='   => 'Paid',    // Don't bill if already paid
+            // Actually, for IPD, 'Active' or 'Done' items should be billed.
+            // If we use 'Billed' status for IPD orders, we check for that.
+            // For now, let's include 'Active', 'Done', 'Billed'
+			'A.InActive'    => 0,
+			'C.InActive'    => 0
+		));
+        $this->db->where_in('C.status', array('Active', 'Done', 'Billed'));
+		$this->db->get(); 
+		$query6 = $this->db->last_query();
+		
 		//union all table
-		$query = $this->db->query($query1." UNION ALL ".$query2." UNION ALL ".$query3." UNION ALL ".$query4);
+		$query = $this->db->query($query1." UNION ALL ".$query2." UNION ALL ".$query3." UNION ALL ".$query4." UNION ALL ".$query5." UNION ALL ".$query6);
 		return $query->result();
 	}
 	

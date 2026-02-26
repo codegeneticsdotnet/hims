@@ -19,6 +19,46 @@ class Opd extends General{
 		General::variable();	
 	}
 	
+	public function dashboard(){
+		// user restriction function
+		$this->session->set_userdata('page_name','opd_dashboard');
+		$page_id = $this->general_model->getPageID();
+		$userRole = $this->general_model->getUserLoggedIn($this->session->userdata('username'));
+		if(isset($page_id->page_id)){
+			if(General::has_rights_to_access($page_id->page_id,$userRole->user_role) == FALSE){
+				//redirect(base_url().'access_denied');
+			}
+		}
+		// end of user restriction function		
+		
+		$this->session->set_userdata(array(
+				 'tab'			=>		'opd',
+				 'module'		=>		'opd_dashboard',
+				 'subtab'		=>		'',
+				 'submodule'	=>		''));
+				 
+		$this->data['opd_counts'] = $this->opd_model->get_opd_counts();
+		$this->data['opd_queue'] = $this->opd_model->get_opd_queue();
+		
+		$this->load->view('app/opd/dashboard', $this->data);
+	}
+	
+	public function search_patient_json(){
+		$query = $this->input->post('query');
+		$patients = $this->opd_model->search_patient_json($query);
+		
+		$output = '<ul class="list-unstyled" style="margin-bottom: 0;">';
+		if(count($patients) > 0){
+			foreach($patients as $row){
+				$output .= '<li class="search-item" data-id="'.$row->patient_no.'" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;">'.$row->name.' ('.$row->patient_no.')</li>';
+			}
+		}else{
+			$output .= '<li style="padding: 10px; color: red;">Patient Not Found</li>';
+		}
+		$output .= '</ul>';
+		echo $output;
+	}
+	
 	public function registration(){
 		
 		$this->session->set_userdata(array(
@@ -239,9 +279,15 @@ class Opd extends General{
 	
 		if($this->form_validation->run()){
 			
+			// Set referral doctor to be the same as consultant doctor if not provided
+			if($this->input->post('refdoctor') == ""){
+				$_POST['refdoctor'] = $this->input->post('doctor');
+			}
+			
 			$this->opd_model->save();
 			
-			$this->opd_model->save_vital();
+			// Only save vital signs if they are provided (which they aren't in the simplified form)
+			// $this->opd_model->save_vital();
 			
 			$this->db->where(array("cCode"=>"OUTPATIENTNO", 'InActive' => 0));
 			$this->db->update('system_option',array('cValue'=>$this->input->post('userID2')));

@@ -4,7 +4,16 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Create Laboratory Request
+            <?php 
+            if(isset($request_type) && $request_type != ""){
+                if($request_type == 'X') echo "X-ray Request Information";
+                else if($request_type == 'L') echo "Laboratory Request Information";
+                else if($request_type == 'U') echo "Ultrasound Request Information";
+                else echo "Create Laboratory Request";
+            } else {
+                echo "Create Laboratory Request";
+            }
+            ?>
             <small>Laboratory Services</small>
         </h1>
     </section>
@@ -25,35 +34,39 @@
             </div>
             <div class="box-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Service Category</label>
-                            <select name="service_category" id="service_category" class="form-control" onchange="updateRequestNo()" required>
-                                <option value="">Select Category</option>
-                                <option value="Laboratory">Laboratory</option>
-                                <option value="X-ray">X-ray</option>
-                                <option value="Ultrasound">Ultrasound</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Request No</label>
-                            <input type="text" name="request_no" id="request_no" class="form-control" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Request Date</label>
-                            <input type="text" name="request_date" class="form-control" value="<?php echo date('Y-m-d H:i:s');?>" readonly>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Patient Name (Search by Name or ID)</label>
-                            <input type="text" id="patient_search" class="form-control" placeholder="Type to search..." autocomplete="off">
-                            <input type="hidden" name="patient_no" id="patient_no" required>
-                            <div id="patient_results" class="list-group" style="position:absolute; z-index:999; display:none; width:95%;"></div>
-                        </div>
-                        <div class="form-group">
-                            <label>Remarks</label>
-                            <textarea name="remarks" class="form-control" rows="3"></textarea>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <label>Service Category</label>
+                                <select name="service_category" id="service_category" class="form-control" onchange="updateRequestNo()" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Laboratory" <?php if(isset($request_type) && $request_type == 'L') echo "selected";?>>Laboratory</option>
+                                    <option value="X-ray" <?php if(isset($request_type) && $request_type == 'X') echo "selected";?>>X-ray</option>
+                                    <option value="Ultrasound" <?php if(isset($request_type) && $request_type == 'U') echo "selected";?>>Ultrasound</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label>Patient Name (Search by Name or ID)</label>
+                                <input type="text" id="patient_search" class="form-control" placeholder="Type to search..." autocomplete="off">
+                                <input type="hidden" name="patient_no" id="patient_no" required>
+                                <div id="patient_results" class="list-group" style="position:absolute; z-index:999; display:none; width:95%;"></div>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label>Remarks</label>
+                                <textarea name="remarks" class="form-control" rows="1"></textarea>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Request No</label>
+                                    <input type="text" name="request_no" id="request_no" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>Request Date</label>
+                                    <input type="text" name="request_date" class="form-control" value="<?php echo date('Y-m-d H:i:s');?>" readonly>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -116,13 +129,15 @@ var rowCounter = 0;
 
 $(document).ready(function(){
     addRow(); // Add one row by default
-
     
+    // Auto-populate request no if category is pre-selected
+    updateRequestNo();
+
     // Patient Search
     $('#patient_search').keyup(function(){
         var search = $(this).val();
         if(search.length > 2){
-            $.post('<?php echo base_url()?>app/lab_services/patient_autocomplete', {search: search}, function(data){
+            $.post('<?php echo base_url()?>app/lab_services/patient_autocomplete_active', {search: search}, function(data){
                 var results = JSON.parse(data);
                 var html = '';
                 if(results.length > 0){

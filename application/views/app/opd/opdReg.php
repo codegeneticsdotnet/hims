@@ -1,17 +1,16 @@
 				<?php require_once(APPPATH.'views/include/head.php');?>
-				<!-- Content Header (Page header) -->
+                <!-- Content Header (Page header) -->
                 <section class="content-header">
                     <h1>OPD Registration</h1>
-                   <ol class="breadcrumb">
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">Patient Management</a></li>
                         <li><a href="<?php echo base_url()?>app/opd/index">OPD</a></li>
                         <li class="active">OPD Registration</li>
                     </ol>
-                </section>
-
-                <!-- Main content -->
-                <section class="content">
                  
                  
                  <div class="row">
@@ -117,6 +116,7 @@
                                 	<td width="21%">OPD No.</td>
                                     <td width="79%"><input class="form-control input-sm" name="opdNo" id="opdNo" type="text" style="width: 100px;" required readonly value="<?php echo "OP-".$userID;?>"></td>
                                 </tr>
+                                <!--
                                 <tr>
                                 	<td>Referal Doctor</td>
                                     <td>
@@ -135,6 +135,7 @@
                                                             </select>
                                     </td>
                                 </tr>
+                                -->
                                 <tr>
                                 	<td>Department</td>
                                     <td>
@@ -156,7 +157,7 @@
                                 <tr>
                                 	<td>Consultant Doctor</td>
                                     <td>
-                          						<select name="doctor" id="doctor" class="form-control input-sm" style="width: 200px;" required>
+                          						<select name="doctor" id="doctor" class="form-control input-sm" style="width: 200px;" required onchange="updateReferralDoctor()">
                                       	<option value="">- Consultant Doctor -</option>
                                       	<?php 
         																foreach($doctorList2 as $doctorList2){
@@ -169,68 +170,32 @@
                                       	<option value="<?php echo $doctorList2->user_id;?>" <?php echo $selected;?>><?php echo $doctorList2->name;?></option>
                                           <?php }?>
                                       </select>
+                                      <!-- Hidden Referral Doctor Field (Same as Consultant) -->
+                                      <input type="hidden" name="refdoctor" id="refdoctor_hidden" value="">
                                     </td>
                                 </tr>
-                                <input type="hidden" name="diagnosis">
-                                <input type="hidden" name="complaints">
-                                <!--<tr>
-                                	<td valign="top">Provisional Diagnosis</td>
-                                	<td><textarea name="diagnosis" id="diagnosis" class="form-control input-sm" style="width: 60%;" rows="3"></textarea></td>
-                                </tr>
                                 <tr>
-                                	<td valign="top">Complaints</td>
-                                	<td><textarea name="complaints" id="complaints" class="form-control input-sm" style="width: 60%;" rows="3"></textarea></td>
-                                </tr>-->
+                                	<td valign="top">Medical Concerns</td>
+                                	<td><textarea name="complaints" id="complaints" class="form-control input-sm" style="width: 60%;" rows="3" placeholder="Enter patient's medical concerns, complaints, or reason for visit..."></textarea></td>
+                                </tr>
                                 
                                 </table>
-                                        </div><hr />
-										<table width="100%" cellpadding="3" cellspacing="3">
-                                        <tr>
-                                        	<td width="12%">Pulse rate</td>
-                                            <Td width="28%"><input type="text" name="pulse_rate" id="pulse_rate" style="width: 100px;">&nbsp;&nbsp;/min</Td>
-                                        	<td width="12%">BP</td>
-                                            <Td width="48%"><input type="text" name="bp" id="bp"  style="width: 100px;">&nbsp;&nbsp;mm of Hg</Td>
-                                        </tr>
-                                        <tr>
-                                        	<td>Temperature</td>
-                                            <Td><input type="text" name="temperature" id="temperature" style="width: 100px;">&nbsp;&nbsp;C</Td>
-                                        	<td>Respiration</td>
-                                            <Td><input type="text" name="respiration" id="respiration"  style="width: 100px;">&nbsp;&nbsp;/min</Td>
-                                        </tr>
-                                        <tr>
-                                        	<td>Height</td>
-                                            <Td><input type="text" name="height" id="height"  style="width: 100px;">&nbsp;&nbsp;Cm</Td>
-                                        	<td>Weight</td>
-                                            <Td><input type="text" name="weight" id="weight"  style="width: 100px;">&nbsp;&nbsp;Kg</Td>
-                                        </tr>
+                                        </div>
                                         
-                                        </table><hr />
-                                        <table width="100%" cellpadding="3" cellspacing="3">
-                                        <tr>
-                                	<td width="21%" valign="top">Allergies</td>
-                                	<td width="79%"><textarea name="allergies" id="allergies" class="form-control input-sm" style="width: 60%;" rows="3"><?php echo ($patientHistory) ? $patientHistory->allergies : "";?></textarea></td>
-                                </tr>
-                                <tr>
-                                	<td valign="top">Warnings</td>
-                                	<td><textarea name="warnings" id="warnings" class="form-control input-sm" style="width: 60%;" rows="3"><?php echo ($patientHistory) ? $patientHistory->warnings : "";?></textarea></td>
-                                </tr>
-                                <tr>
-                                	<td valign="top">Social History</td>
-                                	<td><textarea name="social_history" id="social_history" class="form-control input-sm" style="width: 60%;" rows="3"><?php echo ($patientHistory) ? $patientHistory->social_history : "";?></textarea></td>
-                                </tr>
-                                <tr>
-                                	<td valign="top">Family History</td>
-                                	<td><textarea name="family_history" id="family_history" class="form-control input-sm" style="width: 60%;" rows="3"><?php echo ($patientHistory) ? $patientHistory->family_history : "";?></textarea></td>
-                                </tr>
-                                <tr>
-                                	<td valign="top">Personal History</td>
-                                	<td><textarea name="personal_history" id="personal_history" class="form-control input-sm" style="width: 60%;" rows="3"><?php echo ($patientHistory) ? $patientHistory->personal_history : "";?></textarea></td>
-                                </tr>
-                                <tr>
-                                	<td valign="top">Past Medical History</td>
-                                	<td><textarea name="past_medical_history" id="past_medical_history" class="form-control input-sm" style="width: 60%;" rows="3"><?php echo ($patientHistory) ? $patientHistory->past_medical_history : "";?></textarea></td>
-                                </tr>
-                                        </table>
+                                        <!-- Hidden Inputs for Unused Fields -->
+                                        <input type="hidden" name="diagnosis" value="">
+                                        <input type="hidden" name="pulse_rate" value="">
+                                        <input type="hidden" name="bp" value="">
+                                        <input type="hidden" name="temperature" value="">
+                                        <input type="hidden" name="respiration" value="">
+                                        <input type="hidden" name="height" value="">
+                                        <input type="hidden" name="weight" value="">
+                                        <input type="hidden" name="allergies" value="">
+                                        <input type="hidden" name="warnings" value="">
+                                        <input type="hidden" name="social_history" value="">
+                                        <input type="hidden" name="family_history" value="">
+                                        <input type="hidden" name="personal_history" value="">
+                                        <input type="hidden" name="past_medical_history" value="">
                                         
 										
                                     </div>
@@ -276,6 +241,11 @@
                 });  
             
             });
+            
+            function updateReferralDoctor() {
+                var consultant = document.getElementById("doctor").value;
+                document.getElementById("refdoctor_hidden").value = consultant;
+            }
         </script>
         <!-- END BDAY -->
         
