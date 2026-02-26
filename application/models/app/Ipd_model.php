@@ -6,7 +6,30 @@ class Ipd_model extends CI_Model{
 		parent::__construct();	
 	}
 	
-	public function getRoomMaster($roomType,$occupied){
+	public function get_ipd_counts(){
+        $counts = array();
+        
+        // Admitted Patients
+        $this->db->where('patient_type', 'IPD');
+        $this->db->where('nStatus', 'Pending');
+        $this->db->where('InActive', 0);
+        $counts['admitted'] = $this->db->count_all_results('patient_details_iop');
+        
+        // Available Beds
+        $this->db->where('nStatus', 'Vacant');
+        $this->db->where('InActive', 0);
+        $counts['available_beds'] = $this->db->count_all_results('room_beds');
+        
+        // Discharged Patients
+        $this->db->where('patient_type', 'IPD');
+        $this->db->where('nStatus', 'Discharged');
+        $this->db->where('InActive', 0);
+        $counts['discharged'] = $this->db->count_all_results('patient_details_iop');
+        
+        return $counts;
+    }
+
+    public function getRoomMaster($roomType,$occupied){
 		$this->db->select("
 				A.room_master_id,
 				B.floor_name,
@@ -15,14 +38,16 @@ class Ipd_model extends CI_Model{
 		");
 		
 		if($occupied == "all"){
-			$where = "A.category_id = '".$roomType."'";
-		}else if($occupied == "occupied"){
-			$where = "A.category_id = '".$roomType."' and D.nStatus = 'Occupied' ";
-		}else if($occupied == "unoccupied"){
-			$where = "A.category_id = '".$roomType."' and D.nStatus = 'Vacant' ";
-		}else{
-			$where = "A.category_id = '".$roomType."'";	
-		}
+            $where = "A.category_id = '".$roomType."'";
+        }else if($occupied == "occupied"){
+            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Occupied' ";
+        }else if($occupied == "unoccupied"){
+            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Vacant' ";
+        }else if($occupied == "maintenance"){
+            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Maintenance' ";
+        }else{
+            $where = "A.category_id = '".$roomType."'"; 
+        }
 		
 		$this->db->where($where);
 		$this->db->order_by("A.room_name","ASC");

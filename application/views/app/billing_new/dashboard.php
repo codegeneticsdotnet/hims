@@ -58,25 +58,6 @@
                 </div>
             </div><!-- ./col -->
             
-            <div class="col-lg-3 col-xs-6">
-                <!-- small box -->
-                <div class="small-box bg-yellow">
-                    <div class="inner">
-                        <h3>
-                            New
-                        </h3>
-                        <p>
-                            OPD Registration
-                        </p>
-                    </div>
-                    <div class="icon">
-                        <i class="ion ion-plus-circled"></i>
-                    </div>
-                    <a href="<?php echo base_url()?>app/opd/registration" class="small-box-footer">
-                        Register New <i class="fa fa-arrow-circle-right"></i>
-                    </a>
-                </div>
-            </div><!-- ./col -->
             
              <div class="col-lg-3 col-xs-6">
                 <!-- small box -->
@@ -117,6 +98,7 @@
                                         <th>Patient No</th>
                                         <th>Name</th>
                                         <th>Date</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -132,8 +114,18 @@
                                         <td><?php echo $row->patient_name;?></td>
                                         <td><?php echo date('M d', strtotime($row->date_visit));?></td>
                                         <td>
+                                            <?php if(isset($row->nStatus) && $row->nStatus == 'Discharged'): ?>
+                                                <span class="label label-success">Paid/Discharged</span>
+                                            <?php else: ?>
+                                                <span class="label label-warning">Pending</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
                                             <a href="<?php echo base_url()?>app/billing_new/create_bill/<?php echo $row->patient_no;?>/OPD/<?php echo $row->IO_ID;?>" class="btn btn-primary btn-xs">
                                                 Bill
+                                            </a>
+                                            <a href="#" class="btn btn-default btn-xs" onclick="window.print()">
+                                                <i class="fa fa-print"></i> Print
                                             </a>
                                         </td>
                                     </tr>

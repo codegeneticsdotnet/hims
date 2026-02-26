@@ -21,31 +21,25 @@
                                     	<div class="tab-pane active" id="tab_1">
                                         	<script language="javascript">
                                             function getData(){
-												var roomType,occupied;
-												roomType = document.getElementById("roomType").value;
-												occupied = document.getElementById("occupied").value;
-												if (window.XMLHttpRequest)
-  												{
-
- 						 							xmlhttp3=new XMLHttpRequest();
-  												}
-												else
-  												{// code for IE6, IE5
-  													xmlhttp3=new ActiveXObject("Microsoft.XMLHTTP");
-  												}
-													xmlhttp3.onreadystatechange=function()
-  												{
-  												if (xmlhttp3.readyState==4 && xmlhttp3.status==200)
-    											{
-													document.getElementById("master_room").innerHTML=xmlhttp3.responseText;
-   									 			}
-  												}
-  													var supp;
-													xmlhttp3.open("GET","<?php echo base_url();?>app/ipd/getRoomMaster2/"+roomType+"/"+occupied,true);
-													xmlhttp3.send();
-													
-													
-											}
+                                                var roomType, occupied, maintenance;
+                                                roomType = document.getElementById("roomType").value;
+                                                occupied = document.getElementById("occupied").value;
+                                                
+                                                if (window.XMLHttpRequest) {
+                                                    xmlhttp3 = new XMLHttpRequest();
+                                                } else {
+                                                    xmlhttp3 = new ActiveXObject("Microsoft.XMLHTTP");
+                                                }
+                                                
+                                                xmlhttp3.onreadystatechange = function() {
+                                                    if (xmlhttp3.readyState == 4 && xmlhttp3.status == 200) {
+                                                        document.getElementById("master_room").innerHTML = xmlhttp3.responseText;
+                                                    }
+                                                }
+                                                
+                                                xmlhttp3.open("GET", "<?php echo base_url();?>app/ipd/getRoomMaster2/" + roomType + "/" + occupied, true);
+                                                xmlhttp3.send();
+                                            }
 											
 											function getBed2(room_id,room_name){
 												
@@ -68,13 +62,17 @@
 													xmlhttp4.open("GET","<?php echo base_url();?>app/ipd/getBeds2/"+room_id,true);
 													xmlhttp4.send();
 													
-													document.getElementById("room_name").value = room_name;
-													document.getElementById("room_idfor").value = room_id;
+													if(document.getElementById("room_name"))
+                                                        document.getElementById("room_name").value = room_name;
+                                                    if(document.getElementById("room_idfor"))
+													    document.getElementById("room_idfor").value = room_id;
 											}		
 											
 											function getBedID(room_bed_id,bed_name){
-												document.getElementById("bed_no").value = room_bed_id;
-												document.getElementById("bed_name").value = bed_name;
+                                                if(document.getElementById("bed_no"))
+												    document.getElementById("bed_no").value = room_bed_id;
+                                                if(document.getElementById("bed_name"))
+												    document.getElementById("bed_name").value = bed_name;
 											}
                                             </script>
                                             <table cellpadding="4" width="100%">
@@ -89,9 +87,10 @@
                                                 </td>
                                                 <td align="center">
                                                 	<select name="occupied" id="occupied" class="form-control input-sm" onChange="getData()">
-                                                    	<option value="all">All</option>
+                                                    	<option value="all">All Status</option>
                                                         <option value="occupied">Occupied Bed</option>
                                                         <option value="unoccupied">Unoccupied Bed</option>
+                                                        <option value="maintenance">Under Maintenance</option>
                                                     </select>
                                                 </td>	
                                             </tr>

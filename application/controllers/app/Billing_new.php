@@ -57,7 +57,7 @@ class Billing_new extends General {
         
         $this->data['type'] = $type;
         $this->data['io_id'] = $io_id;
-        $this->data['invoice_no'] = $this->billing_new_model->getInvoiceNo();
+        $this->data['invoice_no'] = $this->billing_new_model->getInvoiceNo($type);
         
         // Fetch Charges
         // Logic for fetching charges based on Type
@@ -72,6 +72,8 @@ class Billing_new extends General {
     
     public function get_items($category){
         $this->load->model("app/billing_new_model");
+        // Decode category just in case
+        $category = urldecode($category);
         $items = $this->billing_new_model->getItemsByCategory($category);
         echo json_encode($items);
     }
@@ -90,18 +92,11 @@ class Billing_new extends General {
             'patient_no' => $patient_no,
             'iop_id' => $io_id,
             'dDate' => date('Y-m-d H:i:s'),
-            'total_amount' => $total_amount,
+            'sub_total' => $total_amount, // Gross Total
             'discount' => $discount,
-            'sub_total' => $net_total, // Note: Schema uses sub_total for final amount? Check existing usage. 
-                                       // Existing: sub_total = nGross, total_amount = total_amount.
-                                       // Let's stick to existing schema: sub_total usually is gross, total is net.
-                                       // Wait, looking at saveHeader in old model: 
-                                       // 'sub_total' => $this->input->post('nGross'), 
-                                       // 'total_amount' => $this->input->post('total_amount') (which seems to be net after discount)
-                                       // So: sub_total = Gross, total_amount = Net.
-            'sub_total' => $total_amount, 
-            'total_amount' => $net_total,
-            'reason_discount' => $this->input->post('remarks'), // Storing remarks in reason_discount as requested
+            'total_amount' => $net_total, // Net Total
+            'reason_discount' => $this->input->post('remarks'), 
+            'payment_type' => 'Cash', // Default to Cash for now
             'InActive' => 0
         );
         
@@ -115,9 +110,6 @@ class Billing_new extends General {
             foreach($items as $key => $id){
                 $details[] = array(
                     'invoice_no' => $invoice_no,
-                    'patient_no' => $patient_no, // Note: iop_billing_t doesn't have patient_no usually, but let's check. 
-                                                 // Old model: invoice_no, iop_id, bill_name, qty, rate, amount.
-                    'iop_id' => $io_id,
                     'bill_name' => $this->input->post('item_name')[$key],
                     'qty' => $qtys[$key],
                     'rate' => $prices[$key],
@@ -130,7 +122,12 @@ class Billing_new extends General {
         $this->billing_new_model->saveBill($header, $details);
         $this->billing_new_model->updateInvoiceNo($invoice_no);
         
-        redirect(base_url().'app/billing_new/view_receipt/'.$invoice_no);
+        // redirect(base_url().'app/billing_new/view_receipt/'.$invoice_no);
+        // Redirect to Dashboard as requested or view receipt
+        // User said: "once processed, it will be marked as paid in dashboard" and "Payment Successful! ... but it is still marked as pending"
+        // The issue is likely the update logic in saveBill for "Pending" items.
+        
+        redirect(base_url().'app/billing_new');
     }
     
     public function view_receipt($invoice_no){

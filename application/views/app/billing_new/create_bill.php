@@ -15,7 +15,7 @@
             <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
             <li><a href="<?php echo base_url()?>app/billing_new">Billing</a></li>
             <li class="active">New Bill</li>
-        </ol>
+        </ol><br />
         
         <form action="<?php echo base_url()?>app/billing_new/save_bill" method="post" onsubmit="return confirm('Are you sure you want to process this payment?');">
             <input type="hidden" name="patient_no" value="<?php echo isset($patient->patient_no) ? $patient->patient_no : '';?>">
@@ -24,25 +24,30 @@
             
             <div class="row">
                 <!-- Patient Info -->
-                <div class="col-md-4">
+                 <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="box box-info">
-                        <div class="box-header">
-                            <h3 class="box-title">Patient Details</h3>
-                        </div>
                         <div class="box-body">
-                            <?php if(isset($patient) && !empty($patient)): ?>
-                            <p><strong>Name:</strong> <?php echo $patient->firstname . ' ' . $patient->lastname;?></p>
-                            <p><strong>Patient No:</strong> <?php echo $patient->patient_no;?></p>
-                            <p><strong>Age/Gender:</strong> <?php echo $patient->age;?> / <?php echo (isset($patient->gender_name) ? $patient->gender_name : $patient->gender);?></p>
-                            <?php else: ?>
-                            <p class="text-danger">Patient information not found. (Patient No: <?php echo $this->uri->segment(4);?>)</p>
-                            <?php endif; ?>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p><strong>Control No:</strong> <?php echo $invoice_no;?></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Patient No:</strong> <?php echo isset($patient->patient_no) ? $patient->patient_no : '';?></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Date:</strong> <?php echo date('M d, Y');?></p>
+                                </div>
+                                <div class="col-md-12">
+                                    <p><strong>Patient Name:</strong> <?php echo (isset($patient) && is_object($patient)) ? $patient->firstname . ' ' . $patient->lastname : '';?></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Billing Items -->
-                <div class="col-md-8">
+                <div class="col-md-12">
                     <div class="box box-primary">
                         <div class="box-header">
                             <h3 class="box-title">Billable Items</h3>
@@ -106,40 +111,45 @@
                             </table>
                         </div>
                     </div>
-                    
-                    <!-- Payment & Discount -->
+                </div>
+                                        </div>
+                <!-- Payment & Discount -->
+                <div class="col-md-4">
                     <div class="box box-warning">
+                        <!--
                         <div class="box-header">
                             <h3 class="box-title">Payment Summary</h3>
                         </div>
+                                        -->
                         <div class="box-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Total Amount</label>
-                                        <input type="text" name="total_amount" id="total_amount" class="form-control" value="<?php echo $grand_total;?>" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Discount Amount</label>
-                                        <input type="number" name="discount" id="discount" class="form-control" value="0" step="0.01" onkeyup="calculateTotal()">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Remarks / Discount Reason</label>
-                                        <textarea name="remarks" class="form-control" rows="2" placeholder="Enter remarks..."></textarea>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Net Total</label>
-                                        <input type="text" name="net_total" id="net_total" class="form-control input-lg" style="font-weight: bold; color: green;" value="<?php echo $grand_total;?>" readonly>
-                                    </div>
-                                    <button type="submit" class="btn btn-success btn-block btn-lg"><i class="fa fa-check"></i> Process Payment</button>
-                                </div>
+                            <div class="form-group">
+                                <label>Total Amount</label>
+                                <input type="text" name="total_amount" id="total_amount" class="form-control input-lg text-right" value="<?php echo $grand_total;?>" readonly>
                             </div>
+                            <div class="form-group">
+                                <label>Discount Amount</label>
+                                <input type="number" name="discount" id="discount" class="form-control text-right" value="0" step="0.01" onkeyup="calculateTotal()">
+                            </div>
+                            <div class="form-group">
+                                <label>Net Total</label>
+                                <input type="text" name="net_total" id="net_total" class="form-control input-lg text-right" style="font-weight: bold; color: green;" value="<?php echo $grand_total;?>" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Remarks / Discount Reason</label>
+                                <textarea name="remarks" class="form-control" rows="2" placeholder="Enter remarks..."></textarea>
+                            </div>
+                             <div class="form-group">
+                                <label>Cash Tendered</label>
+                                <input type="number" name="cash_tendered" id="cash_tendered" class="form-control input-lg text-right" step="0.01" onkeyup="calculateChange()">
+                            </div>
+                            <div class="form-group">
+                                <label>Change</label>
+                                <input type="text" name="change" id="change" class="form-control input-lg text-right" style="font-weight: bold; color: blue;" readonly>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block btn-lg"><i class="fa fa-check"></i> Process Payment</button>
                         </div>
                     </div>
                 </div>
-            </div>
         </form>
     </section>
     </aside><!-- /.right-side -->
@@ -357,6 +367,17 @@
         if(net < 0) net = 0;
         
         document.getElementById('net_total').value = net.toFixed(2);
+        
+        calculateChange();
+    }
+    
+    function calculateChange(){
+        var net = parseFloat(document.getElementById('net_total').value) || 0;
+        var cash = parseFloat(document.getElementById('cash_tendered').value) || 0;
+        var change = cash - net;
+        
+        if(change < 0) change = 0;
+        document.getElementById('change').value = change.toFixed(2);
     }
 </script>
 

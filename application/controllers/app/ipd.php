@@ -19,7 +19,40 @@ class Ipd extends General{
 		General::variable();	
 	}
 	
-	public function index($offset = 0){
+	public function dashboard(){
+        $this->session->set_userdata(array(
+                 'tab'          =>      'ipd',
+                 'module'       =>      'ipd_dashboard',
+                 'subtab'       =>      '',
+                 'submodule'    =>      ''));
+                 
+        $this->data['counts'] = $this->ipd_model->get_ipd_counts();
+        
+        // Get Recent Admitted Patients (Limit 5)
+        $this->db->select("
+            A.IO_ID,
+            A.patient_no,
+            concat(B.firstname,' ',B.lastname) as patient_name,
+            A.date_visit,
+            A.nStatus,
+            G.bed_name,
+            H.room_name
+        ", false);
+        $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+        $this->db->join("room_beds G","G.room_bed_id = A.room_id","left outer");
+        $this->db->join("room_master H","H.room_master_id = G.room_master_id","left outer");
+        $this->db->where("A.patient_type", "IPD");
+        $this->db->where("A.nStatus", "Pending");
+        $this->db->where("A.InActive", 0);
+        $this->db->order_by("A.date_visit", "DESC");
+        $this->db->limit(5);
+        $query = $this->db->get("patient_details_iop A");
+        $this->data['recent_admitted'] = $query->result();
+        
+        $this->load->view('app/ipd/dashboard', $this->data);
+    }
+
+    public function index($offset = 0){
 		// user restriction function
 				$this->session->set_userdata('page_name','ipd_enquiry');
 				$page_id = $this->general_model->getPageID();

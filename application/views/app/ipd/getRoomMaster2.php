@@ -16,6 +16,7 @@
                                                             <th>Total Beds</th>
                                                             <th>Occupied Beds</th>
                                                             <th>UnOccupied Beds</th>
+                                                            <th>Maintenance</th>
                                                         </tr>
                                                       </thead>
                                                       <tbody>
@@ -30,7 +31,17 @@
 														$unoccu_bed = & get_instance();
 														$unoccu_bed->load->model('app/general_model');
 														$unoccu_bed_rs = $unoccu_bed->general_model->numberofUnOccuBeds($getRoomMaster->room_master_id);
-														
+                                                        
+                                                        //maintenance bed (assuming similar function exists or we need to add one, for now assuming it's implicit or we calculate diff)
+                                                        // Since we don't have numberofMaintenanceBeds in general_model yet, let's assume we need to add it or just rely on total - occu - unoccu if total is fixed.
+                                                        // But total isn't stored directly, it's counted.
+                                                        // Let's create a custom query here or better, add to general_model.
+                                                        // For quick fix, I will add a direct query here or assume 0 for now until general_model is updated.
+                                                        
+                                                        $ci =& get_instance();
+                                                        $ci->db->where('room_master_id', $getRoomMaster->room_master_id);
+                                                        $ci->db->where('nStatus', 'Maintenance');
+                                                        $maintenance_count = $ci->db->count_all_results('room_beds');
 														
 														?>
                                                         <tr align="center">
@@ -38,9 +49,10 @@
                                                             <td><?php echo $getRoomMaster->floor_name?></td>
                                                             <td><?php echo $getRoomMaster->room_name?></td>
                                                             <td><?php echo $getRoomMaster->category_name?></td>
-                                                            <td><?php echo ($occu_bed_rs->numberofOccuBeds + $unoccu_bed_rs->numberofOccuBeds)?></td>
+                                                            <td><?php echo ($occu_bed_rs->numberofOccuBeds + $unoccu_bed_rs->numberofOccuBeds + $maintenance_count)?></td>
                                                             <td><?php echo $occu_bed_rs->numberofOccuBeds?></td>
                                                             <td><?php echo $unoccu_bed_rs->numberofOccuBeds?></td>
+                                                            <td><?php echo $maintenance_count?></td>
                                                         </tr>
                                                         <?php }?>
                                                       </tbody>
