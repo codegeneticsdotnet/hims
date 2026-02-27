@@ -136,7 +136,8 @@
                                                 <?php 
                                                 $label = 'default';
                                                 if($row->status == 'Pending') $label = 'warning';
-                                                elseif($row->status == 'Active') $label = 'success';
+                                                elseif($row->status == 'Active') $label = 'primary';
+                                                elseif($row->status == 'Done') $label = 'success';
                                                 elseif($row->status == 'Cancelled') $label = 'danger';
                                                 ?>
                                                 <span class="label label-<?php echo $label;?>"><?php echo $row->status;?></span>
@@ -144,6 +145,9 @@
                                             <td><?php echo number_format($row->total_amount, 2);?></td>
                                             <td>
                                                 <a href="<?php echo base_url()?>app/lab_services/view/<?php echo $row->request_id;?>" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a>
+                                                <?php if($row->status == 'Pending'): ?>
+                                                    <a href="#" class="btn btn-xs btn-danger" onclick="showCancelModal('<?php echo $row->request_id;?>')"><i class="fa fa-times"></i> Cancel</a>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                         <?php endforeach;?>
@@ -168,10 +172,42 @@
     </aside><!-- /.right-side -->
 </div><!-- ./wrapper -->
 
+<!-- Cancel Request Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" role="dialog" aria-labelledby="cancelModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="cancelModalLabel">Cancel Request</h4>
+      </div>
+      <form method="post" action="<?php echo base_url()?>app/lab_services/cancel_request">
+      <div class="modal-body">
+        <input type="hidden" name="request_id" id="cancel_request_id">
+        <div class="form-group">
+            <label>Reason for Cancellation</label>
+            <textarea name="cancel_reason" class="form-control" rows="3" required placeholder="Enter reason..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-danger">Cancel Request</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Core Scripts -->
 <script src="<?php echo base_url();?>public/js/jquery.min.js"></script>
 <script src="<?php echo base_url();?>public/js/bootstrap.min.js" type="text/javascript"></script>     
 <script src="<?php echo base_url();?>public/js/AdminLTE/app.js" type="text/javascript"></script>
+
+<script>
+function showCancelModal(id){
+    $('#cancel_request_id').val(id);
+    $('#cancelModal').modal('show');
+}
+</script>
 
 </body>
 </html>

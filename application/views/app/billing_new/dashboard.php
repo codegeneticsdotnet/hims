@@ -81,7 +81,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="box box-info">
                     <div class="box-header">
                         <h3 class="box-title">Recent Pending OPD</h3>
@@ -95,10 +95,13 @@
                             <table class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
+                                        <th>Lab/Visit No</th>
                                         <th>Patient No</th>
                                         <th>Name</th>
                                         <th>Date</th>
                                         <th>Status</th>
+                                        <th>Invoice No</th>
+                                        <th>Bill Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -110,23 +113,33 @@
                                         $count++;
                                     ?>
                                     <tr>
+                                        <td><?php echo $row->IO_ID;?></td>
                                         <td><?php echo $row->patient_no;?></td>
                                         <td><?php echo $row->patient_name;?></td>
                                         <td><?php echo date('M d', strtotime($row->date_visit));?></td>
                                         <td>
                                             <?php if(isset($row->nStatus) && $row->nStatus == 'Discharged'): ?>
-                                                <span class="label label-success">Paid/Discharged</span>
+                                                <span class="label label-success">Paid</span>
+                                            <?php elseif(isset($row->nStatus) && $row->nStatus == 'Cancelled'): ?>
+                                                <span class="label label-danger">Cancelled</span>
                                             <?php else: ?>
                                                 <span class="label label-warning">Pending</span>
                                             <?php endif; ?>
                                         </td>
+                                        <td><?php echo isset($row->invoice_no) ? $row->invoice_no : '-';?></td>
+                                        <td><?php echo isset($row->bill_date) && $row->bill_date ? date('M d, Y', strtotime($row->bill_date)) : '-';?></td>
                                         <td>
-                                            <a href="<?php echo base_url()?>app/billing_new/create_bill/<?php echo $row->patient_no;?>/OPD/<?php echo $row->IO_ID;?>" class="btn btn-primary btn-xs">
-                                                Bill
-                                            </a>
-                                            <a href="#" class="btn btn-default btn-xs" onclick="window.print()">
-                                                <i class="fa fa-print"></i> Print
-                                            </a>
+                                            <?php if(isset($row->nStatus) && $row->nStatus == 'Discharged'): ?>
+                                                <a href="<?php echo base_url()?>app/reports/receipt/<?php echo $row->invoice_no;?>" target="_blank" class="btn btn-default btn-xs">
+                                                    <i class="fa fa-print"></i> Print
+                                                </a>
+                                            <?php elseif(isset($row->nStatus) && $row->nStatus == 'Cancelled'): ?>
+                                                <!-- No Action for Cancelled -->
+                                            <?php else: ?>
+                                                <a href="<?php echo base_url()?>app/billing_new/create_bill/<?php echo $row->patient_no;?>/OPD/<?php echo $row->IO_ID;?>/<?php echo str_replace(' ', '_', $row->patient_name);?>" class="btn btn-primary btn-xs">
+                                                    Bill
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach;?>
@@ -140,7 +153,7 @@
                 </div><!-- /.box -->
             </div><!-- /.col -->
 
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="box box-success">
                     <div class="box-header">
                         <h3 class="box-title">Recent Admitted IPD</h3>

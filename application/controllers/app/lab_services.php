@@ -242,6 +242,16 @@ class Lab_services extends General {
         echo "Status updated";
     }
 
+    public function cancel_request(){
+        $id = $this->input->post('request_id');
+        $reason = $this->input->post('cancel_reason');
+        
+        $this->lab_services_model->cancelRequest($id, $reason);
+        
+        $this->session->set_flashdata('message', "<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Request successfully cancelled.</div>");
+        redirect(base_url().'app/lab_services/dashboard');
+    }
+
     public function reports(){
         // This page is now redundant as reports are generated from service_request
         redirect(base_url().'app/lab_services/service_request');

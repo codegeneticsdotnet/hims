@@ -18,7 +18,7 @@
         </ol><br />
         
         <form action="<?php echo base_url()?>app/billing_new/save_bill" method="post" onsubmit="return confirm('Are you sure you want to process this payment?');">
-            <input type="hidden" name="patient_no" value="<?php echo isset($patient->patient_no) ? $patient->patient_no : '';?>">
+            <input type="hidden" name="patient_no" value="<?php echo isset($patient->patient_no) ? $patient->patient_no : (isset($patient_no_param) ? $patient_no_param : '');?>">
             <input type="hidden" name="io_id" value="<?php echo $io_id;?>">
             <input type="hidden" name="invoice_no" value="<?php echo $invoice_no;?>">
             
@@ -33,13 +33,13 @@
                                     <p><strong>Control No:</strong> <?php echo $invoice_no;?></p>
                                 </div>
                                 <div class="col-md-4">
-                                    <p><strong>Patient No:</strong> <?php echo isset($patient->patient_no) ? $patient->patient_no : '';?></p>
+                                    <p><strong>Patient No:</strong> <?php echo isset($patient->patient_no) ? $patient->patient_no : (isset($patient_no_param) ? $patient_no_param : '');?></p>
                                 </div>
                                 <div class="col-md-4">
                                     <p><strong>Date:</strong> <?php echo date('M d, Y');?></p>
                                 </div>
                                 <div class="col-md-12">
-                                    <p><strong>Patient Name:</strong> <?php echo (isset($patient) && is_object($patient)) ? $patient->firstname . ' ' . $patient->lastname : '';?></p>
+                                    <p><strong>Patient Name:</strong> <?php echo (isset($patient) && is_object($patient)) ? $patient->firstname . ' ' . $patient->lastname : (isset($patient_name_param) ? $patient_name_param : '');?></p>
                                 </div>
                             </div>
                         </div>

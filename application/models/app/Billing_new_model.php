@@ -20,11 +20,14 @@ class Billing_new_model extends CI_Model{
                 WHEN D.dept_name = 'ULTRASOUND' THEN 'Lab Only'
                 ELSE 'OPD Consultation' 
             END as type,
-            A.nStatus
+            A.nStatus,
+            C.invoice_no,
+            C.dDate as bill_date
         ", false);
         $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
         $this->db->join("department D", "D.department_id = A.department_id", "left");
-        $this->db->where_in("A.nStatus", array("Pending", "Discharged")); // Include Discharged to show Paid status
+        $this->db->join("iop_billing C", "C.iop_id = A.IO_ID", "left");
+        $this->db->where_in("A.nStatus", array("Pending", "Discharged", "Cancelled")); // Include Cancelled
         $this->db->where("A.InActive", 0);
         $query1 = $this->db->get_compiled_select("patient_details_iop A");
         
@@ -33,22 +36,29 @@ class Billing_new_model extends CI_Model{
         // We need to map 'Paid' to something visible or just filter by 'Pending' if we only want pending.
         // If we want to show recent paid lab requests, we need to include status 'Paid'.
         $this->db->select("
-            '' as IO_ID,
+            A.request_no as IO_ID,
             A.patient_no,
             concat(B.firstname,' ',B.lastname) as patient_name,
             CAST(A.request_date AS DATETIME) as date_visit,
             'Lab Only' as type,
-            CASE WHEN A.status = 'Paid' THEN 'Discharged' ELSE 'Pending' END as nStatus
+            CASE 
+                WHEN A.status = 'Paid' THEN 'Discharged' 
+                WHEN A.status = 'Cancelled' THEN 'Cancelled'
+                ELSE 'Pending' 
+            END as nStatus,
+            C.invoice_no,
+            C.dDate as bill_date
         ", false);
         $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
-        $this->db->where_in("A.status", array("Pending", "Paid"));
+        $this->db->join("iop_billing C", "C.iop_id = A.request_no", "left");
+        $this->db->where_in("A.status", array("Pending", "Paid", "Cancelled")); // Include Cancelled
         $this->db->where("A.InActive", 0);
-        $this->db->group_by("A.patient_no"); // Group by patient to avoid duplicates
+        //$this->db->group_by("A.patient_no"); // Group by patient to avoid duplicates
         $query2 = $this->db->get_compiled_select("lab_service_request A");
         
         // Sorting by date_visit DESC in the UNION query
         // Using CAST to ensure proper date sorting
-        $query = $this->db->query("SELECT * FROM ($query1 UNION $query2) as T GROUP BY patient_no ORDER BY date_visit DESC");
+        $query = $this->db->query("SELECT * FROM ($query1 UNION $query2) as T ORDER BY date_visit DESC");
         return $query->result();
     }
     
@@ -96,21 +106,10 @@ class Billing_new_model extends CI_Model{
         
         // Fix for IO_ID filtering
         if($io_id){
-            // If IO_ID is passed and it's valid (not just patient_no or generic), filter by it if column exists
-            // Since we might have mixed OPD/Lab records, strict filtering on iop_id in lab_service_request might be too restrictive if NULL
-            // But if we want to bill specific visit, we should try.
-            // Check if column exists first or just try? 
-            // In lab_service_request table, do we have iop_id? Yes, usually.
-            // But for 'Lab Only' visits, iop_id might be empty or 0.
-            
-            // If it's an IPD admission, strictly filter.
-            if(strpos($io_id, 'IP') !== false){
-                 $this->db->where("C.iop_id", $io_id);
-            } else {
-                // For OPD, we might want to include unlinked labs too?
-                // Or just filter by patient_no is enough as we want to clear all pending for this patient.
-                // Let's stick to patient_no filter primarily for OPD billing to catch all pending labs.
-            }
+             $this->db->group_start();
+             $this->db->where("C.request_no", $io_id);
+             $this->db->or_where("C.iop_id", $io_id);
+             $this->db->group_end();
         }
         
         $query = $this->db->get();
@@ -237,15 +236,43 @@ class Billing_new_model extends CI_Model{
         $this->db->insert("iop_billing", $header);
         
         // Save Details
+        $total_items = 0;
         foreach($details as $detail){
             $this->db->insert("iop_billing_t", $detail);
+            $total_items++;
         }
+        
+        // Create Receipt Record (Auto-generate receipt from invoice for 1-step billing)
+        $receipt = array(
+            'receipt_no'        => $header['invoice_no'], // Using Invoice No as Receipt No
+            'invoice_no'        => $header['invoice_no'],
+            'iop_id'            => $header['iop_id'],
+            'patient_no'        => $header['patient_no'],
+            'dDate'             => $header['dDate'],
+            'subtotal'          => $header['sub_total'],
+            'discount'          => $header['discount'],
+            'total_amount'      => $header['total_amount'],
+            'amountPaid'        => $header['total_amount'], // Assume full payment
+            'change'            => 0,
+            'payment_type'      => $header['payment_type'],
+            'total_purchased'   => $total_items,
+            'creditCardHolder'  => '',
+            'creditCardNo'      => '',
+            'InActive'          => 0
+        );
+        $this->db->insert("iop_receipt", $receipt);
         
         // Update Status of source items
         // Update Lab Requests
-        $this->db->where("patient_no", $header['patient_no']);
-        $this->db->where("status", "Pending");
-        $this->db->update("lab_service_request", array("status" => "Paid"));
+        // Strictly update only the billed request/visit
+        if(!empty($header['iop_id'])){
+            $this->db->group_start();
+            $this->db->where("request_no", $header['iop_id']);
+            $this->db->or_where("iop_id", $header['iop_id']);
+            $this->db->group_end();
+            $this->db->where("status", "Pending");
+            $this->db->update("lab_service_request", array("status" => "Paid"));
+        }
         
         // --- AUTO DISCHARGE LOGIC ---
         
@@ -293,51 +320,46 @@ class Billing_new_model extends CI_Model{
     }
     
     public function getInvoiceNo($type = 'OPD'){
-        if($type == 'IPD'){
-            $this->db->select("cValue");
-            $this->db->where("cCode","invoice_no_ipd");
-            $query = $this->db->get("system_option");
-            if($query->num_rows() > 0){
-                $val = $query->row()->cValue + 1;
+        $this->db->select("cValue");
+        $this->db->where("cCode","invoice_no");
+        $query = $this->db->get("system_option");
+        
+        if($query->num_rows() > 0){
+            $val = $query->row()->cValue + 1;
+            if($type == 'IPD'){
                 return 'CI-' . str_pad($val, 8, '0', STR_PAD_LEFT);
-            }
-            return 'CI-00000001';
-        } else {
-            $this->db->select("cValue");
-            $this->db->where("cCode","invoice_no_opd");
-            $query = $this->db->get("system_option");
-             if($query->num_rows() > 0){
-                $val = $query->row()->cValue + 1;
+            } else {
                 return 'CO-' . str_pad($val, 8, '0', STR_PAD_LEFT);
             }
+        }
+        
+        // Fallback defaults if row missing
+        if($type == 'IPD'){
+            return 'CI-00000001';
+        } else {
             return 'CO-00000001';
         }
     }
     
     public function updateInvoiceNo($new_no){
-        // We need to parse back the number or just increment the system_option
-        // This logic needs to know which type was used.
-        // For simplicity, let's just assume we increment based on prefix
+        // Update the shared invoice counter
+        // Extract number
         if(strpos($new_no, 'CI-') === 0){
             $val = intval(substr($new_no, 3));
-            $this->db->where("cCode", "invoice_no_ipd");
-            $this->db->update("system_option", array("cValue" => $val));
         } else {
             $val = intval(substr($new_no, 3));
-            $this->db->where("cCode", "invoice_no_opd");
-            $this->db->update("system_option", array("cValue" => $val));
         }
+        
+        $this->db->where("cCode", "invoice_no");
+        $this->db->update("system_option", array("cValue" => $val));
     }
     
     public function getPatientInfo($patient_no){
         // Ensure patient_no is trimmed
         $patient_no = trim($patient_no);
-        $this->db->select("
-            A.*,
-            B.cValue as gender_name
-        ", false);
-        $this->db->join("system_parameters B", "B.param_id = A.gender", "left");
-        $this->db->where("A.patient_no", $patient_no);
-        return $this->db->get("patient_personal_info A")->row();
+        // Direct SQL query to be safe
+        $sql = "SELECT * FROM patient_personal_info WHERE patient_no = ?";
+        $query = $this->db->query($sql, array($patient_no));
+        return $query->row();
     }
 }

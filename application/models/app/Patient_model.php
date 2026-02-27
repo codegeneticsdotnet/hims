@@ -209,7 +209,7 @@ class Patient_model extends CI_Model{
 			'middlename'		=>		strtoupper($this->input->post('middlename')),
 			'gender'			=>		$this->input->post('gender'),
 			'civil_status'		=>		empty($civil_status) ? 0 : $civil_status,
-			'birthday'			=>		$this->input->post('birthday'),
+			'birthday'			=>		date("Y-m-d", strtotime($this->input->post('birthday'))),
 			'birthplace'		=>		strtoupper($this->input->post('birthplace')),
 			'age'				=>		$age,
 			'religion'			=>		empty($religion) ? 0 : $religion,

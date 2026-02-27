@@ -96,8 +96,50 @@ class Lab_services_model extends CI_Model{
             'status' => $status,
             'result_remarks' => $remarks
         ));
+        
+        // Check Request Status
+        $this->db->select('request_id');
+        $this->db->where('detail_id', $detail_id);
+        $query = $this->db->get('lab_service_request_details');
+        if($query->num_rows() > 0){
+            $request_id = $query->row()->request_id;
+            
+            // Check if all items are Done or Cancelled
+            $this->db->where('request_id', $request_id);
+            $this->db->where_not_in('status', array('Done', 'Cancelled'));
+            $this->db->where('InActive', 0);
+            $pending_count = $this->db->count_all_results('lab_service_request_details');
+            
+            if($pending_count == 0){
+                // All done
+                $this->db->where('request_id', $request_id);
+                $this->db->update('lab_service_request', array('status' => 'Done'));
+            } else {
+                // If we set this item to Active, update header to Active (Work in Progress)
+                if($status == 'Active'){
+                    $this->db->where('request_id', $request_id);
+                    $this->db->update('lab_service_request', array('status' => 'Active'));
+                }
+            }
+        }
     }
 
+    public function cancelRequest($id, $reason){
+        // Update Header
+        $this->db->where('request_id', $id);
+        $this->db->update('lab_service_request', array(
+            'status' => 'Cancelled',
+            'remarks' => "Cancelled: " . $reason
+        ));
+        
+        // Update Details
+        $this->db->where('request_id', $id);
+        $this->db->update('lab_service_request_details', array(
+            'status' => 'Cancelled',
+            'result_remarks' => "Cancelled: " . $reason
+        ));
+    }
+    
     public function getRequestHeader($id){
         $this->db->select("
             A.*,

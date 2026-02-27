@@ -76,7 +76,7 @@ class Reset_system extends General{
         
         // 5. Billing & Receipts
         $this->db->truncate('iop_billing');
-        $this->db->truncate('iop_billing_details');
+        $this->db->truncate('iop_billing_t');
         $this->db->truncate('declaredor');
         $this->db->truncate('iop_receipt');
         $this->db->truncate('doctors_fee');

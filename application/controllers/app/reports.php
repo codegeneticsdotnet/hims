@@ -336,6 +336,22 @@ class Reports extends General{
 			$this->load->view('app/reports/doctor_fee_report',$this->data);	
 		}
 	}
+    
+    public function receipt($invoice_no){
+        $this->load->model("app/billing_model");
+        $this->load->model("app/patient_model");
+        
+        $this->data['header'] = $this->billing_model->headerInv2($invoice_no);
+        $this->data['details'] = $this->billing_model->detailsInv2($invoice_no);
+        
+        if($this->data['header']){
+            $this->data['patient'] = $this->patient_model->getPatientInfo($this->data['header']->patient_no);
+            $this->data['companyInfo'] = $this->general_model->companyInfo();
+            $this->load->view('app/reports/print_receipt', $this->data);
+        } else {
+            show_404();
+        }
+    }
 	
 	
 	

@@ -44,10 +44,13 @@ class Billing_new extends General {
         $this->load->view('app/billing_new/ipd_list', $this->data);
     }
     
-    public function create_bill($patient_no, $type = 'OPD', $io_id = null){
+    public function create_bill($patient_no, $type = 'OPD', $io_id = null, $patient_name = ''){
         $patient_no = urldecode($patient_no); // Decode URL encoded patient number
+        $patient_name = str_replace('_', ' ', urldecode($patient_name));
         
         $this->data['patient'] = $this->billing_new_model->getPatientInfo($patient_no);
+        $this->data['patient_no_param'] = $patient_no;
+        $this->data['patient_name_param'] = $patient_name;
         
         if(!$this->data['patient']){
             // Try to find patient by IO_ID if patient_no lookup fails (e.g. if patient_no passed is actually IO_ID or something else)

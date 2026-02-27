@@ -96,6 +96,7 @@
                     <div class="box-body table-responsive">
                     <div class="box-tools">
                              <!-- Bulk Actions -->
+                             <?php if($header->status == 'Paid' || $header->status == 'Active'): ?>
                              <div class="input-group input-group-sm" style="width: 300px;">
                                 <select name="bulk_status" class="form-control" required>
                                     <option value="">Select Action</option>
@@ -107,6 +108,11 @@
                                     <button type="button" class="btn btn-default" data-toggle="modal" data-target="#bulkRemarksModal">Update</button>
                                 </div>
                             </div>
+                            <?php else: ?>
+                                <div class="alert alert-warning" style="padding: 5px; margin-bottom: 0;">
+                                    <i class="fa fa-info-circle"></i> Payment required to process request.
+                                </div>
+                            <?php endif; ?>
                         </div><br />
 
                         <table class="table table-hover table-bordered">
