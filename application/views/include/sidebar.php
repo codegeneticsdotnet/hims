@@ -28,6 +28,7 @@ $surgical_package = "";
 $declared_receipt_mod = "";
 $declared_receipt_mod = "";
 $nurse_diagnosis = "";
+$reset_system = "";
 
 $opd_reports = "";
 $opd_diagnosis_reports = "";
@@ -173,6 +174,7 @@ if($this->session->userdata('module') == "company_information"){$company_informa
 if($this->session->userdata('module') == "surgical_package"){$surgical_package = "class='active'";} 
 if($this->session->userdata('module') == "backup_database"){$backup = "class='active'";}    
 if($this->session->userdata('module') == "declared_receipt"){$declared_receipt_mod = "class='active'";} 
+if($this->session->userdata('module') == "reset_system"){$reset_system = "class='active'";} 
 
 //REPORTS
 if($this->session->userdata('module') == "daily_reports"){$daily_reports_mod = "class='active'";}   
@@ -283,12 +285,13 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         <?php }?>
                         <!--END OF Billing Module-->
 
-                        <!--START OF INVENTORy-->
+                        <!--START OF Pharmacy Module-->
 						<li>
-                            <a href="<?php echo base_url()?>app/inventory">
-                                <i class="fa fa-credit-card"></i> <span>Inventory</span>
+                            <a href="<?php echo base_url()?>app/pharmacy">
+                                <i class="fa fa-medkit"></i> <span>Pharmacy</span>
                             </a>
                         </li>     
+                        <!--END OF Pharmacy Module-->
 						
                         <!--START OF Ward-->
                         <?php if($hasAccesstoRooms){?>
@@ -403,6 +406,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                                 <?php if($hasAccesstoAdminParameters){?><li <?php echo $param_mod;?>><a href="<?php echo base_url()?>app/parameters"><i class="fa fa-angle-double-right"></i>System Parameters</a></li><?php }?>
                                 <?php if($hasAccesstoAdminBackup){?><li <?php echo $backup;?>><a href="<?php echo base_url()?>app/backup"><i class="fa fa-angle-double-right"></i>Backup Database</a></li><?php }?>
                                 <?php if($hasAccesstoAdminPages){?><li <?php echo $pages_mod;?>><a href="<?php echo base_url()?>app/pages"><i class="fa fa-angle-double-right"></i>System Pages</a></li> <?php }?>
+                                <li <?php echo $reset_system;?>><a href="<?php echo base_url()?>app/reset_system"><i class="fa fa-angle-double-right"></i>System Reset</a></li>
                             </ul>
                         </li>
                         <?php }?>
