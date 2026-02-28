@@ -128,15 +128,15 @@
                             </div>
                             <div class="form-group">
                                 <label>Discount Amount</label>
-                                <input type="number" name="discount" id="discount" class="form-control text-right" value="0" step="0.01" onkeyup="calculateTotal()">
+                                <input type="number" name="discount" id="discount" class="form-control text-right" value="<?php echo isset($pre_discount) ? $pre_discount : 0;?>" step="0.01" onkeyup="calculateTotal()">
                             </div>
                             <div class="form-group">
                                 <label>Net Total</label>
                                 <input type="text" name="net_total" id="net_total" class="form-control input-lg text-right" style="font-weight: bold; color: green;" value="<?php echo $grand_total;?>" readonly>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" id="discount_remarks_div" style="display:none;">
                                 <label>Remarks / Discount Reason</label>
-                                <textarea name="remarks" class="form-control" rows="2" placeholder="Enter remarks..."></textarea>
+                                <textarea name="remarks" class="form-control" rows="2" placeholder="Enter remarks..."><?php echo isset($pre_discount_remarks) ? $pre_discount_remarks : '';?></textarea>
                             </div>
                              <div class="form-group">
                                 <label>Cash Tendered</label>
@@ -218,6 +218,10 @@
 </div>
 
 <script>
+    $(document).ready(function(){
+        calculateTotal();
+    });
+
     var globalRowCount = <?php echo isset($items) ? count($items) : 0;?>;
 
     function calculateModalTotal(){
@@ -363,6 +367,14 @@
         document.getElementById('total_amount').value = grandTotal.toFixed(2);
         
         var globalDiscount = parseFloat(document.getElementById('discount').value) || 0;
+        
+        // Toggle remarks visibility
+        if(globalDiscount > 0){
+            document.getElementById('discount_remarks_div').style.display = 'block';
+        } else {
+            document.getElementById('discount_remarks_div').style.display = 'none';
+        }
+        
         var net = grandTotal - globalDiscount;
         if(net < 0) net = 0;
         

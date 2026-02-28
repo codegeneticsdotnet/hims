@@ -35,10 +35,6 @@
                  	<div class="col-md-12">
                     <form role="form" method="post" action="<?php echo base_url()?>app/patient/save" onSubmit="return validate()">    
                     	 <div class="box">
-                         		<div class="box-footer clearfix">
-                                    <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
-                                    <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
-                                </div>
                         	    <div class="box-body table-responsive">
                                 		<div class="nav-tabs-custom">
                                         	<ul class="nav nav-tabs">
@@ -100,44 +96,32 @@
                                                     <tr>
                                                     	<td width="12%"><?php echo $this->lang->line("lastname")?>Full Name <font color="#FF0000">*</font></td>
                                                         <td width="30%">
-                                                            <?php echo form_input('lastname',set_value('lastname'),'id="lastname" class="form-control input-sm" placeholder="Last Name" style="width: 250px;" required');?>
+                                                            <?php echo form_input('firstname',set_value('firstname'),'id="firstname" class="form-control input-sm" placeholder="First Name" style="width: 330px;" required');?>
                                                         </td>
-                                                        <td width="30%">
-                                                            <?php echo form_input('firstname',set_value('firstname'),'id="firstname" class="form-control input-sm" placeholder="First Name" style="width: 250px;" required');?>
-                                                        </td>
-                                                        <td width="30%">
+                                                        <td width="10%">
                                                             <?php echo form_input('middlename',set_value('middlename'),'id="middlename" class="form-control input-sm" placeholder="Middle Name" style="width: 100px;"');?>
+                                                        </td>
+                                                        <td width="30%">
+                                                            <?php echo form_input('lastname',set_value('lastname'),'id="lastname" class="form-control input-sm" placeholder="Last Name" style="width: 300px;" required');?>
                                                         </td>
                                                     </tr>
                                                     <tr>
                                                     	<td width="10%">&nbsp;</td>
-                                                        <td width="30%">Lastname</td>
                                                         <td width="30%">Firstname</td>
-                                                        <td width="30%">MI.</td>
+                                                        <td width="10%">MI.</td>
+                                                        <td width="30%">Lastname</td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="14%">Present Address <font color="#FF0000">*</font></td>
+                                                    	<td width="14%">Address <font color="#FF0000">*</font></td>
                                                         <td width="86%" colspan="3">
                                                         <?php echo form_input('noofhouse',set_value('noofhouse'),'id="noofhouse" class="form-control input-sm" placeholder="Present Address" style="width: 610px;"');?>
                                                         <?php echo form_hidden('brgy',set_value('brgy'),'id="brgy" class="form-control input-sm" placeholder="Brgy./Subd." style="width: 250px;"');?>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td>Birth Place </td>
-                                                        <td colspan="3">
-                                                        <?php echo form_input('birthplace',set_value('birthplace'),'id="birthplace" class="form-control input-sm" placeholder="Birth Place" style="width: 150px;"');?>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
                                                     	<td>Birthday <font color="#FF0000">*</font></td>
                                                         <td colspan="3">
                                                         <?php echo form_input('birthday',set_value('birthday'),'id="birthday" class="form-control input-sm" placeholder="MM-DD-YYYY" style="width: 150px;" required');?> 
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                    	<td width="14%">Phone No (Mobile) </td>
-                                                        <td width="86%" colspan="3"> 
-                                                        <?php echo form_input('mobile',set_value('mobile'),'id="mobile" class="form-control input-sm" placeholder="Phone No (Mobile)" style="width: 150px;"');?>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -156,6 +140,18 @@
                                                                 <option value="<?php echo $gender->param_id;?>" <?php echo $selected;?>><?php echo $gender->cValue;?></option>
                                                                 <?php }?>
                                                             </select>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                    	<td width="14%">Phone No (Mobile) </td>
+                                                        <td width="86%" colspan="3"> 
+                                                        <?php echo form_input('mobile',set_value('mobile'),'id="mobile" class="form-control input-sm" placeholder="Phone No (Mobile)" style="width: 150px;"');?>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                    	<td>Birth Place </td>
+                                                        <td colspan="3">
+                                                        <?php echo form_input('birthplace',set_value('birthplace'),'id="birthplace" class="form-control input-sm" placeholder="Birth Place" style="width: 150px;"');?>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -294,6 +290,15 @@
                                                     	<td width="14%">Email Address</td>
                                                         <td width="86%"> 
                                                         <?php echo form_input('email',set_value('email'),'id="email" class="form-control input-sm" placeholder="Email Address" style="width: 250px;"');?>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                    	<td width="14%">&nbsp;</td>
+                                                        <td width="86%"> 
+                                                            <div class="box-footer clearfix">
+                                                                <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
+                                                                <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                     </table>

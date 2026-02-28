@@ -17,14 +17,6 @@
                     <form role="form" method="post" action="<?php echo base_url()?>app/patient/edit" onSubmit="return validate()">    
                     	 <input type="hidden" name="id" value="<?php echo $patientInfo->patient_no;?>">
                          <div class="box">
-                         		
-                         		 <div class="box-footer clearfix">
-                            	
-                                            <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
-                                            <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
-                                 
-                            </div>
-                            
                         	<div class="box-body table-responsive">
                             	
                                 
@@ -73,12 +65,6 @@
                                                     -->
                                                     <input type="hidden" name="title" value="<?php echo $patientInfo->title;?>">
                                                     <tr>
-                                                    	<td width="12%">Last Name <font color="#FF0000">*</font></td>
-                                                        <td width="88%">
-                                                        <?php echo form_input('lastname',set_value('lastname',$patientInfo->lastname),'id="lastname" class="form-control input-sm" placeholder="Last Name" style="width: 250px;" required');?>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
                                                     	<td>First Name <font color="#FF0000">*</font></td>
                                                         <td>
                                                         <?php echo form_input('firstname',set_value('firstname',$patientInfo->firstname),'id="firstname" class="form-control input-sm" placeholder="First Name" style="width: 250px;" required');?>
@@ -91,17 +77,18 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td>Birthday <font color="#FF0000">*</font></td>
-                                                        <td>
-                                                        <input class="form-control input-sm" name="birthday" id="birthday" type="text" value="<?php echo $patientInfo->birthday?>" placeholder="From Date" style="width:150px;" required>
+                                                    	<td width="12%">Last Name <font color="#FF0000">*</font></td>
+                                                        <td width="88%">
+                                                        <?php echo form_input('lastname',set_value('lastname',$patientInfo->lastname),'id="lastname" class="form-control input-sm" placeholder="Last Name" style="width: 250px;" required');?>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td>Birth Place </td>
+                                                    	<td>Birthday <font color="#FF0000">*</font></td>
                                                         <td>
-                                                        <?php echo form_input('birthplace',set_value('birthplace',$patientInfo->birthplace),'id="birthplace" class="form-control input-sm" placeholder="Birth Place" style="width: 380px;"');?>
+                                                        <input class="form-control input-sm" name="birthday" id="birthday" type="text" value="<?php echo date('m/d/Y', strtotime($patientInfo->birthday ?: date('Y-m-d'))); ?>" placeholder="From Date" style="width:150px;" required>
                                                         </td>
                                                     </tr>
+
                                                     <tr>
                                                     	<td width="12%">Gender  <font color="#FF0000">*</font></td>
                                                         <td width="88%">
@@ -118,6 +105,12 @@
                                                             	<option value="<?php echo $gender->param_id;?>" <?php echo $selected;?>><?php echo $gender->cValue;?></option>
                                                                 <?php }?>
                                                             </select>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                    	<td>Birth Place </td>
+                                                        <td>
+                                                        <?php echo form_input('birthplace',set_value('birthplace',$patientInfo->birthplace),'id="birthplace" class="form-control input-sm" placeholder="Birth Place" style="width: 380px;"');?>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -174,6 +167,15 @@
                                                             </select>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                        <td>&nbsp;</td>
+                                                        <td>
+                                                            <div class="box-footer clearfix">
+                                                                <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
+                                                                <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
                                                     </table>
                                                 </div>
                                                 <div class="tab-pane" id="tab_2">
@@ -182,7 +184,7 @@
                                                     	<td colspan="2"></td>
                                                     </tr>
                                                     <tr>
-                                                    	<td width="14%">No. of House</td>
+                                                    	<td width="14%">Address</td>
                                                         <td width="86%">
                                                         <?php echo form_input('noofhouse',set_value('noofhouse',$patientInfo->street),'id="noofhouse" class="form-control input-sm" placeholder="No. of House" style="width: 250px;"');?>
                                                         </td>
@@ -224,6 +226,16 @@
                                                         <?php echo form_input('email',set_value('email',$patientInfo->email_address),'id="email" class="form-control input-sm" placeholder="Email Address" style="width: 250px;"');?>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                        <td>&nbsp;</td>
+                                                        <td>
+                                                            <div class="box-footer clearfix">
+                                                                <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
+                                                                <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    
                                                     </table>
                                                 </div>
                                                 
@@ -263,6 +275,16 @@
                                                         <textarea class="form-control input-sm" style="width: 250px;" name="patient_iden" id="patient_iden"><?php echo $patientInfo->id_identifiers;?></textarea>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                        <td>&nbsp;</td>
+                                                        <td>
+                                                            <div class="box-footer clearfix">
+                                                                <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
+                                                                <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+
                                                     </table>
                                                 </div>
                                                 

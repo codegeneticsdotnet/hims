@@ -67,7 +67,7 @@
         
         <div class="no-print" style="text-align: center; margin-top: 20px;">
             <button onclick="window.print()">Print</button>
-            <button onclick="window.close()">Close</button>
+            <a href="<?php echo base_url()?>app/billing_new" class="button" style="text-decoration: none; color: black; border: 1px solid #ccc; padding: 2px 6px; background-color: #f0f0f0; font-size: 11px;">Close</a>
         </div>
     </div>
     

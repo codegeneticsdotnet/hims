@@ -67,6 +67,20 @@ class Billing_new extends General {
         // If OPD, fetch Pending Lab, Pending Meds (if linked to OPD visit)
         // If IPD, fetch All Unbilled
         
+        // Fetch Discount from Discharge Advice
+        $this->data['pre_discount'] = 0;
+        $this->data['pre_discount_remarks'] = '';
+        if($io_id){
+             $this->db->select("discount, discount_remarks");
+             $this->db->where("iop_id", $io_id);
+             $this->db->where("InActive", 0);
+             $q = $this->db->get("iop_discharge_advice");
+             if($q->num_rows() > 0){
+                 $this->data['pre_discount'] = $q->row()->discount;
+                 $this->data['pre_discount_remarks'] = $q->row()->discount_remarks;
+             }
+        }
+        
         // For simplicity in this demo, we'll fetch based on patient_no and status
         $this->data['items'] = $this->billing_new_model->getBillableItems($patient_no, $io_id);
         
@@ -125,12 +139,8 @@ class Billing_new extends General {
         $this->billing_new_model->saveBill($header, $details);
         $this->billing_new_model->updateInvoiceNo($invoice_no);
         
-        // redirect(base_url().'app/billing_new/view_receipt/'.$invoice_no);
-        // Redirect to Dashboard as requested or view receipt
-        // User said: "once processed, it will be marked as paid in dashboard" and "Payment Successful! ... but it is still marked as pending"
-        // The issue is likely the update logic in saveBill for "Pending" items.
-        
-        redirect(base_url().'app/billing_new');
+        // Redirect to receipt print view
+        redirect(base_url().'app/reports/receipt/'.$invoice_no);
     }
     
     public function view_receipt($invoice_no){

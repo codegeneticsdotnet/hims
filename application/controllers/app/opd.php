@@ -240,7 +240,7 @@ class Opd extends General{
 		{	
 				if($patient->nStatus == "Pending"){ 
 					$nStatus = "Checked In";
-					$discharge = anchor('app/opd/discharge/'.$patient->IO_ID.'/'.$patient->patient_no,'Discharge',array('class'=>'delete','onclick'=>"return confirm('Are you sure want to discharge patient?')"));
+					$discharge = anchor('app/opd/discharge_advice/'.$patient->IO_ID.'/'.$patient->patient_no,'Discharge');
 				}else{ 
 					$nStatus = "Discharged";
 					$discharge = "Discharged";
@@ -804,8 +804,41 @@ class Opd extends General{
 		redirect(base_url().'app/opd/laboratory/'.$iop_no.'/'.$patient_no,$this->data);
 	}
 	
-	
-	
+    public function discharge_advice(){
+        $iop_no = $this->uri->segment("4");
+        $patient_no = $this->uri->segment("5");
+        
+        $this->data['getOPDPatient'] = $this->opd_model->getOPDPatient($iop_no);
+        $this->data['patientInfo'] = $this->patient_model->getPatientInfo($patient_no);
+        $this->data['message'] = $this->session->flashdata('message');
+        
+        $this->load->view("app/opd/discharge_advice", $this->data);
+    }
+    
+    public function save_discharge_advice(){
+        $this->data = array(
+            'iop_id' => $this->input->post('opd_no'),
+            'patient_no' => $this->input->post('patient_no'),
+            'control_no' => $this->input->post('control_no'),
+            'advice_date' => $this->input->post('advice_date'),
+            'doctor_fee' => $this->input->post('doctor_fee'),
+            'discount' => $this->input->post('discount'),
+            'discount_remarks' => $this->input->post('remarks'),
+            'created_by' => $this->session->userdata('user_id'),
+            'created_date' => date('Y-m-d H:i:s'),
+            'InActive' => 0
+        );
+        
+        $this->db->insert('iop_discharge_advice', $this->data);
+        
+        // Update Status to Discharged
+        $this->db->where('IO_ID', $this->input->post('opd_no'));
+        $this->db->update('patient_details_iop', array('nStatus' => 'Discharged'));
+        
+        $this->session->set_flashdata('message', "<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Discharge Advice Saved!</div>");
+        
+        redirect(base_url().'app/opd/index');
+    }
 	
 	
 }

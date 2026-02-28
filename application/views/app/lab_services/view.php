@@ -124,6 +124,7 @@
                                     <th>Total</th>
                                     <th>Status</th>
                                     <th>Remarks</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -147,15 +148,22 @@
                                         elseif($status == 'Cancelled') $label = 'danger';
                                         else $label = 'default';
                                         ?>
-                                        <?php if($status == 'Paid'): ?>
-                                            <span class="label label-<?php echo $label;?>" style="cursor:pointer;" onclick="toggleStatus('<?php echo $row->detail_id;?>', '<?php echo $status;?>')"><?php echo $status;?> (Click to Start)</span>
-                                        <?php elseif($status == 'Active'): ?>
-                                            <span class="label label-<?php echo $label;?>" style="cursor:pointer;" onclick="toggleStatus('<?php echo $row->detail_id;?>', '<?php echo $status;?>')"><?php echo $status;?> (Click to Complete)</span>
-                                        <?php else: ?>
-                                            <span class="label label-<?php echo $label;?>"><?php echo $status;?></span>
-                                        <?php endif; ?>
+                                        <span class="label label-<?php echo $label;?>"><?php echo $status;?></span>
                                     </td>
                                     <td><?php echo isset($row->result_remarks) ? $row->result_remarks : '';?></td>
+                                    <td>
+                                        <?php if($header->status == 'Paid' || $header->status == 'Active'): ?>
+                                            <?php if($row->status != 'Done' && $row->status != 'Cancelled'): ?>
+                                                <?php if($row->status != 'Active'): ?>
+                                                <a href="#" onclick="updateDetailStatus('<?php echo $row->detail_id;?>', 'Active')" class="btn btn-xs btn-primary">Active</a>
+                                                <?php endif; ?>
+                                                <a href="#" onclick="updateDetailStatus('<?php echo $row->detail_id;?>', 'Done')" class="btn btn-xs btn-success">Done</a>
+                                                <a href="#" onclick="updateDetailStatus('<?php echo $row->detail_id;?>', 'Cancelled')" class="btn btn-xs btn-danger">Cancel</a>
+                                            <?php endif; ?>
+                                        <?php elseif($header->status == 'Pending'): ?>
+                                            <a href="#" onclick="updateDetailStatus('<?php echo $row->detail_id;?>', 'Cancelled')" class="btn btn-xs btn-danger">Cancel</a>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                                 <?php endforeach;?>
                             </tbody>
@@ -222,6 +230,14 @@ $(document).ready(function(){
         }
     });
 });
+
+function updateDetailStatus(id, status){
+    if(confirm('Set status to ' + status + '?')){
+        $.post('<?php echo base_url()?>app/lab_services/toggle_detail_status', {id: id, status: status}, function(data){
+            location.reload();
+        });
+    }
+}
 
 function toggleStatus(id, currentStatus){
     var newStatus = '';

@@ -27,7 +27,8 @@ class Billing_new_model extends CI_Model{
         $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
         $this->db->join("department D", "D.department_id = A.department_id", "left");
         $this->db->join("iop_billing C", "C.iop_id = A.IO_ID", "left");
-        $this->db->where_in("A.nStatus", array("Pending", "Discharged", "Cancelled")); // Include Cancelled
+        // Only show Discharged (Ready for Billing) or Paid. Hide Pending (Registration).
+        $this->db->where_in("A.nStatus", array("Discharged", "Paid")); 
         $this->db->where("A.InActive", 0);
         $query1 = $this->db->get_compiled_select("patient_details_iop A");
         
@@ -201,6 +202,26 @@ class Billing_new_model extends CI_Model{
             }
         }
         
+        // 5. Doctor's Fee from Discharge Advice (OPD)
+        if($io_id){
+             $this->db->select("
+                A.advice_id as item_id,
+                'Doctor Fee' as item_name,
+                A.doctor_fee as price,
+                1 as qty,
+                A.doctor_fee as total,
+                'Pending' as status,
+                'Services' as category
+            ", false);
+            $this->db->where("A.iop_id", $io_id);
+            $this->db->where("A.InActive", 0);
+            $query = $this->db->get("iop_discharge_advice A");
+            
+            if($query->num_rows() > 0){
+                $items = array_merge($items, $query->result());
+            }
+        }
+        
         return $items;
     }
     
@@ -272,6 +293,11 @@ class Billing_new_model extends CI_Model{
             $this->db->group_end();
             $this->db->where("status", "Pending");
             $this->db->update("lab_service_request", array("status" => "Paid"));
+            
+            // Also update OPD Visit status if this is a visit
+            $this->db->where("IO_ID", $header['iop_id']);
+            $this->db->where("nStatus", "Discharged");
+            $this->db->update("patient_details_iop", array("nStatus" => "Paid"));
         }
         
         // --- AUTO DISCHARGE LOGIC ---

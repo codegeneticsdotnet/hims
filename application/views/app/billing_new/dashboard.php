@@ -118,8 +118,10 @@
                                         <td><?php echo $row->patient_name;?></td>
                                         <td><?php echo date('M d', strtotime($row->date_visit));?></td>
                                         <td>
-                                            <?php if(isset($row->nStatus) && $row->nStatus == 'Discharged'): ?>
+                                            <?php if(isset($row->nStatus) && $row->nStatus == 'Paid'): ?>
                                                 <span class="label label-success">Paid</span>
+                                            <?php elseif(isset($row->nStatus) && $row->nStatus == 'Discharged'): ?>
+                                                <span class="label label-info">Ready to Bill</span>
                                             <?php elseif(isset($row->nStatus) && $row->nStatus == 'Cancelled'): ?>
                                                 <span class="label label-danger">Cancelled</span>
                                             <?php else: ?>
@@ -129,7 +131,7 @@
                                         <td><?php echo isset($row->invoice_no) ? $row->invoice_no : '-';?></td>
                                         <td><?php echo isset($row->bill_date) && $row->bill_date ? date('M d, Y', strtotime($row->bill_date)) : '-';?></td>
                                         <td>
-                                            <?php if(isset($row->nStatus) && $row->nStatus == 'Discharged'): ?>
+                                            <?php if(isset($row->nStatus) && $row->nStatus == 'Paid'): ?>
                                                 <a href="<?php echo base_url()?>app/reports/receipt/<?php echo $row->invoice_no;?>" target="_blank" class="btn btn-default btn-xs">
                                                     <i class="fa fa-print"></i> Print
                                                 </a>
