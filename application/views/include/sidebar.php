@@ -66,6 +66,7 @@ $sub_room_master_mod = "";
 $sub_room_bed_mod = "";
 $addNew_patient_mode = "";
 $patient_master_mode = "";
+$clinic = "";
 $appointmentList = "";
 $appointmentAdd = "";
 $opd_registration = "";
@@ -125,6 +126,7 @@ if($this->session->userdata('module') == "add_appointment"){$appointmentAdd = "c
 //PATIENT MANAGEMENT
 if($this->session->userdata('module') == "add_new_patient"){$addNew_patient_mode = "class='active'";}   
 if($this->session->userdata('module') == "patient_master"){$patient_master_mode = "class='active'";}    
+if($this->session->userdata('page_name') == "clinic_dashboard"){$clinic = "class='active'";}
 if($this->session->userdata('module') == "bill_history"){$bill_history_mod = "class='active'";} 
 if($this->session->userdata('module') == "OR_history"){$OR_history_mod = "class='active'";} 
 
@@ -242,6 +244,11 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                             <li class="<?php echo $patient;?>">
                                 <a href="<?php echo base_url()?>app/patient/index">
                                     <i class="fa fa-user-md"></i> <span>Patient Management</span>
+                                </a>
+                            </li>
+                            <li class="<?php echo $clinic;?>">
+                                <a href="<?php echo base_url()?>app/clinic/dashboard">
+                                    <i class="fa fa-stethoscope"></i> <span>Clinic Dashboard</span>
                                 </a>
                             </li>
 

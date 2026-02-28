@@ -55,9 +55,9 @@ p {
 </head>
 <body>
 	<div id="container">
+        <p><strong>URL:</strong> <?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"; ?></p>
 		<h1><?php echo $heading; ?></h1>
 		<?php echo $message; ?>
-        <p><strong>URL:</strong> <?php echo (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"; ?></p>
 	</div>
 </body>
 </html>

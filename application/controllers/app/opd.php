@@ -338,7 +338,35 @@ class Opd extends General{
 	}
 	
 	public function save_diagnosis(){
-		$this->form_validation->set_rules("diagnosis","Diagnosis","trim|xss_clean|required|callback_validate_diagnosis");
+  		$diagnosis_input = $this->input->post('diagnosis');
+        
+        if(empty($diagnosis_input)){
+            $opd_no = $this->input->post('opd_no');
+		    $patient_no = $this->input->post('patient_no');
+            $this->session->set_flashdata('message',"<div class='alert alert-danger'>Diagnosis cannot be empty!</div>");
+			redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no);
+            return;
+        }
+          
+          // Check if input is a known Diagnosis Name
+        $this->db->where('diagnosis_name', $diagnosis_input);
+        $q = $this->db->get('diagnosis');
+        
+        if($q->num_rows() > 0){
+            // It exists, use the ID
+            $_POST['diagnosis'] = $q->row()->diagnosis_id;
+        } else {
+             // New diagnosis, insert it
+             $this->data = array(
+                 'diagnosis_name' => $diagnosis_input,
+                 'diagnosis_desc' => $diagnosis_input,
+                 'InActive' => 0
+             );
+             $this->db->insert("diagnosis", $this->data);
+             $_POST['diagnosis'] = $this->db->insert_id();
+         }
+         
+ 		$this->form_validation->set_rules("diagnosis","Diagnosis","trim|xss_clean|required");
 		$this->form_validation->set_error_delimiters("<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>","</div>");
 	
 		$opd_no = $this->input->post('opd_no');
@@ -346,9 +374,22 @@ class Opd extends General{
 		
 		if($this->form_validation->run()){
 			
-			$this->opd_model->save_diagnosis();
+            $iop_diag_id = $this->input->post('iop_diag_id');
+            
+            if(!empty($iop_diag_id)){
+                $this->data = array(
+                    'diagnosis_id' => $this->input->post('diagnosis'),
+                    'remarks' => $this->input->post('remarks')
+                );
+                $this->db->where('iop_diag_id', $iop_diag_id);
+                $this->db->update('iop_diagnosis', $this->data);
+                $msg = "Diagnosis successfully Updated!";
+            } else {
+			    $this->opd_model->save_diagnosis();
+                $msg = "Diagnosis successfully Added!";
+            }
 			
-			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Diagnosis successfully Added!</div>");
+			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>".$msg."</div>");
 			
 			//redirect
 			redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no,$this->data);
@@ -420,6 +461,8 @@ class Opd extends General{
 	
 	public function vitalSign(){
 		if(isset($_POST['btnSave'])){
+            $vital_id = $this->input->post('vital_id');
+            
 			$this->data = array(
 				'iop_id'		=>		$this->input->post('opd_no'),
 				'dDate'			=>		$this->input->post('dDate'),
@@ -430,11 +473,20 @@ class Opd extends General{
 				'bp'			=>		$this->input->post('bp'),
 				'respiration'	=>		$this->input->post('respiration'),
 				'weight'		=>		$this->input->post('weight'),
+				'cPreparedBy'	=>		$this->session->userdata('user_id'),
 				'InActive'		=>		0
 			);
-			$this->db->insert('iop_vital_parameters',$this->data);
+            
+            if(!empty($vital_id)){
+                $this->db->where('vital_id', $vital_id);
+                $this->db->update('iop_vital_parameters', $this->data);
+                $msg = "Vital Parameters successfully Updated!";
+            } else {
+			    $this->db->insert('iop_vital_parameters',$this->data);
+                $msg = "Vital Parameters successfully Added!";
+            }
 			
-			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Vital Parameters successfully Added!</div>");
+			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>".$msg."</div>");
 			
 			//redirect
 			redirect(base_url().'app/opd/vitalSign/'.$this->input->post('opd_no').'/'.$this->input->post('patient_no'),$this->data);
@@ -821,8 +873,8 @@ class Opd extends General{
             'patient_no' => $this->input->post('patient_no'),
             'control_no' => $this->input->post('control_no'),
             'advice_date' => $this->input->post('advice_date'),
-            'doctor_fee' => $this->input->post('doctor_fee'),
-            'discount' => $this->input->post('discount'),
+            'doctor_fee' => ($this->input->post('doctor_fee') == '') ? 0 : $this->input->post('doctor_fee'),
+            'discount' => ($this->input->post('discount') == '') ? 0 : $this->input->post('discount'),
             'discount_remarks' => $this->input->post('remarks'),
             'created_by' => $this->session->userdata('user_id'),
             'created_date' => date('Y-m-d H:i:s'),

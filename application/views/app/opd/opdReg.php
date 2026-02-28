@@ -85,19 +85,12 @@
                             						<?php
 													$userID = $lastOPDNo->opdNo;
 													$userID2 = $lastOPDNo->opdNo;
-													if(strlen($userID) == 1){
-														$userID = "00000".$userID;
-													}else if(strlen($userID) == 2){
-														$userID = "0000".$userID;
-													}else if(strlen($userID) == 3){
-														$userID = "000".$userID;
-													}else if(strlen($userID) == 4){
-														$userID = "00".$userID;
-													}else if(strlen($userID) == 5){
-														$userID = "0".$userID;
-													}else if(strlen($userID) == 6){
-														$userID = $userID;
-													}
+                                                    
+                                                    // Generate New Case No Format: S + Branch + YYMM + Seq
+                                                    $branch = "01"; // Default Branch Code
+                                                    $ym = date('ym');
+                                                    $seq = str_pad($userID, 5, "0", STR_PAD_LEFT);
+                                                    $newCaseNo = "S" . $branch . $ym . $seq;
 													?>
                                  <?php echo validation_errors();?>                  
                                 <div class="nav-tabs-custom">
@@ -113,8 +106,8 @@
                                     	<div class="tab-pane active" id="tab_1">
                                         	<table width="100%" cellpadding="3" cellspacing="3">
                                 <tr>
-                                	<td width="21%">OPD No.</td>
-                                    <td width="79%"><input class="form-control input-sm" name="opdNo" id="opdNo" type="text" style="width: 100px;" required readonly value="<?php echo "OP-".$userID;?>"></td>
+                                	<td width="21%">Case No.</td>
+                                    <td width="79%"><input class="form-control input-sm" name="opdNo" id="opdNo" type="text" style="width: 150px;" required readonly value="<?php echo $newCaseNo;?>"></td>
                                 </tr>
                                 <!--
                                 <tr>

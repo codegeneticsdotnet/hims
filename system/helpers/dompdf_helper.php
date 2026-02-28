@@ -1,5 +1,5 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
-function pdf_create($html, $filename='', $stream=TRUE, $papersize, $orientation) 
+function pdf_create($html, $filename='', $stream=TRUE, $papersize='a4', $orientation='portrait') 
 {
     require_once("dompdf/dompdf_config.inc.php");
 

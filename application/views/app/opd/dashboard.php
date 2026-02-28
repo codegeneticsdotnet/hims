@@ -152,7 +152,7 @@
                                         <td><?php echo date('h:i A', strtotime($row->time_visit));?></td>
                                         <td><?php echo $row->IO_ID;?></td>
                                         <td><?php echo $row->patient_no;?></td>
-                                        <td><?php echo $row->patient_name;?></td>
+                                        <td><?php echo $row->name;?></td>
                                         <td><?php echo $row->dept_name;?></td>
                                         <td><?php echo $row->doctor;?></td>
                                         <td>

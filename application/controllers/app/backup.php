@@ -54,8 +54,53 @@ class Backup extends General{
 	    force_download($db_name, $backup);
 		
 
-
 	}
+    
+    public function restore_database(){
+        if(isset($_POST['btnRestore'])){
+            $config['upload_path'] = './backup/';
+            $config['allowed_types'] = 'sql|zip|txt';
+            $config['max_size'] = '10240'; // 10MB
+            
+            $this->load->library('upload', $config);
+            
+            if ( ! $this->upload->do_upload('backup_file')){
+                $error = $this->upload->display_errors();
+                $this->session->set_flashdata('message',"<div class='alert alert-danger'>".$error."</div>");
+                redirect(base_url().'app/backup');
+            }else{
+                $data = $this->upload->data();
+                $file_path = $data['full_path'];
+                
+                // Handle Zip
+                if($data['file_ext'] == '.zip'){
+                    $zip = new ZipArchive;
+                    if ($zip->open($file_path) === TRUE) {
+                        $sql_file = $zip->getNameIndex(0);
+                        $zip->extractTo('./backup/', $sql_file);
+                        $zip->close();
+                        $file_path = './backup/'.$sql_file;
+                    }
+                }
+                
+                // Read and Execute
+                $templine = '';
+                $lines = file($file_path);
+                foreach ($lines as $line){
+                    if (substr($line, 0, 2) == '--' || $line == '')
+                        continue;
+                    $templine .= $line;
+                    if (substr(trim($line), -1, 1) == ';'){
+                        $this->db->query($templine);
+                        $templine = '';
+                    }
+                }
+                
+                $this->session->set_flashdata('message',"<div class='alert alert-success'>Database Restored Successfully!</div>");
+                redirect(base_url().'app/backup');
+            }
+        }
+    }
 	
 	
 

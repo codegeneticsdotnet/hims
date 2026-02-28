@@ -20,7 +20,10 @@ class Billing_new_model extends CI_Model{
                 WHEN D.dept_name = 'ULTRASOUND' THEN 'Lab Only'
                 ELSE 'OPD Consultation' 
             END as type,
-            A.nStatus,
+            CASE 
+                WHEN C.invoice_no IS NOT NULL THEN 'Paid'
+                ELSE A.nStatus 
+            END as nStatus,
             C.invoice_no,
             C.dDate as bill_date
         ", false);
@@ -43,7 +46,8 @@ class Billing_new_model extends CI_Model{
             CAST(A.request_date AS DATETIME) as date_visit,
             'Lab Only' as type,
             CASE 
-                WHEN A.status = 'Paid' THEN 'Discharged' 
+                WHEN C.invoice_no IS NOT NULL THEN 'Paid'
+                WHEN A.status = 'Paid' THEN 'Paid' 
                 WHEN A.status = 'Cancelled' THEN 'Cancelled'
                 ELSE 'Pending' 
             END as nStatus,
@@ -309,19 +313,23 @@ class Billing_new_model extends CI_Model{
             // For OPD, usually payment means end of visit.
             
             // If IO_ID exists (OPD Visit)
+            /*
             if(!empty($header['iop_id'])){
                 $this->db->where("IO_ID", $header['iop_id']);
                 $this->db->update("patient_details_iop", array("nStatus" => "Discharged"));
             } 
+            */
             // If Lab Only (no IO_ID linked to OPD visit, or just standalone request)
             // We don't have a visit to discharge in patient_details_iop usually if it's purely external/lab only 
             // unless we created a dummy visit. 
             // But if we do have a patient_no, we might want to check if they have an active OPD visit.
+            /*
             else {
                 // Find active OPD visit for this patient and discharge it?
                 // This might be risky if they have multiple, but typically 1 active per day.
                 // Let's stick to discharging specific IO_ID if provided.
             }
+            */
         }
         
         // 2. IPD Discharge

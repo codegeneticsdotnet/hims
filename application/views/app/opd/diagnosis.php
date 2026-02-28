@@ -1,128 +1,33 @@
-<!DOCTYPE html>
-<html>
-    <head>
-<head>
+<?php require_once(APPPATH.'views/include/head.php');?>
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            Patient Diagnosis
+        </h1>
+    </section>
 
-        <meta charset="UTF-8">
-        <title>Hospital Management System</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
- <meta content="Live Demo Hospital Management System,HMS is designed for medical practitioners and health-related institutions to assistant them in storing and keeping track of all correlated information such as patient medical records, admission/discharge reports, pharmaceutical management, billing and report generation and more. " name="description">
- <meta content="free live demo hms,free live demo hospital management system,live demo,demo,live,hospital management system live demo,hospital management system free source codes,source codes,php,mysql,codeigniter,mvc,php frameworks,hospital management system,hospital,management,system,solution,online demo,demo hospital management system,live demo,demo trial,trial,hospital solution,clinic management system,clinic solution,management system,system,online management system" name="keywords">
-  <meta content="Jayson Sarino" name="author">
-
-  <meta property="og:site_name" content="Hospital Management System Free Trial Demo">
-  <meta property="og:title" content="Hospital Management System">
-  <meta property="og:description" content="Live Demo Hospital Management System,HMS is designed for medical practitioners and health-related institutions to assistant them in storing and keeping track of all correlated information such as patient medical records, admission/discharge reports, pharmaceutical management, billing and report generation and more.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="http://hms-demo.jaysonsarino.com/public/img/new/hms_logo.png"><!-- link to image for socio -->
-  <meta property="og:url" content="http://hms-demo.jaysonsarino.com/">
-
-        <link href="<?php echo base_url()?>public/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-        <link href="<?php echo base_url();?>public/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
-        <link href="<?php echo base_url();?>public/css/ionicons.min.css" rel="stylesheet" type="text/css" />
-        <link href="<?php echo base_url();?>public/css/AdminLTE.css" rel="stylesheet" type="text/css" />
-        
-        <!----------BOOTSTRAP DATEPICKER----------------------------->
-    	<link rel="stylesheet" href="<?php echo base_url();?>public/datepicker/css/datepicker.css">
-		<!---------------------------------------------------------->
-        
-        
-        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-        <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-        <![endif]-->
-        
-    </head><div style="position:fixed; bottom: 0; right: 0; width: 67%; border: 2px solid #CCC; top:200px; z-index:1001; background-color: #FFF; display:none;" id="ad2">
-    <span style="right: 0; position: fixed; cursor: pointer; z-index:1002" onclick="closeAd('ad2')" >CLOSE</span>
-    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- Payroll Management System -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-3182624105910612"
-     data-ad-slot="4635770289"
-     data-ad-format="auto"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-
-
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- Hospital Management System -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-3182624105910612"
-     data-ad-slot="3101991489"
-     data-ad-format="auto"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-
-
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- Grading System -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-3182624105910612"
-     data-ad-slot="6132191885"
-     data-ad-format="auto"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- HMS Website -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-3182624105910612"
-     data-ad-slot="1562391480"
-     data-ad-format="auto"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-</div>
-    <body class="skin-blue">
-        <!-- header logo: style can be found in header.less -->
-        <?php require_once(APPPATH.'views/include/header.php');?>
-        
-        <div class="wrapper row-offcanvas row-offcanvas-left">
-            
-            <?php require_once(APPPATH.'views/include/sidebar.php');?>
-
-            <!-- Right side column. Contains the navbar and content of the page -->
-            <aside class="right-side">                
-                <!-- Content Header (Page header) -->
-                <section class="content-header">
+            <!-- Right side column. Contains the navbar and content of the page 
+            <aside class="right-side">                -->
+                <!-- Main content -->
+                <section class="content">
                     <?php if($this->session->userdata('emr_viewing') == "opd_emr_viewing"){?>	
-                   <h1>OPD Patient Information</h1>
-                   <ol class="breadcrumb">
+                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">EMR sheet</a></li>
                         <li><a href="<?php echo base_url()?>app/emr/opd">Out-Patient Master</a></li>
+                        <li class="active">Diagnosis</li>
                     </ol>
                     <?php }else{?>
-                    <h1>OPD Patient Information</h1>
-                   <ol class="breadcrumb">
+                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">Doctor Module</a></li>
                         <li><a href="<?php echo base_url()?>app/doctor/opd">Out-Patient Master</a></li>
-                        <li class="active">OPD Patient Information</li>
+                        <li class="active">Diagnosis</li>
                     </ol>
                     <?php }?>
-                </section>
-
-                <!-- Main content -->
-                <section class="content">
+                    <br>
                  
-        
-                 
-                 
-               
                  <div class="row">
-                 	
                      <div class="col-md-3">
                     	 <div class="box">
                          	 <div class="box-header"></div>
@@ -162,37 +67,34 @@
                             	<div style="margin-top: 15px;">
                                  <ul class="nav nav-pills nav-stacked">
                                  	<li><a href="<?php echo base_url()?>app/opd/view/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> General Information</a></li>
-                                    
                                  	<li class="active"><a href="<?php echo base_url()?>app/opd/diagnosis/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Diagnosis</a></li>
-                                 	
                                  	<li><a href="<?php echo base_url()?>app/opd/medication/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Medication</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/complain/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Complain</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/vitalSign/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Vital Sign</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/patientHistory/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Patient History</a></li>
-                                   	<li><a href="<?php echo base_url()?>app/opd/laboratory/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Laboratory</a></li>
+                                    <li><a href="<?php echo base_url()?>app/opd/laboratory/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Laboratory</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/discharge_summary/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Discharge Summary</a></li>
-                                    <!--<li><a href="<?php echo base_url()?>app/opd/billing/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Admission Billing</a></li>-->
                                  </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
-                     
                      <div class="col-md-9"> 
-                                <div class="nav-tabs-custom">
-                                	<ul class="nav nav-tabs">
-                                		<li class="active"><a href="#tab_1" data-toggle="tab">Diagnosis</a></li>
+                                <div class="box">
+                                	<div class="box-header">
+                                        <h3 class="box-title">Diagnosis History</h3>
+                                        <div class="box-tools pull-right">
+                                            <?php if($this->session->userdata('emr_viewing') == ""){?>	
+                                                <?php if($getOPDPatient->nStatus == "Pending"){?>
+                                                <a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Add Diagnosis</a>
+                                                <?php }}?>
+                                                <a href="<?php echo base_url()?>app/ipd_print/print_diagnosis/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-print"></i> Print</a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="box-body table-responsive no-padding">
                                         
-                                	</ul>
-                                    <div class="tab-content">
-                                    	<div class="tab-pane active" id="tab_1">
-                                        	<?php if($this->session->userdata('emr_viewing') == ""){?>	
-                                        	<?php if($getOPDPatient->nStatus == "Pending"){?>
-                                            <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Add Diagnosis</a>
-                                            <?php }?>
-                                            <?php }?>
-                                            <a href="<?php echo base_url()?>app/ipd_print/print_diagnosis/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>" class="btn btn-default" target="_blank"><i class="fa fa-print"></i> Print</a>
-                                            <a href="<?php echo base_url()?>app/ipd_print/pdf_diagnosis/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>" class="btn btn-success" target="_blank"><i class="fa fa-print"></i> PDF</a>
+                                        	<?php echo $this->session->flashdata('message');?>
                                             
                                            <table class="table table-hover table-striped">
                                            <thead>
@@ -210,6 +112,7 @@
                                                 <td>
                                                 <?php if($this->session->userdata('emr_viewing') == ""){?>	
                                                 <?php if($getOPDPatient->nStatus == "Pending"){?>
+                                                <a href="#" onclick="editDiagnosis('<?php echo $diagnosisList2->iop_diag_id?>', '<?php echo $diagnosisList2->diagnosis_name?>', '<?php echo $diagnosisList2->remarks?>')">Edit</a> |
                                                 <a href="<?php echo base_url()?>app/opd/delete_diagnos/<?php echo $diagnosisList2->iop_diag_id?>/<?php echo $getOPDPatient->IO_ID?>/<?php echo $getOPDPatient->patient_no?>" onClick="return confirm('Are you sure you want to remove?');">Remove</a>
                                                 <?php }}?>
                                                 </td>
@@ -222,7 +125,6 @@
                                             <br><br><br><br><br><br><br>
                                             <br><br><br><br><br><br><br>
                                         </div>
-                           			</div>
                             <div class="box-footer clearfix">
                                 	
                             </div>
@@ -239,7 +141,16 @@
          <script src="<?php echo base_url();?>public/js/bootstrap.min.js" type="text/javascript"></script>     
         <script src="<?php echo base_url();?>public/js/AdminLTE/app.js" type="text/javascript"></script>
         
-         <!-- BDAY -->
+        <script>
+        function editDiagnosis(id, name, remarks){
+            $('#iop_diag_id').val(id);
+            $('#diagnosis').val(name);
+            $('textarea[name="remarks"]').val(remarks);
+            $('#myModal').modal('show');
+        }
+        </script>
+        
+    </body>     <!-- BDAY -->
          <script src="<?php echo base_url();?>public/datepicker/js/jquery-1.9.1.min.js"></script>
         <script src="<?php echo base_url();?>public/datepicker/js/bootstrap-datepicker.js"></script>
         <script type="text/javascript">
@@ -264,6 +175,7 @@
                             <form method="post" action="<?php echo base_url()?>app/opd/save_diagnosis" onSubmit="return confirm('Are you sure you want to save?');">
                                             <input type="hidden" name="opd_no" value="<?php echo $getOPDPatient->IO_ID?>">
                                             <input type="hidden" name="patient_no" value="<?php echo $getOPDPatient->patient_no?>">
+                                            <input type="hidden" name="iop_diag_id" id="iop_diag_id">
                             <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -277,13 +189,12 @@
                                         <tr>
                                         	<td>Diagnosis</td>
                                             <td>
-                                            <select name="diagnosis" id="diagnosis" style="width: 100%;" required class="form-control input-sm">
-                                                            	<option value="">- Diagnosis -</option>
-                                                            	<?php 
-																foreach($diagnosisList as $diagnosisList2){?>
-                                                            	<option value="<?php echo $diagnosisList2->diagnosis_id;?>"><?php echo $diagnosisList2->diagnosis_name;?></option>
-                                                                <?php }?>
-                                                            </select>
+                                            <input list="diagnosis_list" name="diagnosis" id="diagnosis" class="form-control input-sm" style="width: 100%;" required autocomplete="off" placeholder="Type to search or enter new...">
+                                            <datalist id="diagnosis_list">
+                                                <?php foreach($diagnosisList as $diagnosisList2){?>
+                                                <option value="<?php echo $diagnosisList2->diagnosis_name;?>">
+                                                <?php }?>
+                                            </datalist>
                                             </td>
                                         </tr>
                                         <tr>

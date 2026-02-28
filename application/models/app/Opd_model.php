@@ -77,12 +77,13 @@ class Opd_model extends CI_Model{
 		);
 	}
 	
-	public function get_opd_queue(){
+	public function get_opd_queue($doctor_id = NULL){
 		$today = date("Y-m-d");
 		$this->db->select("
 			A.IO_ID,
 			A.patient_no,
-			concat(B.firstname,' ',B.middlename,' ',B.lastname) as patient_name,
+			concat(B.firstname,' ',B.middlename,' ',B.lastname) as name,
+            B.age,
 			A.date_visit,
 			A.time_visit,
 			D.dept_name,
@@ -95,6 +96,11 @@ class Opd_model extends CI_Model{
 		$this->db->join("department D", "D.department_id = A.department_id", "left");
 		$this->db->join("users E", "E.user_id = A.doctor_id", "left");
 		$this->db->join("system_parameters F", "F.param_id = E.title", "left");
+        
+        if($doctor_id){
+            $this->db->where("A.doctor_id", $doctor_id);
+        }
+        
 		$this->db->where("A.patient_type", "OPD");
 		$this->db->where("A.nStatus", "Pending");
 		$this->db->where("A.date_visit", $today);
@@ -380,7 +386,7 @@ class Opd_model extends CI_Model{
 			'iop_id'		=>		$this->input->post('opd_no'),
 			'complain_id'	=>		$this->input->post('complain'),
 			'remarks'		=>		$this->input->post('remarks'),
-			'dDate'			=>		date("Y-m-d h:i:s a"),
+			'dDate'			=>		date("Y-m-d H:i:s"),
 			'InActive'		=>		0
 		);
 		$this->db->insert("iop_complaints",$this->data);	
@@ -391,7 +397,7 @@ class Opd_model extends CI_Model{
 			'iop_id'		=>		$this->input->post('opd_no'),
 			'diagnosis_id'	=>		$this->input->post('diagnosis'),
 			'remarks'		=>		$this->input->post('remarks'),
-			'dDate'			=>		date("Y-m-d h:i:s a"),
+			'dDate'			=>		date("Y-m-d H:i:s"),
 			'InActive'		=>		0
 		);
 		$this->db->insert("iop_diagnosis",$this->data);	

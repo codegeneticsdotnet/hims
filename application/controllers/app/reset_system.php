@@ -62,6 +62,7 @@ class Reset_system extends General{
         $this->db->truncate('iop_intake_record');
         $this->db->truncate('iop_output_record');
         $this->db->truncate('iop_discharge_summary');
+        $this->db->truncate('iop_discharge_advice');
         $this->db->truncate('iop_bed_side_procedure');
         $this->db->truncate('iop_operation_theater');
         $this->db->truncate('iop_room_transfer');
@@ -88,7 +89,8 @@ class Reset_system extends General{
             'opd_no', 
             'ipd_no', 
             'pharmacy_invoice_no', 
-            'receipt_no'
+            'receipt_no',
+            'invoice_no'
         );
         
         $this->db->where_in('cCode', $keys_to_reset);
