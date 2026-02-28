@@ -60,7 +60,9 @@ class Pharmacy extends General{
                 // Initial Stock (Optional, usually 0)
                 $data['nStock'] = 0; 
                 $this->db->insert('medicine_drug_name', $data);
+                $new_id = $this->db->insert_id();
                 $this->session->set_flashdata('message', 'Item added successfully!');
+                $this->session->set_flashdata('new_item_id', $new_id);
             }
             
             // Redirect based on source
@@ -146,10 +148,11 @@ class Pharmacy extends General{
                  }
              }
              
-             $this->pharmacy_model->saveInventoryIn($header, $details);
+             $inv_id = $this->pharmacy_model->saveInventoryIn($header, $details);
              $this->pharmacy_model->updateInventoryRefNo($ref_no);
              
              $this->session->set_flashdata('message', 'Stock added successfully!');
+             $this->session->set_flashdata('print_inv_id', $inv_id);
              redirect(base_url().'app/pharmacy/inventory_in');
          } else {
              redirect(base_url().'app/pharmacy/inventory_in');
@@ -164,6 +167,12 @@ class Pharmacy extends General{
     public function get_inventory_details($inv_id){
         $details = $this->pharmacy_model->getInventoryDetails($inv_id);
         echo json_encode($details);
+    }
+    
+    public function print_inventory($inv_id){
+        $this->data['header'] = $this->pharmacy_model->getInventoryHeader($inv_id);
+        $this->data['details'] = $this->pharmacy_model->getInventoryDetails($inv_id);
+        $this->load->view('app/pharmacy/print_inventory', $this->data);
     }
     
     // POS Functionality
@@ -287,7 +296,7 @@ class Pharmacy extends General{
                  $this->session->set_userdata('company_name', $company->company_name);
                  $this->session->set_userdata('company_address', $company->company_address);
                  $this->session->set_userdata('company_contact', $company->company_contactNo);
-                 $this->session->set_userdata('company_email', $company->company_email); // Assuming email exists
+                 //$this->session->set_userdata('company_email', $company->company_email);
              }
         }
         

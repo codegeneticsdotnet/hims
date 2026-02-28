@@ -6,21 +6,11 @@
         </h1>
     </section>
                 <section class="content">
-                    <?php if($this->session->userdata('emr_viewing') == "opd_emr_viewing"){?>	
-                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
+                    <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-                        <li><a href="#">EMR sheet</a></li>
-                        <li><a href="<?php echo base_url()?>app/emr/opd">Out-Patient Master</a></li>
+                        <li><a href="<?php echo base_url()?>app/clinic/dashboard">Clinic Dashboard</a></li>
                         <li class="active">Vital Signs</li>
                     </ol>
-                    <?php }else{?>
-                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
-                        <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-                        <li><a href="#">Doctor Module</a></li>
-                        <li><a href="<?php echo base_url()?>app/doctor/opd">Out-Patient Master</a></li>
-                        <li class="active">OPD Patient Information</li>
-                    </ol>
-                    <?php }?>
                     <br>
                  
                  <div class="row">

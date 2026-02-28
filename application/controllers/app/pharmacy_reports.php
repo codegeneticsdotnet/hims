@@ -9,6 +9,7 @@ class Pharmacy_reports extends General{
 	public function __construct(){
 		parent::__construct();
 		$this->load->model("app/pharmacy_reports_model");
+        $this->load->model("app/pharmacy_model");
 		$this->load->model("app/general_model");
 		if(General::is_logged_in() == FALSE){
             redirect(base_url().'login');    

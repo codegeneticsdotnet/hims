@@ -181,6 +181,11 @@ class Pharmacy_model extends CI_Model{
         return $query->result();
     }
     
+    public function getInventoryHeader($inv_id){
+        $this->db->where("inv_id", $inv_id);
+        return $this->db->get("pharmacy_inventory_in")->row();
+    }
+    
     public function getInventorySummary(){
         $this->db->select("A.ref_no, A.date_received, A.supplier_name, A.remarks, COUNT(B.detail_id) as total_items");
         $this->db->from("pharmacy_inventory_in A");

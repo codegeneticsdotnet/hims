@@ -15,12 +15,14 @@ class Reports_model extends CI_Model{
 			A.subtotal,
 			B.patient_no,
 			concat(B.firstname,' ',B.lastname) as patient,
-			A.total_amount
+			A.total_amount,
+            C.reason_discount
 		",false);
 		$where = "DATE_FORMAT(A.dDate,  '%Y-%m-%d') between '".$this->input->post('cFrom')."' and '".$this->input->post('cTo')."' and A.InActive = 0 and B.InActive = 0";
 		$this->db->where($where);	
 		$this->db->order_by("A.dDate","ASC");
 		$this->db->join("patient_personal_info B","B.patient_no = A.patient_no","left outer");
+        $this->db->join("iop_billing C","C.invoice_no = A.invoice_no","left outer");
 		$query = $this->db->get("iop_receipt A");
 		return $query->result();
 	}

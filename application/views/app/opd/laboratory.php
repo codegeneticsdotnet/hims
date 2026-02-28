@@ -229,6 +229,34 @@
                                            <?php }?>
                                            </tbody>
                                            </table>
+                                           
+                                           <hr>
+                                           <h4>Laboratory Test Results (From Lab Dept)</h4>
+                                           <table class="table table-hover table-striped">
+                                           <thead>
+                                           <tr>
+                                               <th>Request No</th>
+                                               <th>Date</th>
+                                               <th>Test Name</th>
+                                               <th>Status</th>
+                                               <th>Results/Remarks</th>
+                                           </tr>
+                                           </thead>
+                                           <tbody>
+                                           <?php if(isset($lab_module_results) && !empty($lab_module_results)){
+                                               foreach($lab_module_results as $row){?>
+                                           <tr>
+                                               <td><?php echo $row->request_no?></td>
+                                               <td><?php echo date("M d, Y h:i A",strtotime($row->request_date));?></td>
+                                               <td><?php echo $row->particular_name?></td>
+                                               <td><?php echo $row->status?></td>
+                                               <td><?php echo $row->result_remarks?></td>
+                                           </tr>
+                                           <?php }} else { ?>
+                                           <tr><td colspan="5" align="center">No results found from Lab Department.</td></tr>
+                                           <?php } ?>
+                                           </tbody>
+                                           </table>
                                             
                                             <br><br><br><br><br><br><br>
                                             <br><br><br><br><br><br><br>

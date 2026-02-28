@@ -82,12 +82,12 @@ class Opd_model extends CI_Model{
 		$this->db->select("
 			A.IO_ID,
 			A.patient_no,
-			concat(B.firstname,' ',B.middlename,' ',B.lastname) as name,
+			concat(ifnull(B.firstname,''),' ',ifnull(B.middlename,''),' ',ifnull(B.lastname,'')) as name,
             B.age,
 			A.date_visit,
 			A.time_visit,
 			D.dept_name,
-			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as doctor,
+			concat(ifnull(F.cValue,''),' ',ifnull(E.firstname,''),' ',ifnull(E.middlename,''),' ',ifnull(E.lastname,'')) as doctor,
 			A.nStatus
 		", false);
 		$this->db->from("patient_details_iop A");
@@ -102,7 +102,7 @@ class Opd_model extends CI_Model{
         }
         
 		$this->db->where("A.patient_type", "OPD");
-		$this->db->where("A.nStatus", "Pending");
+		//$this->db->where("A.nStatus", "Pending");
 		$this->db->where("A.date_visit", $today);
 		$this->db->where("A.InActive", 0);
 		$this->db->order_by("A.time_visit", "DESC");
@@ -126,13 +126,13 @@ class Opd_model extends CI_Model{
 		$this->db->select("
 			A.IO_ID,
 			B.patient_no,
-			concat(B.firstname,' ',B.middlename,' ',B.lastname) as 'name',
+			concat(ifnull(B.firstname,''),' ',ifnull(B.middlename,''),' ',ifnull(B.lastname,'')) as 'name',
 			B.age,
 			A.date_visit,
 			A.time_visit,
 			D.dept_name,
 			D.dept_name,
-			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as 'doctor',
+			concat(ifnull(F.cValue,''),' ',ifnull(E.firstname,''),' ',ifnull(E.middlename,''),' ',ifnull(E.lastname,'')) as 'doctor',
 			A.nStatus,
 			",false);
 		$where = "(
@@ -210,7 +210,7 @@ class Opd_model extends CI_Model{
 	public function getAll_search($limit = 10, $offset = 0){
 		$this->db->select("
 			A.patient_no,
-			concat(B.cValue,' ',A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
+			concat(ifnull(A.firstname,''),' ',ifnull(A.middlename,''),' ',ifnull(A.lastname,'')) as 'name',
 			C.cValue as 'gender',
 			D.cValue as 'civil_status',
 			A.age,
@@ -396,7 +396,7 @@ class Opd_model extends CI_Model{
 		$this->data = array(
 			'iop_id'		=>		$this->input->post('opd_no'),
 			'diagnosis_id'	=>		$this->input->post('diagnosis'),
-			'remarks'		=>		$this->input->post('remarks'),
+			'remarks'		=>		strtoupper($this->input->post('remarks')),
 			'dDate'			=>		date("Y-m-d H:i:s"),
 			'InActive'		=>		0
 		);
@@ -405,7 +405,7 @@ class Opd_model extends CI_Model{
 	
 	
 	public function patientDiagnosis($iop_no){
-		$this->db->select("A.iop_diag_id,B.diagnosis_name, A.remarks");
+		$this->db->select("A.iop_diag_id,B.diagnosis_name, A.remarks, A.dDate");
 		$this->db->order_by("A.iop_diag_id","DESC");
 		$this->db->where(array(
 			'A.iop_id'		=>		$iop_no,

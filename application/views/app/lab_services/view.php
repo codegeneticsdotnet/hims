@@ -96,7 +96,7 @@
                     <div class="box-body table-responsive">
                     <div class="box-tools">
                              <!-- Bulk Actions -->
-                             <?php if($header->status == 'Paid' || $header->status == 'Active'): ?>
+                             <?php if($header->status == 'Paid' || $header->status == 'Active' || $header->status == 'Done'): ?>
                              <div class="input-group input-group-sm" style="width: 300px;">
                                 <select name="bulk_status" class="form-control" required>
                                     <option value="">Select Action</option>
@@ -152,7 +152,7 @@
                                     </td>
                                     <td><?php echo isset($row->result_remarks) ? $row->result_remarks : '';?></td>
                                     <td>
-                                        <?php if($header->status == 'Paid' || $header->status == 'Active'): ?>
+                                        <?php if($header->status == 'Paid' || $header->status == 'Active' || $header->status == 'Done'): ?>
                                             <?php if($row->status != 'Done' && $row->status != 'Cancelled'): ?>
                                                 <?php if($row->status != 'Active'): ?>
                                                 <a href="#" onclick="updateDetailStatus('<?php echo $row->detail_id;?>', 'Active')" class="btn btn-xs btn-primary">Active</a>

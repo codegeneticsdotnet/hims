@@ -54,57 +54,75 @@
                         Sales Report<br>
                         <small>From: <?php echo date('M d, Y', strtotime($cFrom));?> To: <?php echo date('M d, Y', strtotime($cTo));?></small>
                     </h4>
-                    <table class="table table-bordered table-striped">
-                        <thead>
+                    <table width="100%" cellpadding="5" cellspacing="0" border="0" style="border-collapse:collapse;">
+                    <thead>
+                        <tr style="font-weight:bold; background:#eee; border-bottom:1px solid #000;">
+                            <th width="50%" style="padding:5px;">Description</th>
+                            <th width="10%" style="padding:5px; text-align:center;">Qty</th>
+                            <th width="20%" style="padding:5px; text-align:right;">Unit Price</th>
+                            <th width="20%" style="padding:5px; text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php 
+                    $grand_total = 0;
+                    if(isset($sales) && !empty($sales)){
+                        foreach($sales as $row){
+                            $grand_total += $row->total_amount;
+                            // Fetch Details
+                            $details = $this->pharmacy_model->getPOSDetails($row->sale_id);
+                    ?>
+                        <tr style="background:#f9f9f9; border-top:1px solid #ccc;">
+                            <td colspan="4" style="padding:8px 10px;">
+                                <strong>Invoice No:</strong> <?php echo $row->invoice_no;?> &nbsp;|&nbsp;
+                                <strong>Date:</strong> <?php echo date('M d, Y h:i A', strtotime($row->date_sale));?> &nbsp;|&nbsp;
+                                <strong>Patient:</strong> <?php echo $row->patient_name ? $row->patient_name : $row->patient_full_name;?> &nbsp;|&nbsp;
+                                <strong>Payment Type:</strong> <?php echo $row->payment_type;?>
+                                <?php if(!empty($row->remarks)): ?>
+                                    <br><strong>Remarks:</strong> <?php echo $row->remarks;?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        
+                        <?php if($details): ?>
+                            <?php foreach($details as $item): ?>
                             <tr>
-                                <th>Invoice No</th>
-                                <th>Date</th>
-                                <th>Patient Name</th>
-                                <th>Payment Type</th>
-                                <th class="text-right">Sub Total</th>
-                                <th class="text-right">Discount</th>
-                                <th class="text-right">Net Total</th>
-                                <th>Remarks</th>
+                                <td style="padding:3px 10px; border-bottom:1px solid #eee; padding-left:30px;"><?php echo $item->item_name;?></td>
+                                <td align="center" style="padding:3px; border-bottom:1px solid #eee;"><?php echo $item->qty;?></td>
+                                <td align="right" style="padding:3px; border-bottom:1px solid #eee;"><?php echo number_format($item->price, 2);?></td>
+                                <td align="right" style="padding:3px; border-bottom:1px solid #eee;"><?php echo number_format($item->total, 2);?></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $grand_total = 0;
-                            if(count($sales) > 0): 
-                                foreach($sales as $row): 
-                                    $grand_total += $row->total_amount;
-                            ?>
-                            <tr>
-                                <td><?php echo $row->invoice_no;?></td>
-                                <td><?php echo date('M d, Y h:i A', strtotime($row->date_sale));?></td>
-                                <td><?php echo $row->patient_name ? $row->patient_name : $row->patient_full_name;?></td>
-                                <td>
-                                    <?php 
-                                    if($row->payment_type == 'Charge'){
-                                        echo '<span class="label label-danger">Charge (IPD)</span>';
-                                    } else {
-                                        echo '<span class="label label-success">Cash</span>';
-                                    }
-                                    ?>
-                                </td>
-                                <td class="text-right"><?php echo number_format($row->sub_total, 2);?></td>
-                                <td class="text-right"><?php echo number_format($row->discount, 2);?></td>
-                                <td class="text-right"><?php echo number_format($row->total_amount, 2);?></td>
-                                <td><?php echo $row->remarks;?></td>
-                            </tr>
-                            <?php endforeach; else: ?>
-                            <tr>
-                                <td colspan="8" class="text-center">No records found.</td>
-                            </tr>
-                            <?php endif; ?>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="6" class="text-right">Grand Total</th>
-                                <th class="text-right"><?php echo number_format($grand_total, 2);?></th>
-                                <th></th>
-                            </tr>
-                        </tfoot>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="4" align="center">No details available</td></tr>
+                        <?php endif; ?>
+                        
+                        <?php if($row->discount > 0): ?>
+                        <tr>
+                            <td colspan="3" align="right" style="padding:3px;">
+                                <strong>Less Discount:</strong>
+                            </td>
+                            <td align="right" style="padding:3px;"><?php echo number_format($row->discount, 2);?></td>
+                        </tr>
+                        <?php endif; ?>
+                        
+                        <tr>
+                            <td colspan="3" align="right" style="padding:3px; padding-bottom:10px;"><strong>TOTAL:</strong></td>
+                            <td align="right" style="padding:3px; padding-bottom:10px;"><strong><?php echo number_format($row->total_amount, 2);?></strong></td>
+                        </tr>
+
+                    <?php }} else { ?>
+                        <tr><td colspan="4" align="center">No records found.</td></tr>
+                    <?php } ?>
+                    
+                    <!-- Grand Total -->
+                    <tr style="border-top:2px solid #000;">
+                        <td colspan="2"></td>
+                        <td align="right" style="padding:10px;"><strong>Grand Total:</strong></td>
+                        <td align="right" style="padding:10px;"><strong><?php echo number_format($grand_total, 2);?></strong></td>
+                    </tr>
+                    
+                    </tbody>
                     </table>
                 </div>
             </div>

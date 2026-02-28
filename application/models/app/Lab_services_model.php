@@ -272,4 +272,22 @@ class Lab_services_model extends CI_Model{
         $this->db->where('request_id', $id);
         $this->db->update('lab_service_request', array('status' => $status));
     }
+    
+    public function getPatientLabResults($patient_no){
+        $this->db->select("
+            A.request_no,
+            A.request_date,
+            C.particular_name,
+            B.status,
+            B.result_remarks
+        ", false);
+        $this->db->from("lab_service_request A");
+        $this->db->join("lab_service_request_details B", "B.request_id = A.request_id");
+        $this->db->join("bill_particular C", "C.particular_id = B.particular_id");
+        $this->db->where("A.patient_no", $patient_no);
+        $this->db->where("A.InActive", 0);
+        $this->db->where("B.InActive", 0);
+        $this->db->order_by("A.request_date", "DESC");
+        return $this->db->get()->result();
+    }
 }

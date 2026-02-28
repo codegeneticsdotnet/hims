@@ -10,23 +10,12 @@
             <aside class="right-side">                -->
                 <!-- Main content -->
                 <section class="content">
-                    <?php if($this->session->userdata('emr_viewing') == "opd_emr_viewing"){?>	
-                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
+                    <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-                        <li><a href="#">EMR sheet</a></li>
-                        <li><a href="<?php echo base_url()?>app/emr/opd">Out-Patient Master</a></li>
-                        <li class="active">Diagnosis</li>
+                        <li><a href="<?php echo base_url()?>app/clinic/dashboard">Clinic Dashboard</a></li>
+                        <li class="active">Patient Diagnosis</li>
                     </ol>
-                    <?php }else{?>
-                   <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
-                        <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-                        <li><a href="#">Doctor Module</a></li>
-                        <li><a href="<?php echo base_url()?>app/doctor/opd">Out-Patient Master</a></li>
-                        <li class="active">Diagnosis</li>
-                    </ol>
-                    <?php }?>
                     <br>
-                 
                  <div class="row">
                      <div class="col-md-3">
                     	 <div class="box">
@@ -99,6 +88,7 @@
                                            <table class="table table-hover table-striped">
                                            <thead>
                                            <tr>
+                                                <th>Date</th>
                                            		<th>Diagnosis</th>
                                                 <th>Remarks</th>
                                                 <th></th>
@@ -107,6 +97,7 @@
                                            <tbody>
                                            <?php foreach($patientDiagnosis as $diagnosisList2){?>
                                            <tr>
+                                                <td><?php echo date('M d, Y h:i A', strtotime($diagnosisList2->dDate));?></td>
                                            		<td><?php echo $diagnosisList2->diagnosis_name?></td>
                                                 <td><?php echo $diagnosisList2->remarks?></td>
                                                 <td>
@@ -189,7 +180,7 @@
                                         <tr>
                                         	<td>Diagnosis</td>
                                             <td>
-                                            <input list="diagnosis_list" name="diagnosis" id="diagnosis" class="form-control input-sm" style="width: 100%;" required autocomplete="off" placeholder="Type to search or enter new...">
+                                            <input list="diagnosis_list" name="diagnosis" id="diagnosis" class="form-control input-sm" style="width: 100%; text-transform: uppercase;" required autocomplete="off" placeholder="Type to search or enter new...">
                                             <datalist id="diagnosis_list">
                                                 <?php foreach($diagnosisList as $diagnosisList2){?>
                                                 <option value="<?php echo $diagnosisList2->diagnosis_name;?>">
@@ -199,7 +190,7 @@
                                         </tr>
                                         <tr>
                                         	<td>Remarks</td>
-                                            <td><textarea name="remarks" placeholder="Remarks" class="form-control input-sm" style="width: 100%;" rows="3"></textarea></td>
+                                            <td><textarea name="remarks" placeholder="Remarks" class="form-control input-sm" style="width: 100%; text-transform: uppercase;" rows="3"></textarea></td>
                                         </tr>
                                         </tbody>
                                         </table>

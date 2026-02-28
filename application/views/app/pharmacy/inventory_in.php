@@ -180,6 +180,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printInventory()"><i class="fa fa-print"></i> Print</button>
             </div>
         </div>
     </div>
@@ -206,13 +207,14 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printInventory()"><i class="fa fa-print"></i> Print</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Add Item Modal -->
-<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+<div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="addNewItemForm" action="<?php echo base_url('app/pharmacy/save_item');?>" method="post">
@@ -385,7 +387,10 @@
         return confirm('Are you sure you want to save this stock entry?');
     }
     
+    var current_inv_id = 0;
+    
     function viewDetails(inv_id){
+        current_inv_id = inv_id;
         $.ajax({
             url: "<?php echo base_url();?>app/pharmacy/get_inventory_details/" + inv_id,
             type: "GET",
@@ -405,6 +410,18 @@
             }
         });
     }
+    
+    function printInventory(){
+        if(current_inv_id > 0){
+             window.open("<?php echo base_url();?>app/pharmacy/print_inventory/" + current_inv_id, "_blank");
+        }
+    }
+    
+    $(document).ready(function(){
+        <?php if($this->session->flashdata('print_inv_id')): ?>
+            viewDetails(<?php echo $this->session->flashdata('print_inv_id'); ?>);
+        <?php endif; ?>
+    });
     
     // Close search result on click outside
     $(document).mouseup(function(e) 

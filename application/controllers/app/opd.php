@@ -294,8 +294,19 @@ class Opd extends General{
 			
 			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>OPD Patient successfully saved!</div>");
 			
+            // Check Department for Redirect
+            $dept_id = $this->input->post('department');
+            $dept = $this->db->get_where('department', array('department_id' => $dept_id))->row();
+            $redirect_url = base_url().'app/opd/index';
+            
+            if($dept){
+                if(stripos($dept->dept_name, 'OUT PATIENT') !== false){
+                    $redirect_url = base_url().'app/clinic/dashboard';
+                }
+            }
+            
 			//redirect
-			redirect(base_url().'app/opd/index',$this->data);
+			redirect($redirect_url,$this->data);
 			
 			
 		}else{
@@ -338,7 +349,7 @@ class Opd extends General{
 	}
 	
 	public function save_diagnosis(){
-  		$diagnosis_input = $this->input->post('diagnosis');
+  		$diagnosis_input = strtoupper($this->input->post('diagnosis'));
         
         if(empty($diagnosis_input)){
             $opd_no = $this->input->post('opd_no');
@@ -379,12 +390,15 @@ class Opd extends General{
             if(!empty($iop_diag_id)){
                 $this->data = array(
                     'diagnosis_id' => $this->input->post('diagnosis'),
-                    'remarks' => $this->input->post('remarks')
+                    'remarks' => strtoupper($this->input->post('remarks'))
                 );
                 $this->db->where('iop_diag_id', $iop_diag_id);
                 $this->db->update('iop_diagnosis', $this->data);
                 $msg = "Diagnosis successfully Updated!";
             } else {
+			    // We need to modify save_diagnosis in model or do it here.
+                // Model uses post('remarks'). We can overwrite $_POST or modify logic.
+                $_POST['remarks'] = strtoupper($this->input->post('remarks'));
 			    $this->opd_model->save_diagnosis();
                 $msg = "Diagnosis successfully Added!";
             }
@@ -817,6 +831,10 @@ class Opd extends General{
 		
 		
 		$this->data['patient_lab'] = $this->opd_model->patient_lab($iop_no);
+        
+        // Fetch Lab Module Results
+        $this->load->model('app/lab_services_model');
+        $this->data['lab_module_results'] = $this->lab_services_model->getPatientLabResults($patient_no);
 		
 		
 		$this->load->view("app/opd/laboratory",$this->data);	

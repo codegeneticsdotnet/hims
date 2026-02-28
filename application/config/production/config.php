@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://hims.codegenetics.site/';
+$config['base_url']	= 'https://hims.codegenetics.site/';
 
 /*
 |--------------------------------------------------------------------------

@@ -111,8 +111,6 @@
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php else: ?>
-                                <tr><td colspan="6" class="text-center">No patients in queue</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>

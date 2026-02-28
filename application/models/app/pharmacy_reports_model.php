@@ -8,6 +8,7 @@ class Pharmacy_reports_model extends CI_Model{
 	
     public function getDailySales($cFrom, $cTo){
         $this->db->select("
+            A.sale_id,
             A.invoice_no,
             A.date_sale,
             A.patient_name,
