@@ -1,20 +1,15 @@
-<?php require_once(APPPATH.'views/include/head.php');?>
-<?php require_once(APPPATH.'views/include/header.php');?>
-<?php require_once(APPPATH.'views/include/sidebar.php');?>
-
-<div class="content-wrapper">
+<?php require_once(APPPATH.'views/include/head.php');?>                
+    <!-- Content Header (Page header) -->
     <section class="content-header">
-        <h1> Clinic Dashboard </h1>
+        <h1>
+            Clinic Dashboard
+        </h1>
     </section>
-                
-    <section class="content">
-        <ol class="breadcrumb">
+        <section class="content">
+        <ol class="breadcrumb" style="margin-bottom: 10px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
             <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
             <li class="active">Clinic Dashboard</li>
         </ol>
-    </section>
-
-    <section class="content">
         <div class="row">
             <!-- Doctor Patients -->
             <div class="col-lg-3 col-xs-6">
