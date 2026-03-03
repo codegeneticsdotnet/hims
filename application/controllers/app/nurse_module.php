@@ -12,6 +12,8 @@ class Nurse_module extends General{
 		$this->load->model("app/ipd_model");
 		$this->load->model("app/opd_model");
 		$this->load->model("app/patient_model");
+        $this->load->model("app/lab_services_model");
+        $this->load->model("app/pharmacy_model");
 		if(General::is_logged_in() == FALSE){
             redirect(base_url().'login');    
         }
@@ -804,6 +806,7 @@ class Nurse_module extends General{
             $this->data['message'] = $this->session->flashdata('message');
             $this->data['particular_cat'] = $this->billing_model->particular_cat();
             $this->data['patient_lab'] = $this->opd_model->patient_lab($iop_no);
+            $this->data['lab_requests'] = $this->lab_services_model->getPatientLabResults($this->data['patientInfo']->patient_no);
             $this->data['doctorList2'] = $this->general_model->doctorList();
             
             $this->load->view("app/nurse_module/laboratory",$this->data);    
@@ -813,6 +816,84 @@ class Nurse_module extends General{
         }
     }
     
+    public function save_lab_request(){
+        // Validation
+        $this->form_validation->set_rules('patient_no', 'Patient', 'required');
+        $this->form_validation->set_rules('service_category', 'Category', 'required');
+        $this->form_validation->set_rules('particular_id[]', 'Service', 'required');
+
+        if($this->form_validation->run() == FALSE){
+             $this->session->set_flashdata('message', "<div class='alert alert-danger alert-dismissable'><i class='fa fa-ban'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Validation Error!</div>");
+        } else {
+            // Generate ID 
+            $type = $this->input->post('service_category');
+            $next_id = $this->lab_services_model->generateRequestNo($type);
+            
+            // Override the posted request_no with the fresh one
+            $_POST['request_no'] = $next_id;
+
+            if($this->lab_services_model->saveRequest()){
+                $this->session->set_flashdata('message', "<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Request successfully saved!</div>");
+            } else {
+                $this->session->set_flashdata('message', "<div class='alert alert-danger alert-dismissable'><i class='fa fa-ban'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Error saving request.</div>");
+            }
+        }
+        $this->session->set_userdata("abc","1");
+        redirect(base_url().'app/nurse_module/laboratory/'.$this->input->post('opd_no').'/'.$this->input->post('patient_no'));
+    }
+
+    public function save_medication_pos(){
+        // Validation
+        $this->form_validation->set_rules("total_amount", "Total Amount", "required");
+        
+        if($this->form_validation->run()){
+            $items = $this->input->post('item_id');
+            $qtys = $this->input->post('qty');
+            $prices = $this->input->post('price');
+            
+            // For IPD Billing
+            $iop_id = $this->input->post('opd_no'); // Used opd_no in nurse module forms usually as IOP ID
+            $ipd_meds = array();
+            
+            // Generate Doctor Order No
+            $this->load->model('app/pharmacy_model');
+            $order_no = $this->pharmacy_model->generateDoctorOrderNo();
+            
+            if($items){
+                foreach($items as $key => $id){
+                    // Only save as Order (Pending Pharmacy)
+                    $ipd_meds[] = array(
+                        'iop_id' => $iop_id,
+                        'medicine_id' => $id,
+                        'total_qty' => $qtys[$key],
+                        'dDate' => date('Y-m-d h:i:s'),
+                        'cPreparedBy' => $this->session->userdata('user_id'),
+                        'instruction' => 'Ordered via Nurse Module',
+                        'advice' => 'Pending Pharmacy',
+                        'days' => '0',
+                        'is_dispensed' => 0, // Pending
+                        'doctor_order_no' => $order_no,
+                        'InActive' => 0
+                    );
+                }
+            }
+            
+            // Save directly to iop_medication
+            if(!empty($ipd_meds)){
+                $this->db->insert_batch('iop_medication', $ipd_meds);
+                $this->session->set_flashdata('message', "<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Medication Ordered Successfully! Order No: <b>".$order_no."</b></div>");
+            } else {
+                 $this->session->set_flashdata('message', "<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>No items to order.</div>");
+            }
+
+        } else {
+             $this->session->set_flashdata('message', "<div class='alert alert-danger alert-dismissable'><i class='fa fa-ban'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Validation Error.</div>");
+        }
+        
+        $this->session->set_userdata("abc","1");
+        redirect(base_url().'app/nurse_module/medication/'.$this->input->post('opd_no').'/'.$this->input->post('patient_no'));
+    }
+
     public function save_laboratory(){
         $this->form_validation->set_rules("category","Category","trim|xss_clean|required");
         $this->form_validation->set_error_delimiters("<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>","</div>");

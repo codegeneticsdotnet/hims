@@ -219,6 +219,9 @@ class Pharmacy extends General{
     }
     
     public function get_ipd_medication($iop_id){
+        // Decode in case of URL encoding issues, though CI usually handles it
+        $iop_id = urldecode($iop_id);
+        
         $this->db->select("
             A.iop_med_id,
             B.drug_id,
@@ -226,11 +229,18 @@ class Pharmacy extends General{
             B.nPrice as price,
             B.nStock as stock,
             A.total_qty as qty,
-            (B.nPrice * A.total_qty) as total
+            (B.nPrice * A.total_qty) as total,
+            A.doctor_order_no
         ", false);
         $this->db->join("medicine_drug_name B", "B.drug_id = A.medicine_id", "left");
         $this->db->where("A.iop_id", $iop_id);
+        
+        // Allow 0 or NULL for pending (defensive)
+        $this->db->group_start();
         $this->db->where("A.is_dispensed", 0);
+        $this->db->or_where("A.is_dispensed IS NULL");
+        $this->db->group_end();
+        
         $this->db->where("A.InActive", 0);
         $query = $this->db->get("iop_medication A");
         echo json_encode($query->result());
@@ -278,18 +288,25 @@ class Pharmacy extends General{
                     );
                     
                     if($payment_type == 'Charge' && $iop_id){
-                        $ipd_meds[] = array(
-                            'iop_id' => $iop_id,
-                            'medicine_id' => $id,
-                            'total_qty' => $qtys[$key],
-                            'dDate' => date('Y-m-d h:i:s'),
-                            'cPreparedBy' => $this->session->userdata('user_id'),
-                            'instruction' => 'Dispensed via Pharmacy',
-                            'advice' => 'Dispensed via Pharmacy',
-                            'days' => '0',
-                            'is_dispensed' => 1,
-                            'InActive' => 0
-                        );
+                        // Check if this item has a ref_id (existing order)
+                        $ref_ids_input = $this->input->post('ref_id');
+                        $current_ref_id = isset($ref_ids_input[$key]) ? $ref_ids_input[$key] : '';
+                        
+                        // Only insert NEW record if it's NOT an existing order being dispensed
+                        if(empty($current_ref_id)){
+                            $ipd_meds[] = array(
+                                'iop_id' => $iop_id,
+                                'medicine_id' => $id,
+                                'total_qty' => $qtys[$key],
+                                'dDate' => date('Y-m-d h:i:s'),
+                                'cPreparedBy' => $this->session->userdata('user_id'),
+                                'instruction' => 'Dispensed via Pharmacy',
+                                'advice' => 'Dispensed via Pharmacy',
+                                'days' => '0',
+                                'is_dispensed' => 1,
+                                'InActive' => 0
+                            );
+                        }
                     }
                 }
             }

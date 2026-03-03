@@ -96,7 +96,24 @@ class Pharmacy_model extends CI_Model{
         return $query->result();
     }
     
-    public function getPOSInvoiceNo(){
+    public function generateDoctorOrderNo(){
+        $this->db->select("cValue");
+        $this->db->where("cCode", "doctor_order_no");
+        $query = $this->db->get("system_option");
+        
+        $val = 1;
+        if($query->num_rows() > 0){
+             $val = $query->row()->cValue + 1;
+             $this->db->where("cCode", "doctor_order_no");
+             $this->db->update("system_option", array("cValue" => $val));
+        } else {
+             $data = array('cCode' => 'doctor_order_no', 'cValue' => '1', 'InActive' => 0);
+             $this->db->insert('system_option', $data);
+        }
+        
+        return 'DO-' . str_pad($val, 8, '0', STR_PAD_LEFT);
+    }
+        public function getPOSInvoiceNo(){
         $this->db->select("cValue");
         $this->db->where("cCode", "pharmacy_invoice_no");
         $query = $this->db->get("system_option");

@@ -101,7 +101,6 @@ class Billing_new_model extends CI_Model{
         $this->db->from("lab_service_request_details A");
         $this->db->join("bill_particular B", "B.particular_id = A.particular_id", "left");
         $this->db->join("lab_service_request C", "C.request_id = A.request_id", "left");
-        $this->db->where("C.patient_no", $patient_no);
         $this->db->where("A.InActive", 0);
         $this->db->where("C.InActive", 0);
         
@@ -111,10 +110,18 @@ class Billing_new_model extends CI_Model{
         
         // Fix for IO_ID filtering
         if($io_id){
+             // Also join patient details to check via patient_no if needed
+             $this->db->join("patient_details_iop P", "P.IO_ID = C.iop_id", "left");
+             
              $this->db->group_start();
              $this->db->where("C.request_no", $io_id);
              $this->db->or_where("C.iop_id", $io_id);
+             // Include all requests for this patient to ensure nothing is missed
+             $this->db->or_where("C.patient_no", $patient_no);
+             $this->db->or_where("P.patient_no", $patient_no);
              $this->db->group_end();
+        } else {
+             $this->db->where("C.patient_no", $patient_no);
         }
         
         $query = $this->db->get();
@@ -149,7 +156,15 @@ class Billing_new_model extends CI_Model{
             ", false);
             $this->db->from("iop_medication A");
             $this->db->join("medicine_drug_name B", "B.drug_id = A.medicine_id", "left");
+            
+            // Allow fetching by IO_ID OR Patient linkage
+            $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            $this->db->group_start();
             $this->db->where("A.iop_id", $io_id);
+            $this->db->or_where("P.patient_no", $patient_no);
+            $this->db->group_end();
+            
+            $this->db->where("A.is_dispensed", 1); // Only bill dispensed meds
             $this->db->where("A.InActive", 0);
             // Assuming we have a status column or we assume all are billable
             // Let's assume all linked to this admission are billable

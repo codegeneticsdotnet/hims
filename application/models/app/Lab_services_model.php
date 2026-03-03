@@ -202,13 +202,26 @@ class Lab_services_model extends CI_Model{
         $this->db->trans_start();
 
         // Header
+        $status = 'Pending';
+        // Check if IPD
+        $iop_id = $this->input->post('opd_no') ? $this->input->post('opd_no') : $this->input->post('iop_id');
+        if($iop_id){
+             $this->db->select('patient_type');
+             $this->db->where('IO_ID', $iop_id);
+             $q = $this->db->get('patient_details_iop');
+             if($q->num_rows() > 0 && $q->row()->patient_type == 'IPD'){
+                 $status = 'Active';
+             }
+        }
+
         $data = array(
             'request_no' => $this->input->post('request_no'),
             'patient_no' => $this->input->post('patient_no'),
+            'iop_id'     => $iop_id,
             'request_date' => date('Y-m-d H:i:s'),
             'request_type' => $this->input->post('service_category'),
             'remarks' => $this->input->post('remarks'),
-            'status' => 'Pending',
+            'status' => $status,
             'created_by' => $this->session->userdata('user_id'), // Assuming user_id is in session
             'created_date' => date('Y-m-d H:i:s'),
             'InActive' => 0
@@ -232,8 +245,8 @@ class Lab_services_model extends CI_Model{
                         'particular_id' => $val,
                         'qty' => $qtys[$key],
                         'amount' => $amounts[$key],
-                        'discount' => $discounts[$key],
-                        'discount_remarks' => $discount_remarks[$key],
+                        'discount' => isset($discounts[$key]) ? $discounts[$key] : 0,
+                        'discount_remarks' => isset($discount_remarks[$key]) ? $discount_remarks[$key] : '',
                         'total_amount' => $totals[$key],
                         'InActive' => 0
                     );

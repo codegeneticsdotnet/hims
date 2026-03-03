@@ -81,8 +81,12 @@
                                                 <?php echo $item->item_name;?>
                                                 <input type="hidden" name="item_id[]" value="<?php echo $item->item_id;?>">
                                                 <input type="hidden" name="item_name[]" value="<?php echo $item->item_name;?>">
+                                                <input type="hidden" name="item_source[]" value="existing">
                                             </td>
-                                            <td><?php echo $item->category;?></td>
+                                            <td>
+                                                <?php echo $item->category;?>
+                                                <input type="hidden" name="category[]" value="<?php echo $item->category;?>">
+                                            </td>
                                             <td>
                                                 <?php echo number_format($item->price, 2);?>
                                                 <input type="hidden" name="price[]" id="price_<?php echo $i;?>" value="<?php echo $item->price;?>">
@@ -290,11 +294,12 @@
         var cell0 = row.insertCell(0);
         cell0.innerHTML = itemName + 
             '<input type="hidden" name="item_id[]" value="' + itemId + '">' +
-            '<input type="hidden" name="item_name[]" value="' + itemName + '">';
+            '<input type="hidden" name="item_name[]" value="' + itemName + '">' +
+            '<input type="hidden" name="item_source[]" value="new">';
             
         // Cell 1: Category
         var cell1 = row.insertCell(1);
-        cell1.innerHTML = category;
+        cell1.innerHTML = category + '<input type="hidden" name="category[]" value="' + category + '">';
         
         // Cell 2: Price
         var cell2 = row.insertCell(2);

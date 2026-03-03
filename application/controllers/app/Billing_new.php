@@ -137,6 +137,23 @@ class Billing_new extends General {
         }
         
         $this->billing_new_model->saveBill($header, $details);
+        
+        // Update Pharmacy Items status to Billed (is_dispensed = 2)
+        // This ensures they don't appear in the pending bill list again
+        $categories = $this->input->post('category');
+        $sources = $this->input->post('item_source');
+        if($items){
+            foreach($items as $key => $id){
+                // Check if category is Pharmacy AND source is existing
+                $cat = isset($categories[$key]) ? $categories[$key] : '';
+                $src = isset($sources[$key]) ? $sources[$key] : '';
+                if($cat == 'Pharmacy' && $src == 'existing'){
+                    $this->db->where('iop_med_id', $id);
+                    $this->db->update('iop_medication', array('is_dispensed' => 2)); 
+                }
+            }
+        }
+        
         $this->billing_new_model->updateInvoiceNo($invoice_no);
         
         // Redirect to receipt print view
