@@ -17,10 +17,45 @@ class Nurse_module extends General{
         }
 		General::variable();	
 	}
+    
+    public function dashboard(){
+		$this->session->set_userdata(array(
+				 'tab'			=>		'nurse_module',
+				 'module'		=>		'dashboard',
+				 'subtab'		=>		'',
+				 'submodule'	=>		''));
+        
+        $this->db->select("
+            A.IO_ID,
+            A.patient_no,
+            concat(B.firstname,' ',B.lastname) as patient_name,
+            A.date_visit,
+            A.nStatus,
+            G.bed_name,
+            H.room_name,
+            concat(D.cValue,' ',C.firstname,' ',C.middlename,' ',C.lastname) as doctor
+        ", false);
+        $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+        $this->db->join("room_beds G","G.room_bed_id = A.room_id","left outer");
+        $this->db->join("room_master H","H.room_master_id = G.room_master_id","left outer");
+        $this->db->join("users C","C.user_id = A.doctor_id","left outer");
+        $this->db->join("system_parameters D","D.param_id = C.title","left outer");
+        
+        $this->db->where("A.patient_type", "IPD");
+        $this->db->where("A.nStatus", "Pending");
+        $this->db->where("A.InActive", 0);
+        $this->db->order_by("H.room_name", "ASC");
+        $this->db->order_by("G.bed_name", "ASC");
+        
+        $query = $this->db->get("patient_details_iop A");
+        $this->data['patients'] = $query->result();
+        
+        $this->load->view('app/nurse_module/dashboard', $this->data);
+    }
 	
 	public function medication(){
 		
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
 			//set if post is null
@@ -105,7 +140,7 @@ class Nurse_module extends General{
 	
 	public function intake_output(){
 		
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
 			//set if post is null
@@ -222,7 +257,7 @@ class Nurse_module extends General{
 	
 	
 	public function nurse_progress_note(){
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
@@ -305,7 +340,7 @@ class Nurse_module extends General{
 	
 	
 	public function vitalSign(){
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
@@ -389,7 +424,7 @@ class Nurse_module extends General{
 	
 	
 	public function room_transfer(){
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
@@ -480,7 +515,7 @@ class Nurse_module extends General{
 	
 	
 	public function patientHistory(){
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
@@ -556,7 +591,7 @@ class Nurse_module extends General{
 	
 	
 	public function discharge_summary(){
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
@@ -628,7 +663,7 @@ class Nurse_module extends General{
 	
 	public function bed_side_procedure(){
 		
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
@@ -708,7 +743,7 @@ class Nurse_module extends General{
 	
 	public function diagnosis(){
 		
-		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1"){
+		if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
 			//delete session for abc
 			$this->session->set_userdata("abc","");	
 			//set if post is null
@@ -725,8 +760,8 @@ class Nurse_module extends General{
 		
 			$this->data['message'] = $this->session->flashdata('message');
 			
-			$this->data['medicineCategory'] = $this->opd_model->medicineCategory();
-			$this->data['patientMedication'] = $this->opd_model->patientMedication($iop_no);
+			$this->data['diagnosisList'] = $this->opd_model->diagnosisList();
+			$this->data['patientDiagnosis'] = $this->opd_model->patientDiagnosis($iop_no);
 		
 			$this->load->view("app/nurse_module/diagnosis",$this->data);	
 		}else{
@@ -750,6 +785,76 @@ class Nurse_module extends General{
 			$this->load->view("app/nurse_module/pick",$this->data);	
 		}
 	}
+    
+    public function laboratory(){
+        if(isset($_POST['btnSubmit']) || $this->session->userdata("abc") == "1" || $this->uri->segment(4)){
+            $this->session->set_userdata("abc","");
+            
+            if($this->input->post("iop_no") == "" && $this->input->post("patient_no") == ""){
+                $iop_no = $this->uri->segment("4");
+                $patient_no = $this->uri->segment("5");
+            }else{
+                $iop_no = $this->input->post("iop_no");
+                $patient_no = $this->input->post("patient_no");
+            }
+            
+            $this->data['getOPDPatient'] = $this->ipd_model->getIPDPatient($iop_no);
+            $this->data['patientInfo'] = $this->patient_model->getPatientInfo($patient_no);
+            
+            $this->data['message'] = $this->session->flashdata('message');
+            $this->data['particular_cat'] = $this->billing_model->particular_cat();
+            $this->data['patient_lab'] = $this->opd_model->patient_lab($iop_no);
+            $this->data['doctorList2'] = $this->general_model->doctorList();
+            
+            $this->load->view("app/nurse_module/laboratory",$this->data);    
+        }else{
+             $this->data['patientList'] = $this->ipd_model->getAll();
+             $this->load->view("app/nurse_module/pick",$this->data);    
+        }
+    }
+    
+    public function save_laboratory(){
+        $this->form_validation->set_rules("category","Category","trim|xss_clean|required");
+        $this->form_validation->set_error_delimiters("<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>","</div>");
+        
+        if($this->form_validation->run()){
+            $this->data = array(
+                'iop_id'                =>      $this->input->post('opd_no'),
+                'dDate'                 =>      $this->input->post('dDate'),
+                'dDateTime'             =>      $this->input->post('dDate')." ".$this->input->post('cTime'),
+                'category_id'           =>      $this->input->post('category'),
+                'laboratory_id'         =>      $this->input->post('particular'),
+                'findings'              =>      $this->input->post('findings'),
+                'result'                =>      $this->input->post('results'),
+                'doctor'                =>      $this->input->post('doctor'),
+                'InActive'              =>      0
+            );
+            $this->db->insert('iop_laboratory',$this->data);
+            
+            $this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Laboratory successfully Added!</div>");
+            
+            $opd_no = $this->input->post('opd_no');
+            $patient_no = $this->input->post('patient_no');
+            $this->session->set_userdata("abc","1");
+            redirect(base_url().'app/nurse_module/laboratory/'.$opd_no.'/'.$patient_no);
+        }else{
+            $this->session->set_userdata("abc","1");
+            redirect(base_url().'app/nurse_module/laboratory/'.$this->input->post('opd_no').'/'.$this->input->post('patient_no'));
+        }
+    }
+    
+    public function delete_lab(){
+        $id = $this->uri->segment("4");
+        $iop_no = $this->uri->segment("5");
+        $patient_no = $this->uri->segment("6");
+        
+        $this->db->query("update iop_laboratory set InActive = 1 where io_lab_id = ".$id);
+        
+        $this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Laboratory successfully Deleted!</div>");
+        
+        $this->session->set_userdata("abc","1");
+        redirect(base_url().'app/nurse_module/laboratory/'.$iop_no.'/'.$patient_no);
+    }
 	
 	
 	

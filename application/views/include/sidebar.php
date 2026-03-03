@@ -293,11 +293,11 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         <!--END OF Billing Module-->
 
                         <!--START OF Pharmacy Module-->
-						<li>
+                        <li>
                             <a href="<?php echo base_url()?>app/pharmacy">
                                 <i class="fa fa-medkit"></i> <span>Pharmacy</span>
                             </a>
-                        </li>     
+                        </li>
                         <!--END OF Pharmacy Module-->
 						
                         <!--START OF Ward-->
@@ -318,6 +318,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                                 <i class="fa fa-angle-left pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
+                                <li><a href="<?php echo base_url()?>app/nurse_module/dashboard"><i class="fa fa-angle-double-right"></i>Dashboard</a></li>
                                 <!--<li <?php echo $nurse_diagnosis;?>><a href="<?php echo base_url()?>app/nurse_module/diagnosis">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Diagnosis</a></li>-->
                                 <?php if($hasAccesstoNurseMedication){?><li <?php echo $nurse_medication;?>><a href="<?php echo base_url()?>app/nurse_module/medication">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Patient Medication</a></li><?php }?>
                                 <?php if($hasAccesstoNurseInOutTake){?><li <?php echo $nurse_intake_output;?>><a href="<?php echo base_url()?>app/nurse_module/intake_output">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Intake/Output Record</a></li><?php }?>
@@ -341,6 +342,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                                 <i class="fa fa-angle-left pull-right"></i>
                             </a>
                             <ul class="treeview-menu">
+                                <li><a href="<?php echo base_url()?>app/doctor/dashboard"><i class="fa fa-angle-double-right"></i>Dashboard</a></li>
                                 <?php if($hasAccesstoDoctorOPD){?><li <?php echo $opd_doctor;?>><a href="<?php echo base_url()?>app/doctor/opd"><i class="fa fa-angle-double-right"></i>Out-Patient</a></li><?php }?> 
                                 <?php if($hasAccesstoDoctorIPD){?><li <?php echo $ipd_doctor;?>><a href="<?php echo base_url()?>app/doctor/ipd"><i class="fa fa-angle-double-right"></i>In-Patient</a></li><?php }?>
                             </ul>

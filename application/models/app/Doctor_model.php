@@ -24,7 +24,7 @@ class Doctor_model extends CI_Model{
 		$this->db->select("
 			A.IO_ID,
 			B.patient_no,
-			concat(C.cValue,' ',B.firstname,' ',B.middlename,' ',B.lastname) as 'name',
+			concat(ifnull(C.cValue,''),' ',ifnull(B.firstname,''),' ',ifnull(B.middlename,''),' ',ifnull(B.lastname,'')) as 'name',
 			B.age,
 			A.date_visit,
 			A.time_visit,
@@ -34,12 +34,11 @@ class Doctor_model extends CI_Model{
 			A.nStatus,
 			",false);
 		$where = "(
-				B.lastname like '%".$this->input->post('search')."%' or 
-				B.firstname like '%".$this->input->post('search')."%' or 
-				B.patient_no like '%".$this->input->post('search')."%' or 
+				ifnull(B.lastname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.firstname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.patient_no,'') like '%".$this->input->post('search')."%' or 
 				A.IO_ID like '%".$this->input->post('search')."%'
 				) 
-				and E.user_id = '".$this->session->userdata('user_id')."' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."'  
 				and A.patient_type = 'OPD' 
 				and A.InActive = 0";
@@ -70,7 +69,7 @@ class Doctor_model extends CI_Model{
 		$this->db->select("
 			A.IO_ID,
 			B.patient_no,
-			concat(C.cValue,' ',B.firstname,' ',B.middlename,' ',B.lastname) as 'name',
+			concat(ifnull(C.cValue,''),' ',ifnull(B.firstname,''),' ',ifnull(B.middlename,''),' ',ifnull(B.lastname,'')) as 'name',
 			B.age,
 			A.date_visit,
 			A.time_visit,
@@ -79,13 +78,11 @@ class Doctor_model extends CI_Model{
 			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as 'doctor',
 			",false);
 		$where = "(
-				B.lastname like '%".$this->input->post('search')."%' or 
-				B.firstname like '%".$this->input->post('search')."%' or 
-				B.patient_no like '%".$this->input->post('search')."%' or 
+				ifnull(B.lastname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.firstname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.patient_no,'') like '%".$this->input->post('search')."%' or 
 				A.IO_ID like '%".$this->input->post('search')."%'
 				) 
-				and A.department_id = '".$this->session->userdata('department')."' 
-				and E.user_id = '".$this->session->userdata('user_id')."' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."' 
 				and A.patient_type = 'OPD' 
 				and A.InActive = 0";
@@ -131,7 +128,7 @@ class Doctor_model extends CI_Model{
 		$this->db->select("
 			A.IO_ID,
 			B.patient_no,
-			concat(C.cValue,' ',B.firstname,' ',B.middlename,' ',B.lastname) as 'name',
+			concat(ifnull(C.cValue,''),' ',ifnull(B.firstname,''),' ',ifnull(B.middlename,''),' ',ifnull(B.lastname,'')) as 'name',
 			B.age,
 			A.date_visit,
 			A.time_visit,
@@ -143,12 +140,11 @@ class Doctor_model extends CI_Model{
 			H.room_name
 			",false);
 		$where = "(
-				B.lastname like '%".$this->input->post('search')."%' or 
-				B.firstname like '%".$this->input->post('search')."%' or 
-				B.patient_no like '%".$this->input->post('search')."%' or 
+				ifnull(B.lastname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.firstname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.patient_no,'') like '%".$this->input->post('search')."%' or 
 				A.IO_ID like '%".$this->input->post('search')."%'
 				) 
-				and E.user_id = '".$this->session->userdata('user_id')."' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."'  
 				and A.patient_type = 'IPD' 
 				and A.InActive = 0";
@@ -181,7 +177,7 @@ class Doctor_model extends CI_Model{
 		$this->db->select("
 			A.IO_ID,
 			B.patient_no,
-			concat(C.cValue,' ',B.firstname,' ',B.middlename,' ',B.lastname) as 'name',
+			concat(ifnull(C.cValue,''),' ',ifnull(B.firstname,''),' ',ifnull(B.middlename,''),' ',ifnull(B.lastname,'')) as 'name',
 			B.age,
 			A.date_visit,
 			A.time_visit,
@@ -190,13 +186,11 @@ class Doctor_model extends CI_Model{
 			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as 'doctor',
 			",false);
 		$where = "(
-				B.lastname like '%".$this->input->post('search')."%' or 
-				B.firstname like '%".$this->input->post('search')."%' or 
-				B.patient_no like '%".$this->input->post('search')."%' or 
+				ifnull(B.lastname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.firstname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.patient_no,'') like '%".$this->input->post('search')."%' or 
 				A.IO_ID like '%".$this->input->post('search')."%'
 				) 
-				and A.department_id = '".$this->session->userdata('department')."' 
-				and E.user_id = '".$this->session->userdata('user_id')."' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."' 
 				and A.patient_type = 'IPD' 
 				and A.InActive = 0";
@@ -209,6 +203,45 @@ class Doctor_model extends CI_Model{
 		$this->db->join("system_parameters F","F.param_id = E.title","left outer");
 		$query = $this->db->get("patient_details_iop A");
 		return $query->num_rows();
+	}
+    
+    public function getMyPatients($limit = 100, $offset = 0){
+		$cFrom = $this->input->post('cFrom');
+		$cTo = $this->input->post('cTo');
+		
+		$this->db->select("
+			A.IO_ID,
+			B.patient_no,
+			concat(ifnull(C.cValue,''),' ',ifnull(B.firstname,''),' ',ifnull(B.middlename,''),' ',ifnull(B.lastname,'')) as 'name',
+			B.age,
+			A.date_visit,
+			A.time_visit,
+			D.dept_name,
+			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as 'doctor',
+			A.nStatus,
+			",false);
+		$where = "(
+				ifnull(B.lastname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.firstname,'') like '%".$this->input->post('search')."%' or 
+				ifnull(B.patient_no,'') like '%".$this->input->post('search')."%' or 
+				A.IO_ID like '%".$this->input->post('search')."%'
+				) 
+				and A.patient_type = 'OPD' 
+				and A.InActive = 0";
+        
+        if($cFrom && $cTo){
+            $where .= " and A.date_visit between '".$cFrom."' and '".$cTo."' ";
+        }
+        
+		$this->db->where($where);
+		$this->db->order_by('A.date_visit','DESC');
+		$this->db->join("patient_personal_info B","B.patient_no = A.patient_no","left outer");
+		$this->db->join("system_parameters C","C.param_id = B.title","left outer");
+		$this->db->join("department D","D.department_id = A.department_id","left outer");
+		$this->db->join("users E","E.user_id = A.doctor_id","left outer");
+		$this->db->join("system_parameters F","F.param_id = E.title","left outer");
+		$query = $this->db->get("patient_details_iop A", $limit, $offset);
+		return $query->result();
 	}
 	
 }

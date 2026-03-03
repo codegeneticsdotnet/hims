@@ -218,6 +218,24 @@ class Pharmacy extends General{
         echo json_encode($query->result());
     }
     
+    public function get_ipd_medication($iop_id){
+        $this->db->select("
+            A.iop_med_id,
+            B.drug_id,
+            B.drug_name,
+            B.nPrice as price,
+            B.nStock as stock,
+            A.total_qty as qty,
+            (B.nPrice * A.total_qty) as total
+        ", false);
+        $this->db->join("medicine_drug_name B", "B.drug_id = A.medicine_id", "left");
+        $this->db->where("A.iop_id", $iop_id);
+        $this->db->where("A.is_dispensed", 0);
+        $this->db->where("A.InActive", 0);
+        $query = $this->db->get("iop_medication A");
+        echo json_encode($query->result());
+    }
+    
     public function save_pos(){
         // Validation
         $this->form_validation->set_rules("total_amount", "Total Amount", "required");
@@ -266,10 +284,21 @@ class Pharmacy extends General{
                             'total_qty' => $qtys[$key],
                             'dDate' => date('Y-m-d h:i:s'),
                             'cPreparedBy' => $this->session->userdata('user_id'),
+                            'instruction' => 'Dispensed via Pharmacy',
+                            'advice' => 'Dispensed via Pharmacy',
+                            'days' => '0',
+                            'is_dispensed' => 1,
                             'InActive' => 0
                         );
                     }
                 }
+            }
+            
+            // Update original orders as dispensed
+            $ref_ids = $this->input->post('ref_id');
+            if($ref_ids && is_array($ref_ids)){
+                $this->db->where_in('iop_med_id', $ref_ids);
+                $this->db->update('iop_medication', array('is_dispensed' => 1));
             }
             
             $sale_id = $this->pharmacy_model->savePOS($header, $details, $ipd_meds);
@@ -477,4 +506,234 @@ class Pharmacy extends General{
 		header('Content-Type: application/json');
 		echo json_encode($response);
 	}
+    
+    public function ledger(){
+        $this->session->set_userdata(array(
+            'tab'           =>      'pharmacy',
+            'module'        =>      'ledger',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
+        $this->data['pharmacy_mod'] = 'active';
+        $this->load->view('app/pharmacy/ledger', $this->data);
+    }
+
+    public function get_item_ledger($item_id){
+        $ledger = $this->pharmacy_model->getItemLedger($item_id);
+        
+        // Add current stock to the response
+        $this->db->select('nStock');
+        $this->db->where('drug_id', $item_id);
+        $query = $this->db->get('medicine_drug_name');
+        $stock = 0;
+        if($query->num_rows() > 0){
+            $stock = $query->row()->nStock;
+        }
+        
+        echo json_encode(array('ledger' => $ledger, 'current_stock' => $stock));
+    }
+    
+    public function print_ledger($item_id){
+        $this->data['ledger'] = $this->pharmacy_model->getItemLedger($item_id);
+        $this->db->select('drug_name, nStock');
+        $this->db->where('drug_id', $item_id);
+        $query = $this->db->get('medicine_drug_name');
+        $this->data['item_info'] = $query->row();
+        
+        $this->load->view('app/pharmacy/print_ledger', $this->data);
+    }
+    
+    public function export_ledger($item_id){
+        $ledger = $this->pharmacy_model->getItemLedger($item_id);
+        
+        $this->db->select('drug_name');
+        $this->db->where('drug_id', $item_id);
+        $item_name = $this->db->get('medicine_drug_name')->row()->drug_name;
+        
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=Ledger_".$item_name."_".date('Ymd').".xls");
+        
+        echo "Item Name: \t" . $item_name . "\n\n";
+        echo "REF DATE \t REF NO \t TYPE \t EXPIRY \t AMOUNT \t IN \t OUT \t TOTAL \t REMARKS \n";
+        
+        $running_total = 0;
+        foreach($ledger as $item){
+             $qty_in = $item->qty_in;
+             $qty_out = $item->qty_out;
+             $running_total += $qty_in - $qty_out;
+             
+             $unit_cost = 0;
+             if($qty_in > 0 && $item->amount > 0) $unit_cost = $item->amount / $qty_in;
+             elseif($qty_out > 0 && $item->amount > 0) $unit_cost = $item->amount / $qty_out;
+             
+             echo $item->ref_date . "\t" . $item->ref_no . "\t" . $item->type . "\t" . ($item->expiry_date ? $item->expiry_date : '-') . "\t" . number_format($unit_cost, 2) . "\t" . ($qty_in > 0 ? $qty_in : '-') . "\t" . ($qty_out > 0 ? $qty_out : '-') . "\t" . $running_total . "\t" . $item->remarks . "\n";
+        }
+    }
+
+    public function returns(){
+        $this->session->set_userdata(array(
+            'tab'           =>      'pharmacy',
+            'module'        =>      'returns',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
+        $this->data['return_no'] = $this->pharmacy_model->getReturnNo();
+        $this->data['pharmacy_mod'] = 'active';
+        $this->load->view('app/pharmacy/return_items', $this->data);
+    }
+    
+    public function get_sale_items($invoice_no){
+        $sale = $this->pharmacy_model->getSaleByInvoice($invoice_no);
+        if($sale){
+            if($sale->InActive == 1){
+                 echo json_encode(array('status' => 'error', 'message' => 'Invoice is already VOIDED!'));
+                 return;
+            }
+            $details = $this->pharmacy_model->getSaleDetails($sale->sale_id);
+            echo json_encode(array('status' => 'success', 'sale' => $sale, 'items' => $details));
+        } else {
+            echo json_encode(array('status' => 'error', 'message' => 'Invoice not found.'));
+        }
+    }
+    
+    public function save_return(){
+        $header = array(
+            'return_no' => $this->input->post('return_no'),
+            'date_return' => date('Y-m-d H:i:s'),
+            'patient_no' => $this->input->post('patient_no'),
+            'remarks' => $this->input->post('remarks'),
+            'InActive' => 0
+        );
+        
+        $details = array();
+        $drug_ids = $this->input->post('drug_id');
+        $qtys = $this->input->post('qty_return');
+        
+        if($drug_ids){
+            foreach($drug_ids as $key => $drug_id){
+                if($qtys[$key] > 0){
+                    $details[] = array(
+                        'drug_id' => $drug_id,
+                        'qty' => $qtys[$key],
+                        'InActive' => 0
+                    );
+                }
+            }
+            
+            if(count($details) > 0){
+                if($this->pharmacy_model->saveReturn($header, $details)){
+                    $this->session->set_flashdata('message','<div class="alert alert-success alert-dismissable"><i class="fa fa-check"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Return Processed Successfully!</div>');
+                    $this->session->set_flashdata('print_return_id', $this->db->insert_id());
+                    redirect('app/pharmacy/returns');
+                } else {
+                    $this->session->set_flashdata('message','<div class="alert alert-danger alert-dismissable"><i class="fa fa-ban"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Database Error!</div>');
+                    redirect('app/pharmacy/returns');
+                }
+            } else {
+                $this->session->set_flashdata('message','<div class="alert alert-warning alert-dismissable"><i class="fa fa-warning"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> No items selected for return.</div>');
+                redirect('app/pharmacy/returns');
+            }
+        } else {
+            redirect('app/pharmacy/returns');
+        }
+    }
+    
+    public function adjustments(){
+        $this->session->set_userdata(array(
+            'tab'           =>      'pharmacy',
+            'module'        =>      'adjustments',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
+        $this->data['ref_no'] = $this->pharmacy_model->getAdjustmentRefNo();
+        $this->data['pharmacy_mod'] = 'active';
+        $this->load->view('app/pharmacy/adjustments', $this->data);
+    }
+    
+    public function save_adjustment(){
+        $header = array(
+            'reference_no' => $this->input->post('reference_no'),
+            'date_adjust' => date('Y-m-d H:i:s'),
+            'remarks' => 'Stock Adjustment',
+            'cPreparedBy' => $this->session->userdata('user_id'),
+            'InActive' => 0
+        );
+        
+        $details = array();
+        $drug_ids = $this->input->post('drug_id');
+        $qtys = $this->input->post('adjust_qty');
+        $types = $this->input->post('type');
+        $reasons = $this->input->post('reason');
+        $old_stocks = $this->input->post('stock_on_hand');
+        
+        if($drug_ids){
+            foreach($drug_ids as $key => $drug_id){
+                if($qtys[$key] > 0){
+                    $qty = $qtys[$key];
+                    $type = $types[$key];
+                    $old = $old_stocks[$key];
+                    $new = ($type == 'IN') ? $old + $qty : $old - $qty;
+                    
+                    $details[] = array(
+                        'drug_id' => $drug_id,
+                        'old_stock' => $old,
+                        'adjust_qty' => $qty,
+                        'new_stock' => $new,
+                        'type' => $type,
+                        'reason' => $reasons[$key],
+                        'InActive' => 0
+                    );
+                }
+            }
+            
+            if(count($details) > 0){
+                if($this->pharmacy_model->saveAdjustment($header, $details)){
+                    $this->session->set_flashdata('message','<div class="alert alert-success alert-dismissable"><i class="fa fa-check"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Adjustment Saved Successfully!</div>');
+                    redirect('app/pharmacy/adjustments');
+                } else {
+                    $this->session->set_flashdata('message','<div class="alert alert-danger alert-dismissable"><i class="fa fa-ban"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Database Error!</div>');
+                    redirect('app/pharmacy/adjustments');
+                }
+            } else {
+                $this->session->set_flashdata('message','<div class="alert alert-warning alert-dismissable"><i class="fa fa-warning"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> No items to adjust.</div>');
+                redirect('app/pharmacy/adjustments');
+            }
+        } else {
+            redirect('app/pharmacy/adjustments');
+        }
+    }
+    
+    public function print_return($return_id){
+        $this->db->select("A.*, B.patient_no, concat(B.firstname,' ',B.lastname) as patient_name");
+        $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+        $this->db->where("A.return_id", $return_id);
+        $this->data['header'] = $this->db->get("pharmacy_returns A")->row();
+        
+        $this->db->select("A.*, B.drug_name");
+        $this->db->join("medicine_drug_name B", "B.drug_id = A.drug_id", "left");
+        $this->db->where("A.return_id", $return_id);
+        $this->data['details'] = $this->db->get("pharmacy_return_details A")->result();
+        
+        $this->load->view('app/pharmacy/print_return', $this->data);
+    }
+    
+    public function void_transaction(){
+        $this->session->set_userdata(array(
+            'tab'           =>      'pharmacy',
+            'module'        =>      'void',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
+        $this->data['pharmacy_mod'] = 'active';
+        $this->load->view('app/pharmacy/void_transaction', $this->data);
+    }
+    
+    public function save_void(){
+        $invoice_no = $this->input->post('invoice_no');
+        $reason = $this->input->post('reason');
+        $user_id = $this->session->userdata('user_id');
+        
+        if($this->pharmacy_model->voidTransaction($invoice_no, $reason, $user_id)){
+            $this->session->set_flashdata('message','<div class="alert alert-success alert-dismissable"><i class="fa fa-check"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Transaction Voided Successfully!</div>');
+        } else {
+            $this->session->set_flashdata('message','<div class="alert alert-danger alert-dismissable"><i class="fa fa-ban"></i><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> Failed to Void Transaction! Invoice not found or error occurred.</div>');
+        }
+        redirect('app/pharmacy/void_transaction');
+    }
 }

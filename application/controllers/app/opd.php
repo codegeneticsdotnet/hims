@@ -355,7 +355,12 @@ class Opd extends General{
             $opd_no = $this->input->post('opd_no');
 		    $patient_no = $this->input->post('patient_no');
             $this->session->set_flashdata('message',"<div class='alert alert-danger'>Diagnosis cannot be empty!</div>");
-			redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no);
+            
+            if($this->input->post('redirect_to') == 'edit_history'){
+                redirect(base_url().'app/opd/edit_history/'.$opd_no.'/'.$patient_no);
+            } else {
+			    redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no);
+            }
             return;
         }
           
@@ -406,11 +411,19 @@ class Opd extends General{
 			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>".$msg."</div>");
 			
 			//redirect
-			redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no,$this->data);
+            if($this->input->post('redirect_to') == 'edit_history'){
+                redirect(base_url().'app/opd/edit_history/'.$opd_no.'/'.$patient_no,$this->data);
+            } else {
+			    redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no,$this->data);
+            }
 			
 			
 		}else{
-			redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no,$this->data);
+            if($this->input->post('redirect_to') == 'edit_history'){
+                redirect(base_url().'app/opd/edit_history/'.$opd_no.'/'.$patient_no,$this->data);
+            } else {
+			    redirect(base_url().'app/opd/diagnosis/'.$opd_no.'/'.$patient_no,$this->data);
+            }
 		}		
 	}
 	
@@ -419,34 +432,49 @@ class Opd extends General{
 		$id = $this->uri->segment("4");
 		$iop_no = $this->uri->segment("5");
 		$patient_no = $this->uri->segment("6");
+        $redirect_to = $this->uri->segment("7");
 		
 		$this->db->query("update iop_complaints set InActive = 1 where iop_comp_id = ".$id);
 		
-		redirect(base_url().'app/opd/complain/'.$iop_no.'/'.$patient_no,$this->data);
+        if($redirect_to == 'edit_history'){
+            redirect(base_url().'app/opd/edit_history/'.$iop_no.'/'.$patient_no,$this->data);
+        } else {
+		    redirect(base_url().'app/opd/complain/'.$iop_no.'/'.$patient_no,$this->data);
+        }
 	}
 	
 	public function delete_medication(){
 		$id = $this->uri->segment("4");
 		$iop_no = $this->uri->segment("5");
 		$patient_no = $this->uri->segment("6");
+        $redirect_to = $this->uri->segment("7");
 		
 		$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Medication successfully Added!</div>");
 		
 		$this->db->query("update iop_medication set InActive = 1 where iop_med_id = ".$id);
 		
-		redirect(base_url().'app/opd/medication/'.$iop_no.'/'.$patient_no,$this->data);
+        if($redirect_to == 'edit_history'){
+            redirect(base_url().'app/opd/edit_history/'.$iop_no.'/'.$patient_no,$this->data);
+        } else {
+		    redirect(base_url().'app/opd/medication/'.$iop_no.'/'.$patient_no,$this->data);
+        }
 	}
 	
 	public function delete_diagnos(){
 		$id = $this->uri->segment("4");
 		$iop_no = $this->uri->segment("5");
 		$patient_no = $this->uri->segment("6");
+        $redirect_to = $this->uri->segment("7");
 		
 		$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Diagnosis successfully Added!</div>");
 		
 		$this->db->query("update iop_diagnosis set InActive = 1 where iop_diag_id = ".$id);
 		
-		redirect(base_url().'app/opd/diagnosis/'.$iop_no.'/'.$patient_no,$this->data);
+        if($redirect_to == 'edit_history'){
+            redirect(base_url().'app/opd/edit_history/'.$iop_no.'/'.$patient_no,$this->data);
+        } else {
+		    redirect(base_url().'app/opd/diagnosis/'.$iop_no.'/'.$patient_no,$this->data);
+        }
 	}
 	
 	
@@ -566,11 +594,19 @@ class Opd extends General{
 			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Complain successfully Added!</div>");
 			
 			//redirect
-			redirect(base_url().'app/opd/complain/'.$opd_no.'/'.$patient_no,$this->data);
+            if($this->input->post('redirect_to') == 'edit_history'){
+                redirect(base_url().'app/opd/edit_history/'.$opd_no.'/'.$patient_no,$this->data);
+            } else {
+			    redirect(base_url().'app/opd/complain/'.$opd_no.'/'.$patient_no,$this->data);
+            }
 			
 			
 		}else{
-			redirect(base_url().'app/opd/complain/'.$opd_no.'/'.$patient_no,$this->data);
+            if($this->input->post('redirect_to') == 'edit_history'){
+                redirect(base_url().'app/opd/edit_history/'.$opd_no.'/'.$patient_no,$this->data);
+            } else {
+			    redirect(base_url().'app/opd/complain/'.$opd_no.'/'.$patient_no,$this->data);
+            }
 		}		
 	}
 	
@@ -632,22 +668,33 @@ class Opd extends General{
 	}
 	
 	public function save_medication(){
+		$this->form_validation->set_rules("drug_name","Drug Name","trim|xss_clean|required");
+		$this->form_validation->set_error_delimiters("<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>","</div>");
+	
+		$opd_no = $this->input->post('opd_no');
+		$patient_no = $this->input->post('patient_no');
 		
-		$this->data = array(
-			'iop_id'		=>		$this->input->post('opd_no'),
-			'medicine_id'	=>		$this->input->post('drug_name'),
-			'instruction'	=>		$this->input->post('instruction'),
-			'advice'		=>		$this->input->post('advice'),
-			'days'			=>		$this->input->post('nDays'),
-			'total_qty'		=>		$this->input->post('qty'),
-			'InActive'		=>		0
-		);
-		$this->db->insert("iop_medication",$this->data);
-		
-		$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Medication successfully Added!</div>");
-		
-		redirect(base_url().'app/opd/medication/'.$this->input->post('opd_no').'/'.$this->input->post('patient_no'),$this->data);
-		
+		if($this->form_validation->run()){
+			
+			$this->opd_model->save_medication();
+			
+			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Medication successfully Added!</div>");
+			
+			//redirect
+            if($this->input->post('redirect_to') == 'edit_history'){
+                redirect(base_url().'app/opd/edit_history/'.$opd_no.'/'.$patient_no,$this->data);
+            } else {
+			    redirect(base_url().'app/opd/medication/'.$opd_no.'/'.$patient_no,$this->data);
+            }
+			
+			
+		}else{
+            if($this->input->post('redirect_to') == 'edit_history'){
+                redirect(base_url().'app/opd/edit_history/'.$opd_no.'/'.$patient_no,$this->data);
+            } else {
+			    redirect(base_url().'app/opd/medication/'.$opd_no.'/'.$patient_no,$this->data);
+            }
+		}		
 	}
 	
 	
@@ -837,8 +884,71 @@ class Opd extends General{
         $this->data['lab_module_results'] = $this->lab_services_model->getPatientLabResults($patient_no);
 		
 		
-		$this->load->view("app/opd/laboratory",$this->data);	
+		$this->load->view("app/opd/laboratory",$this->data);
 	}
+    
+    public function patient_history_print($patient_no){
+        $this->load->model('app/lab_services_model');
+        $this->load->model('app/patient_model');
+        
+        $this->data['patientInfo'] = $this->patient_model->getPatientInfo($patient_no);
+        
+        $cFrom = $this->input->post('cFrom');
+        $cTo = $this->input->post('cTo');
+        
+        // Get Allergies/Medical History from latest visit if not in patientInfo
+        // patientInfo comes from patient_personal_info. 
+        // Allergies are in patient_details_iop.
+        // We can get the latest visit for allergies (regardless of filter).
+        $all_visits = $this->opd_model->getAllVisits($patient_no);
+        
+        if(!empty($all_visits)){
+            $this->data['latest_visit'] = $all_visits[0];
+        } else {
+            $this->data['latest_visit'] = null;
+        }
+        
+        // Filtered Visits for History Table
+        $visits = $this->opd_model->getAllVisits($patient_no, $cFrom, $cTo);
+        
+        $history = array();
+        foreach($visits as $visit){
+            $data = array();
+            $data['visit_info'] = $visit;
+            $data['complaints'] = $this->opd_model->patientComplain($visit->IO_ID);
+            $data['diagnosis'] = $this->opd_model->patientDiagnosis($visit->IO_ID);
+            $data['medication'] = $this->opd_model->patientMedication($visit->IO_ID);
+            $data['vitals'] = $this->opd_model->getVital($visit->IO_ID);
+            $data['labs'] = $this->lab_services_model->getLabResultsByDate($patient_no, $visit->date_visit);
+            
+            $history[] = $data;
+        }
+        $this->data['history'] = $history;
+        
+        $this->load->view("app/opd/patient_history_print", $this->data);
+    }
+    
+    public function edit_history(){
+        $iop_no = $this->uri->segment("4");
+        $patient_no = $this->uri->segment("5");
+        
+        $this->data['getOPDPatient'] = $this->opd_model->getOPDPatient($iop_no);
+        $this->data['patientInfo'] = $this->patient_model->getPatientInfo($patient_no);
+        
+        // Lists
+        $this->data['ComplainList'] = $this->opd_model->ComplainList();
+        $this->data['patientComplain'] = $this->opd_model->patientComplain($iop_no);
+        
+        $this->data['diagnosisList'] = $this->opd_model->diagnosisList($iop_no);
+        $this->data['patientDiagnosis'] = $this->opd_model->patientDiagnosis($iop_no);
+        
+        $this->data['medicineCategory'] = $this->opd_model->medicineCategory();
+        $this->data['patientMedication'] = $this->opd_model->patientMedication($iop_no);
+        
+        $this->data['message'] = $this->session->flashdata('message');
+        
+        $this->load->view("app/opd/edit_history", $this->data);
+    }
 	
 	
 	

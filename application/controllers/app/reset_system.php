@@ -49,12 +49,12 @@ class Reset_system extends General{
         // 1. Patient Records
         $this->db->truncate('patient_personal_info');
         $this->db->truncate('patient_attachment');
-        $this->db->truncate('patient_details_iop');
+        $this->db->truncate('patient_details_iop'); // Visits/Admissions
         
         // 2. Clinical Records (OPD/IPD)
         $this->db->truncate('iop_diagnosis');
-        $this->db->truncate('iop_medication'); // Also used in Pharmacy IPD Billing
-        $this->db->truncate('iop_laboratory');
+        $this->db->truncate('iop_medication');
+        $this->db->truncate('iop_laboratory'); // Clinical Lab Results/Entries
         $this->db->truncate('iop_vital_parameters');
         $this->db->truncate('iop_nurse_notes');
         $this->db->truncate('iop_progress_note');
@@ -67,13 +67,26 @@ class Reset_system extends General{
         $this->db->truncate('iop_operation_theater');
         $this->db->truncate('iop_room_transfer');
         
-        // 3. Laboratory Services
+        // Reset Room Beds Status
+        $this->db->update('room_beds', array('nStatus' => 'Vacant', 'patient_no' => ''));
+        
+        // 3. Laboratory Services (Orders)
         $this->db->truncate('lab_service_request');
         $this->db->truncate('lab_service_request_details');
         
-        // 4. Pharmacy Sales
+        // 4. Pharmacy Sales & Inventory
         $this->db->truncate('pharmacy_sales');
         $this->db->truncate('pharmacy_sales_details');
+        $this->db->truncate('pharmacy_inventory_in');
+        $this->db->truncate('pharmacy_inventory_details');
+        $this->db->truncate('pharmacy_returns');
+        $this->db->truncate('pharmacy_return_details');
+        $this->db->truncate('pharmacy_adjustments');
+        $this->db->truncate('pharmacy_adjustment_details');
+        $this->db->truncate('pharmacy_void_logs');
+        
+        // Reset Stock to 0 in medicine_drug_name
+        $this->db->update('medicine_drug_name', array('nStock' => 0));
         
         // 5. Billing & Receipts
         $this->db->truncate('iop_billing');
@@ -86,9 +99,10 @@ class Reset_system extends General{
         // Reset specific keys to 0
         $keys_to_reset = array(
             'patient_no', 
-            'opd_no', 
-            'ipd_no', 
+            'OUTPATIENTNO', // Corrected from opd_no
+            'INPATIENTNO',  // Corrected from ipd_no
             'pharmacy_invoice_no', 
+            'pharmacy_rr_no',
             'receipt_no',
             'invoice_no'
         );

@@ -27,7 +27,7 @@
                                 <strong>WARNING: This action is irreversible!</strong>
                             </p>
                             <p>
-                                You are about to delete <strong>ALL</strong> patient records, OPD visits, IPD admissions, laboratory requests, pharmacy sales, and billing records.
+                                You are about to delete <strong>ALL</strong> patient records, OPD visits, IPD admissions, laboratory requests, pharmacy sales, inventory, and billing records.
                             </p>
                             <p>
                                 The system increments (Patient ID, Invoice No, etc.) will also be reset to 0.

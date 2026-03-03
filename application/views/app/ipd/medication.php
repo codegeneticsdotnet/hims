@@ -1,26 +1,11 @@
-<?php require_once(APPPATH.'views/include/head.php');?>
-    <body class="skin-blue">
-        <!-- header logo: style can be found in header.less -->
-        <?php require_once(APPPATH.'views/include/header.php');?>
-        
-        <div class="wrapper row-offcanvas row-offcanvas-left">
-            
-            <?php require_once(APPPATH.'views/include/sidebar.php');?>
-
-            <!-- Right side column. Contains the navbar and content of the page -->
-            <aside class="right-side">                
-                <!-- Content Header (Page header) -->
-                <section class="content-header">
-                      <?php if($this->session->userdata('emr_viewing') == "ipd_emr_viewing"){?>	
-                   <h1>IPD Patient Information</h1>
-                    <?php }else{?>
-                    <h1>IPD Patient Information</h1>
-                    <?php }?>
-                </section>
-
-                <!-- Main content -->
+<?php require_once(APPPATH.'views/include/head.php');?>                
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            IPD Patient Medication 
+        </h1>
+    </section>
                 <section class="content">
-                 
                  <?php if($this->session->userdata('emr_viewing') == "ipd_emr_viewing"){?>	
                    <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -203,54 +188,64 @@
                                         </div>
 
 <script language="javascript">
-function showDrugName(category_id)
-{
-if (window.XMLHttpRequest)
-  {
-  xmlhttp=new XMLHttpRequest();
-  }
-else
-  {// code for IE6, IE5
-  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-  }
-xmlhttp.onreadystatechange=function()
-  {
-  if (xmlhttp.readyState==4 && xmlhttp.status==200)
-    {
-	
-    document.getElementById("showCategories").innerHTML=xmlhttp.responseText;
-    }
-  }
-  var supp;
+$(document).ready(function(){
+    $('#search_medicine').keyup(function(){
+        var keyword = $(this).val();
+        if(keyword.length > 2){
+            $.ajax({
+                url: "<?php echo base_url();?>app/pharmacy/get_items/" + keyword,
+                type: "GET",
+                dataType: "JSON",
+                success: function(data){
+                    var html = '<ul class="list-group" style="margin-bottom: 0;">';
+                    if(data.length > 0){
+                        $.each(data, function(i, item){
+                            html += '<li class="list-group-item" style="cursor: pointer;" onclick="selectMedicine(' + item.item_id + ', \'' + item.item_name.replace(/'/g, "\\'") + '\', ' + item.stock_on_hand + ')">' + item.item_name + ' (Stock: ' + item.stock_on_hand + ')</li>';
+                        });
+                    } else {
+                        html += '<li class="list-group-item">No items found</li>';
+                    }
+                    html += '</ul>';
+                    $('#medicine_search_result').html(html).show();
+                }
+            });
+        } else {
+            $('#medicine_search_result').hide();
+        }
+    });
+});
 
-xmlhttp.open("GET","<?php echo base_url();?>app/opd/getDrugName/"+category_id,true);
-xmlhttp.send();
-
+function selectMedicine(id, name, stock){
+    $('#drug_id').val(id);
+    $('#search_medicine').val(name);
+    $('#stock_on_hand').val(stock);
+    $('#medicine_search_result').hide();
 }
+
+// Close search result on click outside
+$(document).mouseup(function(e) 
+{
+    var container = $("#medicine_search_result");
+    if (!container.is(e.target) && container.has(e.target).length === 0) 
+    {
+        container.hide();
+    }
+});
 </script>
                                         <div class="modal-body">
                                         <table class="table table-hover">
                                         <tbody>
                                         <tr>
-                                        	<td>Category</td>
-                                            <td>
-                                            				<select name="category" onChange="showDrugName(this.value);" id="category" class="form-control input-sm" style="width: 250px;" required>
-                                                            	<option value="">- Category Name -</option>
-                               																<?php 
-																foreach($medicineCategory as $medicineCategory){?>
-                                                            	<option value="<?php echo $medicineCategory->cat_id;?>"><?php echo $medicineCategory->med_category_name;?></option>
-                                                                <?php }?>
-                                                            </select>
+                                        	<td>Medicine Search</td>
+                                            <td style="position: relative;">
+                                                <input type="text" id="search_medicine" class="form-control input-sm" placeholder="Search Medicine..." style="width: 250px;" autocomplete="off">
+                                                <input type="hidden" name="drug_name" id="drug_id" required>
+                                                <div id="medicine_search_result" style="position: absolute; z-index: 999; background: #fff; width: 250px; border: 1px solid #ccc; display: none; max-height: 200px; overflow-y: auto;"></div>
                                             </td>
                                         </tr>
                                         <tr>
-                                        	<td>Drug Name</td>
-                                            <td>
-                                            <label id="showCategories">
-                        					<select name="drug_name" id="drug_name" class="form-control input-sm" style="width: 250px;" required>
-                        						<option value="">- select -</option>
-                        					</select>
-                                            </td>
+                                            <td>Stock on Hand</td>
+                                            <td><input type="text" id="stock_on_hand" class="form-control input-sm" style="width: 250px;" readonly></td>
                                         </tr>
                                         <tr>
                                         	<td>Days</td>

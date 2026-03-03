@@ -289,6 +289,9 @@ class Patient_model extends CI_Model{
 		$this->db->select("
 			A.patient_no,
 			concat(A.firstname,' ',A.middlename,' ',A.lastname) as 'name',
+            A.firstname,
+            A.middlename,
+            A.lastname,
 			A.picture,
 			A.age,
 			A.street,

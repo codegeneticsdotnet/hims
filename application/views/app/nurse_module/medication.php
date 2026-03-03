@@ -1,18 +1,8 @@
-<?php require_once(APPPATH.'views/include/head.php');?>
-    <body class="skin-blue">
-        <!-- header logo: style can be found in header.less -->
-        <?php require_once(APPPATH.'views/include/header.php');?>
-        
-        <div class="wrapper row-offcanvas row-offcanvas-left">
-            
-            <?php require_once(APPPATH.'views/include/sidebar.php');?>
-
-            <!-- Right side column. Contains the navbar and content of the page -->
-                <!-- Content Header (Page header) -->
+<?php require_once(APPPATH.'views/include/head.php');?>                
+    <!-- Content Header (Page header) -->
                 <section class="content-header">
                     <h1>Medication</h1>
                 </section>
-
                 <!-- Main content -->
                 <section class="content">
                     <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">

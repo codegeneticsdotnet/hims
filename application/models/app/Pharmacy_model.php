@@ -13,6 +13,14 @@ class Pharmacy_model extends CI_Model{
         $this->db->query("CREATE TABLE IF NOT EXISTS pharmacy_inventory_in (inv_id INT AUTO_INCREMENT PRIMARY KEY, ref_no VARCHAR(50), date_received DATETIME, supplier_name VARCHAR(100) DEFAULT NULL, remarks TEXT, InActive INT DEFAULT 0)");
         $this->db->query("CREATE TABLE IF NOT EXISTS pharmacy_inventory_details (detail_id INT AUTO_INCREMENT PRIMARY KEY, inv_id INT, drug_id INT, item_name VARCHAR(255), qty INT, batch_no VARCHAR(50), expiry_date DATE, InActive INT DEFAULT 0)");
         
+        $this->db->query("CREATE TABLE IF NOT EXISTS pharmacy_returns (return_id INT AUTO_INCREMENT PRIMARY KEY, return_no VARCHAR(50), date_return DATETIME, patient_no VARCHAR(50) DEFAULT NULL, remarks TEXT, InActive INT DEFAULT 0)");
+        $this->db->query("CREATE TABLE IF NOT EXISTS pharmacy_return_details (detail_id INT AUTO_INCREMENT PRIMARY KEY, return_id INT, drug_id INT, qty INT, InActive INT DEFAULT 0)");
+        
+        $this->db->query("CREATE TABLE IF NOT EXISTS pharmacy_adjustments (adjust_id INT AUTO_INCREMENT PRIMARY KEY, reference_no VARCHAR(50), date_adjust DATETIME, remarks TEXT, cPreparedBy VARCHAR(50), InActive INT DEFAULT 0)");
+        $this->db->query("CREATE TABLE IF NOT EXISTS pharmacy_adjustment_details (detail_id INT AUTO_INCREMENT PRIMARY KEY, adjust_id INT, drug_id INT, old_stock INT, adjust_qty INT, new_stock INT, type VARCHAR(10), reason VARCHAR(255), InActive INT DEFAULT 0)");
+        
+        $this->db->query("CREATE TABLE IF NOT EXISTS pharmacy_void_logs (void_id INT AUTO_INCREMENT PRIMARY KEY, sale_id INT, invoice_no VARCHAR(50), date_voided DATETIME, voided_by VARCHAR(50), reason TEXT, InActive INT DEFAULT 0)");
+        
         // Check system options
         // Note: The system_option table in this database seems to have different columns than expected.
         // It likely has 'cCode' and 'cValue' but maybe not 'cDesc'.
@@ -37,6 +45,12 @@ class Pharmacy_model extends CI_Model{
                 $data['cDesc'] = 'Pharmacy Receiving Report Number';
              }
              $this->db->insert('system_option', $data);
+        }
+        
+        // Add is_dispensed column to iop_medication if not exists
+        if ($this->db->table_exists('iop_medication') && !$this->db->field_exists('is_dispensed', 'iop_medication'))
+        {
+            $this->db->query("ALTER TABLE iop_medication ADD COLUMN is_dispensed INT DEFAULT 0");
         }
     }
 
@@ -254,4 +268,193 @@ class Pharmacy_model extends CI_Model{
 		$this->db->insert('system_parameters',$this->data);
 		return ($this->db->affected_rows() != 1) ? false : true;
 	}
+    
+    public function getItemLedger($item_id){
+        // Inventory In
+        $sql = "SELECT 
+                    A.date_received as ref_date, 
+                    A.ref_no, 
+                    'Inventory In' as type, 
+                    (B.qty * C.nPrice) as amount,
+                    B.qty as qty_in, 
+                    0 as qty_out, 
+                    A.remarks,
+                    B.expiry_date
+                FROM pharmacy_inventory_in A 
+                JOIN pharmacy_inventory_details B ON A.inv_id = B.inv_id 
+                JOIN medicine_drug_name C ON B.drug_id = C.drug_id
+                WHERE B.drug_id = ? AND A.InActive = 0";
+        
+        // Sales (Out)
+        $sql .= " UNION ALL SELECT 
+                    A.date_sale as ref_date, 
+                    A.invoice_no as ref_no, 
+                    CONCAT(A.payment_type, ' Sales') as type, 
+                    B.total as amount,
+                    0 as qty_in, 
+                    B.qty as qty_out, 
+                    A.remarks,
+                    NULL as expiry_date
+                FROM pharmacy_sales A 
+                JOIN pharmacy_sales_details B ON A.sale_id = B.sale_id 
+                WHERE B.drug_id = ? AND A.InActive = 0";
+                
+        // Returns (In)
+        $sql .= " UNION ALL SELECT 
+                    A.date_return as ref_date, 
+                    A.return_no as ref_no, 
+                    'Return' as type, 
+                    0 as amount, 
+                    B.qty as qty_in, 
+                    0 as qty_out, 
+                    A.remarks,
+                    NULL as expiry_date
+                FROM pharmacy_returns A 
+                JOIN pharmacy_return_details B ON A.return_id = B.return_id 
+                WHERE B.drug_id = ? AND A.InActive = 0";
+                
+        // Adjustments
+        $sql .= " UNION ALL SELECT 
+                    A.date_adjust as ref_date, 
+                    A.reference_no as ref_no, 
+                    CONCAT('Adjustment (', B.type, ')') as type, 
+                    0 as amount, 
+                    CASE WHEN B.type = 'IN' THEN B.adjust_qty ELSE 0 END as qty_in, 
+                    CASE WHEN B.type = 'OUT' THEN B.adjust_qty ELSE 0 END as qty_out, 
+                    B.reason as remarks,
+                    NULL as expiry_date
+                FROM pharmacy_adjustments A 
+                JOIN pharmacy_adjustment_details B ON A.adjust_id = B.adjust_id 
+                WHERE B.drug_id = ? AND A.InActive = 0";
+                
+        // Void (In) - Show reversal of sales
+        $sql .= " UNION ALL SELECT 
+                    A.date_voided as ref_date, 
+                    A.invoice_no as ref_no, 
+                    'Void Transaction' as type, 
+                    0 as amount, 
+                    B.qty as qty_in, 
+                    0 as qty_out, 
+                    CONCAT('Voided: ', A.reason) as remarks,
+                    NULL as expiry_date
+                FROM pharmacy_void_logs A 
+                JOIN pharmacy_sales_details B ON A.sale_id = B.sale_id 
+                WHERE B.drug_id = ? AND A.InActive = 0";
+                
+        $sql .= " ORDER BY ref_date ASC";
+        
+        $query = $this->db->query($sql, array($item_id, $item_id, $item_id, $item_id, $item_id));
+        return $query->result();
+    }
+    
+    public function getAdjustmentRefNo(){
+        $prefix = "AA" . date('ym');
+        $query = $this->db->query("SELECT reference_no FROM pharmacy_adjustments WHERE reference_no LIKE '$prefix%' ORDER BY adjust_id DESC LIMIT 1");
+        if($query->num_rows() > 0){
+            $row = $query->row();
+            $last_no = substr($row->reference_no, -4);
+            $new_no = $prefix . str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $new_no = $prefix . '0001';
+        }
+        return $new_no;
+    }
+    
+    public function saveAdjustment($header, $details){
+        $this->db->trans_start();
+        $this->db->insert('pharmacy_adjustments', $header);
+        $adjust_id = $this->db->insert_id();
+        
+        foreach($details as $item){
+            $item['adjust_id'] = $adjust_id;
+            $this->db->insert('pharmacy_adjustment_details', $item);
+            
+            // Update Stock
+            if($item['type'] == 'IN'){
+                $this->db->query("UPDATE medicine_drug_name SET nStock = nStock + " . $item['adjust_qty'] . " WHERE drug_id = " . $item['drug_id']);
+            } else {
+                $this->db->query("UPDATE medicine_drug_name SET nStock = nStock - " . $item['adjust_qty'] . " WHERE drug_id = " . $item['drug_id']);
+            }
+        }
+        
+        $this->db->trans_complete();
+        return $this->db->trans_status();
+    }
+    
+    public function getReturnNo(){
+        $query = $this->db->query("SELECT return_no FROM pharmacy_returns ORDER BY return_id DESC LIMIT 1");
+        if($query->num_rows() > 0){
+            $row = $query->row();
+            $last_no = substr($row->return_no, 2);
+            $new_no = 'RT' . str_pad($last_no + 1, 8, '0', STR_PAD_LEFT);
+        } else {
+            $new_no = 'RT00000001';
+        }
+        return $new_no;
+    }
+    
+    public function getSaleByInvoice($invoice_no){
+        $this->db->select("A.*, B.patient_no, B.middlename, B.firstname, B.lastname");
+        $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+        $this->db->where("A.invoice_no", $invoice_no);
+        $query = $this->db->get("pharmacy_sales A");
+        return $query->row();
+    }
+    
+    public function getSaleDetails($sale_id){
+        $this->db->select("A.*, B.drug_name");
+        $this->db->join("medicine_drug_name B", "B.drug_id = A.drug_id", "left");
+        $this->db->where("A.sale_id", $sale_id);
+        $query = $this->db->get("pharmacy_sales_details A");
+        return $query->result();
+    }
+    
+    public function saveReturn($header, $details){
+        $this->db->trans_start();
+        $this->db->insert('pharmacy_returns', $header);
+        $return_id = $this->db->insert_id();
+        
+        foreach($details as $item){
+            $item['return_id'] = $return_id;
+            $this->db->insert('pharmacy_return_details', $item);
+            
+            // Update Stock
+            $this->db->query("UPDATE medicine_drug_name SET nStock = nStock + " . $item['qty'] . " WHERE drug_id = " . $item['drug_id']);
+        }
+        
+        $this->db->trans_complete();
+        return $this->db->trans_status();
+    }
+    
+    public function voidTransaction($invoice_no, $reason, $user_id){
+        $this->db->trans_start();
+        
+        // 1. Get Sale Info
+        $sale = $this->getSaleByInvoice($invoice_no);
+        if(!$sale) return false;
+        
+        // 2. Mark as Void/Inactive
+        $this->db->where('sale_id', $sale->sale_id);
+        $this->db->update('pharmacy_sales', array('InActive' => 1, 'remarks' => $reason . ' (VOIDED)'));
+        
+        // 3. Log Void
+        $log = array(
+            'sale_id' => $sale->sale_id,
+            'invoice_no' => $invoice_no,
+            'date_voided' => date('Y-m-d H:i:s'),
+            'voided_by' => $user_id,
+            'reason' => $reason,
+            'InActive' => 0
+        );
+        $this->db->insert('pharmacy_void_logs', $log);
+        
+        // 4. Restore Stock
+        $details = $this->getSaleDetails($sale->sale_id);
+        foreach($details as $item){
+            $this->db->query("UPDATE medicine_drug_name SET nStock = nStock + " . $item->qty . " WHERE drug_id = " . $item->drug_id);
+        }
+        
+        $this->db->trans_complete();
+        return $this->db->trans_status();
+    }
 }

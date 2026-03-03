@@ -9,7 +9,7 @@ class Opd_model extends CI_Model{
 	public function search_patient_json($query){
 		$this->db->select("
 			patient_no,
-			concat(firstname,' ',middlename,' ',lastname) as 'name'
+			concat(ifnull(firstname,''),' ',ifnull(middlename,''),' ',ifnull(lastname,'')) as 'name'
 		",false);
 		$where = "(
 				lastname like '%".$query."%' or 
@@ -262,6 +262,7 @@ class Opd_model extends CI_Model{
 			'patient_no'		=>		$this->input->post('patient_no'),
 			'nStatus'			=>		'Pending',
 			'patient_type'		=>		'OPD',
+            'date_visit'        =>      date('Y-m-d'),
 			'InActive'			=>		0
 		));
 		$query = $this->db->get("patient_details_iop");
@@ -553,8 +554,36 @@ class Opd_model extends CI_Model{
 		$query = $this->db->get("iop_laboratory A");	
 		return $query->result();
 	}
-	
-	
-	
+    
+	public function save_medication(){
+		$this->data = array(
+			'iop_id'		=>		$this->input->post('opd_no'),
+			'medicine_id'	=>		$this->input->post('drug_name'),
+			'instruction'	=>		$this->input->post('instruction'),
+			'advice'		=>		$this->input->post('advice'),
+			'days'			=>		$this->input->post('nDays'),
+			'total_qty'		=>		$this->input->post('qty'),
+            'cPreparedBy'   =>      $this->session->userdata('user_id'),
+			'dDate'			=>		date("Y-m-d H:i:s"),
+			'InActive'		=>		0
+		);
+		$this->db->insert("iop_medication",$this->data);	
+	}
+
+    public function getAllVisits($patient_no, $cFrom = null, $cTo = null){
+        $this->db->select("*");
+        $this->db->from("patient_details_iop");
+        $this->db->where("patient_no", $patient_no);
+        $this->db->where("patient_type", "OPD");
+        $this->db->where("InActive", 0);
+        
+        if($cFrom && $cTo){
+            $this->db->where("date_visit >=", $cFrom);
+            $this->db->where("date_visit <=", $cTo);
+        }
+        
+        $this->db->order_by("date_visit", "DESC");
+        return $this->db->get()->result();
+    }
 	
 }

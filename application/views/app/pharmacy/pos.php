@@ -195,6 +195,40 @@
     </div>
 </div>
 
+<!-- IPD Orders Modal -->
+<div class="modal fade" id="ipdOrdersModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Doctor's Orders</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th class="text-center"><input type="checkbox" id="check_all_ipd" onclick="toggleAllIPD(this)"></th>
+                            <th>Medicine</th>
+                            <th>Requested Qty</th>
+                            <th>Stock on Hand</th>
+                            <th>Dispense</th>
+                            <th>Amount</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ipd_orders_body">
+                        <!-- Rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="addSelectedToCart()">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     </section><!-- /.content -->
     </aside><!-- /.right-side -->
 </div><!-- ./wrapper -->
@@ -281,6 +315,7 @@
         $('#patient_no').val(patientNo);
         $('#iop_id').val(iopId);
         $('#patient_search_result').hide();
+        loadIPDOrders();
     }
     
     function togglePaymentType(){
@@ -303,10 +338,13 @@
     var selectedRow = null;
 
     // Add Item to Table
-    function addItem(id, name, price, stock){
+    function addItem(id, name, price, stock, qty, refId){
         $('#search_result').hide();
         $('#search_item').val('');
         $('#empty_row').remove();
+        
+        qty = (typeof qty !== 'undefined') ? parseFloat(qty) : 1;
+        refId = (typeof refId !== 'undefined') ? refId : '';
         
         // Check if item already exists
         var exists = false;
@@ -316,11 +354,11 @@
                 // Increment Qty
                 var row = $(this).closest('tr');
                 var currentQty = parseFloat(row.find('.qty-input').val());
-                if(currentQty < stock){
-                    row.find('.qty-input').val(currentQty + 1);
+                if(currentQty + qty <= stock){
+                    row.find('.qty-input').val(currentQty + qty);
                     calculateRow(row);
                 } else {
-                    alert('Insufficient Stock!');
+                    alert('Insufficient Stock for ' + name + '! Available: ' + stock);
                 }
                 return false;
             }
@@ -328,12 +366,17 @@
         
         if(exists) return;
         
+        if(qty > stock){
+             alert('Insufficient Stock for ' + name + '! Available: ' + stock);
+             qty = stock;
+        }
+        
         var html = '<tr onclick="selectRow(this)" style="cursor: pointer;">';
-        html += '<td>' + name + '<input type="hidden" name="item_id[]" value="' + id + '"><input type="hidden" name="item_name[]" value="' + name + '"></td>';
+        html += '<td>' + name + '<input type="hidden" name="item_id[]" value="' + id + '"><input type="hidden" name="item_name[]" value="' + name + '"><input type="hidden" name="ref_id[]" value="' + refId + '"></td>';
         html += '<td>' + stock + '<input type="hidden" class="stock-val" value="' + stock + '"></td>';
         html += '<td><a href="#" onclick="openEditModal(this); event.stopPropagation();">' + parseFloat(price).toFixed(2) + '</a><input type="hidden" name="price[]" class="price-val" value="' + price + '"></td>';
-        html += '<td><input type="number" name="qty[]" class="form-control input-sm qty-input" value="1" min="1" max="' + stock + '" onchange="calculateRow(this)" onkeyup="calculateRow(this)" style="width: 70px;"></td>';
-        html += '<td><span class="row-total">' + parseFloat(price).toFixed(2) + '</span></td>';
+        html += '<td><input type="number" name="qty[]" class="form-control input-sm qty-input" value="' + qty + '" min="1" max="' + stock + '" onchange="calculateRow(this)" onkeyup="calculateRow(this)" style="width: 70px;"></td>';
+        html += '<td><span class="row-total">' + (parseFloat(price) * qty).toFixed(2) + '</span></td>';
         html += '<td><a href="#" class="text-danger" onclick="removeRow(this); event.stopPropagation();"><i class="fa fa-times"></i></a></td>';
         html += '</tr>';
         
@@ -548,6 +591,111 @@
             container2.hide();
         }
     });
+
+    function loadIPDOrders(){
+        var iop_id = $('#iop_id').val();
+        if(!iop_id){
+            alert('No IPD Patient Selected');
+            return;
+        }
+        
+        $.ajax({
+            url: "<?php echo base_url();?>app/pharmacy/get_ipd_medication/" + iop_id,
+            type: "GET",
+            dataType: "JSON",
+            success: function(data){
+                $('#ipd_orders_body').empty();
+                if(data.length > 0){
+                    var html = '';
+                    $.each(data, function(i, item){
+                        var stock = parseFloat(item.stock) || 0;
+                        var requested = parseFloat(item.qty) || 0;
+                        var price = parseFloat(item.price) || 0;
+                        var total = price * requested;
+                        var disabled = (stock <= 0) ? 'disabled' : '';
+                        var rowClass = (stock <= 0) ? 'danger' : '';
+                        
+                        // Dispense Logic
+                        var dispense = 0;
+                        if(stock > 0){
+                            dispense = requested;
+                            if(stock < requested){
+                                dispense = stock;
+                            }
+                        }
+                        
+                        html += '<tr class="' + rowClass + '">';
+                        html += '<td class="text-center"><input type="checkbox" class="ipd-check" value="' + i + '" ' + disabled + '></td>';
+                        html += '<td>' + item.drug_name + '</td>';
+                        html += '<td class="text-center">' + requested + '</td>';
+                        html += '<td class="text-center">' + stock + '</td>';
+                        html += '<td>';
+                        html += '<input type="number" class="form-control input-sm dispense-qty" value="' + dispense + '" min="1" max="' + stock + '" onchange="updateIPDRow(this)" onkeyup="updateIPDRow(this)" ' + disabled + '>';
+                        html += '<input type="hidden" class="ipd-id" value="' + item.drug_id + '">';
+                        html += '<input type="hidden" class="ipd-ref-id" value="' + item.iop_med_id + '">';
+                        html += '<input type="hidden" class="ipd-name" value="' + item.drug_name + '">';
+                        html += '<input type="hidden" class="ipd-price" value="' + price + '">';
+                        html += '<input type="hidden" class="ipd-stock" value="' + stock + '">';
+                        html += '</td>';
+                        html += '<td class="text-right">' + price.toFixed(2) + '</td>';
+                        html += '<td class="text-right ipd-total">' + total.toFixed(2) + '</td>';
+                        html += '</tr>';
+                    });
+                    $('#ipd_orders_body').html(html);
+                    $('#ipdOrdersModal').modal('show');
+                } else {
+                    alert('No pending medication orders found for this patient.');
+                }
+            },
+            error: function(){
+                alert('Error loading orders.');
+            }
+        });
+    }
+
+    function toggleAllIPD(source) {
+        $('.ipd-check').prop('checked', source.checked);
+    }
+
+    function updateIPDRow(element){
+        var row = $(element).closest('tr');
+        var qty = parseFloat($(element).val()) || 0;
+        var price = parseFloat(row.find('.ipd-price').val()) || 0;
+        var stock = parseFloat(row.find('.ipd-stock').val()) || 0;
+        
+        if(qty > stock){
+            alert('Cannot dispense more than stock!');
+            $(element).val(stock);
+            qty = stock;
+        }
+        
+        var total = qty * price;
+        row.find('.ipd-total').text(total.toFixed(2));
+    }
+
+    function addSelectedToCart(){
+        var count = 0;
+        $('#ipd_orders_body tr').each(function(){
+            var row = $(this);
+            var id = row.find('.ipd-id').val();
+            var name = row.find('.ipd-name').val();
+            var price = row.find('.ipd-price').val();
+            var stock = row.find('.ipd-stock').val();
+            var qty = parseFloat(row.find('.dispense-qty').val()) || 0;
+            var refId = row.find('.ipd-ref-id').val();
+            
+            if(qty > 0){
+                addItem(id, name, Number(price), Number(stock), Number(qty), refId);
+                count++;
+            }
+        });
+        
+        if(count > 0){
+            $('#ipdOrdersModal').modal('hide');
+        } else {
+            alert('No items with valid dispense quantity (> 0) found.');
+        }
+    }
 </script>
 
 </body>

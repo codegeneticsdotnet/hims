@@ -530,7 +530,7 @@ class Ipd extends General{
 			'days'			=>		$this->input->post('nDays'),
 			'total_qty'		=>		$this->input->post('qty'),
 			'cPreparedBy'	=>		$this->session->userdata('user_id'),
-			'dDate'			=>		date("Y-m-d h:i:s A"),
+			'dDate'			=>		date("Y-m-d H:i:s"),
 			'InActive'		=>		0
 		);
 		$this->db->insert("iop_medication",$this->data);

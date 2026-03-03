@@ -23,23 +23,41 @@ class Pharmacy_reports extends General{
 
     public function daily_sales(){
         $this->session->set_userdata(array(
-             'tab'			=>		'pharmacy',
-             'module'		=>		'daily_sales_report',
-             'subtab'		=>		'',
-             'submodule'	=>		''));
+            'tab'           =>      'pharmacy',
+            'module'        =>      'reports',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
         
-        $this->data['reports_title'] = "Daily Pharmacy Sales Report";
+        $this->data['cFrom'] = $this->input->post('cFrom') ? $this->input->post('cFrom') : date('Y-m-d');
+        $this->data['cTo'] = $this->input->post('cTo') ? $this->input->post('cTo') : date('Y-m-d');
         
         if($this->input->post('btnView')){
-            $cFrom = $this->input->post('cFrom');
-            $cTo = $this->input->post('cTo');
-            $this->data['sales'] = $this->pharmacy_reports_model->getDailySales($cFrom, $cTo);
-            $this->data['cFrom'] = $cFrom;
-            $this->data['cTo'] = $cTo;
-            $this->load->view('app/pharmacy/reports/daily_sales', $this->data);
-        }else{
-            $this->load->view('app/pharmacy/reports/daily_sales', $this->data);
+            $this->data['sales'] = $this->pharmacy_reports_model->getDailySales($this->data['cFrom'], $this->data['cTo']);
+            $this->data['returns'] = $this->pharmacy_reports_model->getDailyReturns($this->data['cFrom'], $this->data['cTo']);
         }
+        
+        $this->load->view('app/pharmacy/reports/daily_sales', $this->data);
+    }
+    
+    public function sales_return(){
+        $this->session->set_userdata(array(
+            'tab'           =>      'pharmacy',
+            'module'        =>      'reports',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
+        
+        $this->data['cFrom'] = $this->input->post('cFrom') ? $this->input->post('cFrom') : date('Y-m-d');
+        $this->data['cTo'] = $this->input->post('cTo') ? $this->input->post('cTo') : date('Y-m-d');
+        
+        if($this->input->post('btnView')){
+            $this->data['returns'] = $this->pharmacy_reports_model->getDailyReturns($this->data['cFrom'], $this->data['cTo']);
+            if($this->input->post('print')){
+                $this->load->view('app/pharmacy/reports/print_sales_return', $this->data);
+                return;
+            }
+        }
+        
+        $this->load->view('app/pharmacy/reports/sales_return', $this->data);
     }
     
     public function daily_dispense(){

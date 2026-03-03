@@ -33,6 +33,7 @@
                         <a class="btn btn-app" href="#">
                             <i class="fa fa-upload"></i> Issuance
                         </a>
+<!--
                         <a class="btn btn-app" href="#">
                             <i class="fa fa-exchange"></i> BIN Transfer
                         </a>
@@ -42,8 +43,12 @@
                         <a class="btn btn-app" href="#">
                             <i class="fa fa-sign-in"></i> Transfer In
                         </a>
-                        <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/items">
-                            <i class="fa fa-tag"></i> Product List
+-->
+                        <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/ledger">
+                            <i class="fa fa-book"></i> Ledger
+                        </a>
+                        <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/void_transaction">
+                            <i class="fa fa-ban"></i> Void Transaction
                         </a>
                         <a class="btn btn-app" href="<?php echo base_url()?>app/medicine_category">
                             <i class="fa fa-list-alt"></i> Categories
@@ -65,26 +70,22 @@
                         <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/pos">
                             <i class="fa fa-desktop"></i> Point Of Sales
                         </a>
-                        <a class="btn btn-app" href="#">
+                        <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/returns">
                             <i class="fa fa-reply"></i> Return
                         </a>
-                        <a class="btn btn-app" href="#">
-                            <i class="fa fa-sliders"></i> Adjustments
+                        <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/adjustments">
+                            <i class="fa fa-tags"></i> Adjustments
                         </a>
-                        <a class="btn btn-app" href="#">
-                            <i class="fa fa-cubes"></i> Stock on hand
+                        <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/ledger">
+                            <i class="fa fa-book"></i> Inventory
                         </a>
-                        <a class="btn btn-app" href="#">
-                            <i class="fa fa-book"></i> Ledger
-                        </a>
-                        
                         <hr>
                         <p><strong>Reports</strong></p>
                         <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy_reports/daily_sales">
-                            <i class="fa fa-bar-chart-o"></i> Daily Sales
+                            <i class="fa fa-bar-chart-o"></i> Sales
                         </a>
                         <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy_reports/daily_dispense">
-                            <i class="fa fa-medkit"></i> Daily Dispense
+                            <i class="fa fa-medkit"></i> Dispense
                         </a>
                     </div><!-- /.box-body -->
                 </div><!-- /.box -->

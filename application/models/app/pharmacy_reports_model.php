@@ -5,6 +5,24 @@ class Pharmacy_reports_model extends CI_Model{
 	public function __construct(){
 		parent::__construct();	
 	}
+    
+    public function getDailyReturns($cFrom, $cTo){
+        $this->db->select("A.*, B.patient_no, concat(B.firstname,' ',B.lastname) as patient_name");
+        $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+        $this->db->where("date(A.date_return) >=", $cFrom);
+        $this->db->where("date(A.date_return) <=", $cTo);
+        $this->db->where("A.InActive", 0);
+        $query = $this->db->get("pharmacy_returns A");
+        return $query->result();
+    }
+    
+    public function getReturnDetails($return_id){
+        $this->db->select("A.*, B.drug_name, B.nPrice as price");
+        $this->db->join("medicine_drug_name B", "B.drug_id = A.drug_id", "left");
+        $this->db->where("A.return_id", $return_id);
+        $query = $this->db->get("pharmacy_return_details A");
+        return $query->result();
+    }
 	
     public function getDailySales($cFrom, $cTo){
         $this->db->select("
@@ -18,10 +36,11 @@ class Pharmacy_reports_model extends CI_Model{
             A.discount,
             A.total_amount,
             A.remarks,
+            A.InActive,
             CONCAT(B.lastname, ', ', B.firstname) as patient_full_name
         ", false);
         
-        $where = "DATE_FORMAT(A.date_sale, '%Y-%m-%d') BETWEEN '".$cFrom."' AND '".$cTo."' AND A.InActive = 0";
+        $where = "DATE_FORMAT(A.date_sale, '%Y-%m-%d') BETWEEN '".$cFrom."' AND '".$cTo."'";
         $this->db->where($where);
         $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
         $this->db->order_by("A.date_sale", "ASC");
@@ -47,7 +66,6 @@ class Pharmacy_reports_model extends CI_Model{
         // $this->db->join("system_parameters C", "C.param_id = M.nCategory", "left outer"); 
         $this->db->order_by("A.date_sale", "ASC");
         $query = $this->db->get("pharmacy_sales A");
-        // Manually join category if needed or just skip for now to fix error
         return $query->result();
     }
 }

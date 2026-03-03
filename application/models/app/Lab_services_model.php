@@ -290,4 +290,25 @@ class Lab_services_model extends CI_Model{
         $this->db->order_by("A.request_date", "DESC");
         return $this->db->get()->result();
     }
+    
+    public function getLabResultsByDate($patient_no, $date){
+        $this->db->select("
+            A.request_no,
+            A.request_date,
+            C.particular_name,
+            B.status,
+            B.result_remarks
+        ", false);
+        $this->db->from("lab_service_request A");
+        $this->db->join("lab_service_request_details B", "B.request_id = A.request_id");
+        $this->db->join("bill_particular C", "C.particular_id = B.particular_id");
+        $this->db->where("A.patient_no", $patient_no);
+        // Assuming date is Y-m-d, and request_date is datetime. 
+        // Use DATE() or LIKE
+        $this->db->where("DATE(A.request_date)", $date);
+        $this->db->where("A.InActive", 0);
+        $this->db->where("B.InActive", 0);
+        $this->db->order_by("A.request_date", "DESC");
+        return $this->db->get()->result();
+    }
 }

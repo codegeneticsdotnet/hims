@@ -77,6 +77,7 @@
                                     <li><a href="<?php echo base_url()?>app/opd/complain/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Complain</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/vitalSign/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Vital Sign</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/patientHistory/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Patient History</a></li>
+                                    <li><a href="<?php echo base_url()?>app/opd/patient_history_print/<?php echo $getOPDPatient->patient_no;?>" target="_blank"> Print Information Sheet</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/laboratory/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Laboratory</a></li>
                                     <li><a href="<?php echo base_url()?>app/opd/discharge_summary/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>"> Discharge Summary</a></li>
                                     

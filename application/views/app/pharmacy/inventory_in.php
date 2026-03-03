@@ -380,7 +380,14 @@
     }
     
     function validateForm(){
-        if($('#inventory_body tr').length == 0 || $('#empty_row').length > 0){
+        var supplier = $('input[name="supplier_name"]').val();
+        if(supplier.trim() == ''){
+            alert('Supplier Name is required!');
+            $('input[name="supplier_name"]').focus();
+            return false;
+        }
+        
+        if($('#inventory_body tr').length == 0 || $('#inventory_body tr#empty_row').length > 0){
             alert('Please add items to the inventory.');
             return false;
         }

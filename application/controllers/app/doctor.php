@@ -17,6 +17,44 @@ class Doctor extends General{
 		General::variable();	
 		
 	}
+    
+    public function dashboard(){
+		$this->session->set_userdata(array(
+				 'tab'			=>		'doctor',
+				 'module'		=>		'dashboard',
+				 'subtab'		=>		'',
+				 'submodule'	=>		''));
+        
+        $this->load->model('app/opd_model');
+        $this->data['opd_counts'] = $this->opd_model->get_opd_counts();
+        
+        // Get Today's Queue
+        $this->data['queue'] = $this->opd_model->get_opd_queue(); 
+        
+        $this->load->view('app/doctor/dashboard', $this->data);
+    }
+    
+    public function search_patient_json(){
+        $query = $this->input->get('term');
+        $this->load->model('app/opd_model');
+        $data = $this->opd_model->search_patient_json($query);
+        $result = array();
+        foreach($data as $row){
+            $result[] = array(
+                'label' => $row->name . " (" . $row->patient_no . ")",
+                'value' => $row->patient_no
+            );
+        }
+        echo json_encode($result);
+    }
+    
+    public function debug(){
+        $this->db->select('*');
+        $q = $this->db->get('patient_details_iop');
+        echo "<pre>";
+        print_r($q->result());
+        echo "</pre>";
+    }
 	
 	public function opd($offset = 0){
 				 
