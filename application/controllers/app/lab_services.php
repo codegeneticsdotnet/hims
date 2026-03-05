@@ -139,6 +139,7 @@ class Lab_services extends General {
         $this->db->where('B.patient_type', 'OPD');
         $this->db->where_not_in('B.nStatus', array('Discharge', 'Discharged', 'Cancelled'));
         $this->db->where('B.InActive', 0);
+        $this->db->where('B.branch_id', $this->session->userdata('branch_id'));
         
         $this->db->limit(10);
         $query = $this->db->get();

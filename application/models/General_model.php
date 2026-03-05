@@ -170,18 +170,40 @@ class General_model extends CI_Model{
 	}
 	
 	public function lastOPDNo(){
-		$this->db->select("(cValue + 1) as 'opdNo'");
-		$this->db->where("cCode","OUTPATIENTNO");
-		$query = $this->db->get("system_option");	
-		return $query->row();
+		return (object) array('opdNo' => $this->generateID('IO', 'patient_details_iop', 'IO_ID'));
 	}
 	
 	public function lastIPDNo(){
-		$this->db->select("(cValue + 1) as 'ipdNo'");
-		$this->db->where("cCode","INPATIENTNO");
-		$query = $this->db->get("system_option");	
-		return $query->row();
+		return (object) array('ipdNo' => $this->generateID('IP', 'patient_details_iop', 'IO_ID'));
 	}
+
+    public function generateID($prefix, $table, $column){
+        $branch_code = $this->session->userdata('branch_code');
+        if(empty($branch_code)){
+            $branch_code = 'A'; // Default fallback
+        }
+        
+        $year_month = date('ym');
+        $search_pattern = $prefix . $branch_code . $year_month;
+        
+        $this->db->select($column);
+        $this->db->like($column, $search_pattern, 'after');
+        $this->db->order_by($column, 'DESC');
+        $this->db->limit(1);
+        $query = $this->db->get($table);
+        
+        if($query->num_rows() > 0){
+            $row = $query->row();
+            $last_id = $row->$column;
+            // Extract the sequence number (last 4 digits)
+            $sequence = (int)substr($last_id, -4);
+            $next_sequence = str_pad($sequence + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $next_sequence = '0001';
+        }
+        
+        return $search_pattern . $next_sequence;
+    }
 	
 	public function patientList(){
 		$this->db->select("A.patient_no,

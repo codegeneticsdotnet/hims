@@ -101,17 +101,13 @@ class Billing_model extends CI_Model{
 	}
 	
 	public function invoice_no(){
-		$this->db->select("(cValue + 1) as invoice_no");
-		$this->db->where("cCode","invoice_no");
-		$query = $this->db->get("system_option");	
-		return $query->row();	
+		$this->load->model('general_model');
+		return (object) array('invoice_no' => $this->general_model->generateID('INV', 'iop_billing', 'invoice_no'));
 	}
 	
 	public function receipt_no(){
-		$this->db->select("(cValue + 1) as receipt_no");
-		$this->db->where("cCode","receipt_no");
-		$query = $this->db->get("system_option");	
-		return $query->row();	
+		$this->load->model('general_model');
+		return (object) array('receipt_no' => $this->general_model->generateID('OR', 'iop_receipt', 'receipt_no'));
 	}
 	
 	public function saveHeader(){

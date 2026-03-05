@@ -33,6 +33,7 @@ class Billing_new_model extends CI_Model{
         // Only show Discharged (Ready for Billing) or Paid. Hide Pending (Registration).
         $this->db->where_in("A.nStatus", array("Discharged", "Paid")); 
         $this->db->where("A.InActive", 0);
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
         $query1 = $this->db->get_compiled_select("patient_details_iop A");
         
         // Pending Lab Requests (without active OPD visit or independent)
@@ -56,6 +57,10 @@ class Billing_new_model extends CI_Model{
         ", false);
         $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
         $this->db->join("iop_billing C", "C.iop_id = A.request_no", "left");
+        // Join to get Branch ID
+        $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+        $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+        
         $this->db->where_in("A.status", array("Pending", "Paid", "Cancelled")); // Include Cancelled
         $this->db->where("A.InActive", 0);
         //$this->db->group_by("A.patient_no"); // Group by patient to avoid duplicates
@@ -80,6 +85,7 @@ class Billing_new_model extends CI_Model{
         $this->db->where("A.patient_type", "IPD");
         $this->db->where("A.nStatus", "Pending"); // Currently admitted
         $this->db->where("A.InActive", 0);
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
         $query = $this->db->get("patient_details_iop A");
         return $query->result();
     }
@@ -101,6 +107,10 @@ class Billing_new_model extends CI_Model{
         $this->db->from("lab_service_request_details A");
         $this->db->join("bill_particular B", "B.particular_id = A.particular_id", "left");
         $this->db->join("lab_service_request C", "C.request_id = A.request_id", "left");
+        // Always join patient details to filter by branch
+        $this->db->join("patient_details_iop P", "P.IO_ID = C.iop_id", "left");
+        $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+        
         $this->db->where("A.InActive", 0);
         $this->db->where("C.InActive", 0);
         
@@ -110,9 +120,6 @@ class Billing_new_model extends CI_Model{
         
         // Fix for IO_ID filtering
         if($io_id){
-             // Also join patient details to check via patient_no if needed
-             $this->db->join("patient_details_iop P", "P.IO_ID = C.iop_id", "left");
-             
              $this->db->group_start();
              $this->db->where("C.request_no", $io_id);
              $this->db->or_where("C.iop_id", $io_id);
@@ -159,6 +166,8 @@ class Billing_new_model extends CI_Model{
             
             // Allow fetching by IO_ID OR Patient linkage
             $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            
             $this->db->group_start();
             $this->db->where("A.iop_id", $io_id);
             $this->db->or_where("P.patient_no", $patient_no);
@@ -187,6 +196,9 @@ class Billing_new_model extends CI_Model{
             ", false);
             $this->db->from("iop_room_transfer A");
             $this->db->join("room_master B", "B.room_master_id = A.room_master_id", "left");
+            $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            
             $this->db->where("A.iop_id", $io_id);
             $this->db->where("A.InActive", 0);
             $query = $this->db->get();
@@ -213,6 +225,9 @@ class Billing_new_model extends CI_Model{
             ", false);
             $this->db->from("iop_bed_side_procedure A");
             $this->db->join("bill_particular B", "B.particular_id = A.cItem_id", "left");
+            $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            
             $this->db->where("A.iop_id", $io_id);
             $this->db->where("A.InActive", 0);
             $query = $this->db->get();
@@ -232,6 +247,9 @@ class Billing_new_model extends CI_Model{
                 'Pending' as status,
                 'Services' as category
             ", false);
+            $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            
             $this->db->where("A.iop_id", $io_id);
             $this->db->where("A.InActive", 0);
             $query = $this->db->get("iop_discharge_advice A");
@@ -369,38 +387,16 @@ class Billing_new_model extends CI_Model{
     }
     
     public function getInvoiceNo($type = 'OPD'){
-        $this->db->select("cValue");
-        $this->db->where("cCode","invoice_no");
-        $query = $this->db->get("system_option");
-        
-        if($query->num_rows() > 0){
-            $val = $query->row()->cValue + 1;
-            if($type == 'IPD'){
-                return 'CI-' . str_pad($val, 8, '0', STR_PAD_LEFT);
-            } else {
-                return 'CO-' . str_pad($val, 8, '0', STR_PAD_LEFT);
-            }
-        }
-        
-        // Fallback defaults if row missing
+        $this->load->model('general_model');
         if($type == 'IPD'){
-            return 'CI-00000001';
+            return $this->general_model->generateID('CI', 'iop_billing', 'invoice_no');
         } else {
-            return 'CO-00000001';
+            return $this->general_model->generateID('CO', 'iop_billing', 'invoice_no');
         }
     }
     
     public function updateInvoiceNo($new_no){
-        // Update the shared invoice counter
-        // Extract number
-        if(strpos($new_no, 'CI-') === 0){
-            $val = intval(substr($new_no, 3));
-        } else {
-            $val = intval(substr($new_no, 3));
-        }
-        
-        $this->db->where("cCode", "invoice_no");
-        $this->db->update("system_option", array("cValue" => $val));
+        // Deprecated
     }
     
     public function getPatientInfo($patient_no){

@@ -4,243 +4,205 @@ require APPPATH.'controllers/general.php';
 
 class Inventory extends General{
 
-	private $limit = 10;
+    private $limit = 10;
 
-	public function __construct(){
-		parent::__construct();
-		$this->load->model("app/inventory_model");
-		if(General::is_logged_in() == FALSE){
+    public function __construct(){
+        parent::__construct();
+        $this->load->model("app/inventory_model");
+        $this->load->model("app/pharmacy_model"); // Reuse item search if needed
+        $this->load->model("general_model");
+        if(General::is_logged_in() == FALSE){
             redirect(base_url().'login');    
         }
-		General::variable();	
-	}
-	
-	public function index(){
-				// user restriction function
-				$this->session->set_userdata('page_name','inventory');
-				$page_id = $this->general_model->getPageID();
-				$userRole = $this->general_model->getUserLoggedIn($this->session->userdata('username'));
-				if(General::has_rights_to_access($page_id->page_id,$userRole->user_role) == FALSE){
-					redirect(base_url().'access_denied');
-				}
-				// end of user restriction function
-				
-		$this->session->set_userdata(array(
-				 'tab'			=>		'admin',
-				 'module'		=>		'',
-				 'subtab'		=>		'inventory_master',
-				 'submodule'	=>		'inventory_category'));
-		$this->inventory();
-	}
-	
-	public function inventory($offset = 0){
-		$uri_segment = 4;
-		$offset = $this->uri->segment($uri_segment);
-		$category = $this->inventory_model->getAll($this->limit, $offset);
-		
-		$config['base_url'] = base_url().'app/inventory/index/';
- 		$config['total_rows'] = $this->inventory_model->count_all();
- 		$config['per_page'] = $this->limit;
-		
-		
-		$config['uri_segment'] = $uri_segment;
-		$config['full_tag_open'] = '<ul class="pagination pagination no-margin pull-right">';
-		$config['full_tag_close'] = '</ul><!--pagination-->';
-
-		$config['first_link'] = '&laquo; First';
-		$config['first_tag_open'] = '<li class="prev page">';
-		$config['first_tag_close'] = '</li>';
-
-		$config['last_link'] = 'Last &raquo;';
-		$config['last_tag_open'] = '<li class="next page">';
-		$config['last_tag_close'] = '</li>';
-
-		$config['next_link'] = 'Next &rarr;';
-		$config['next_tag_open'] = '<li class="next page">';
-		$config['next_tag_close'] = '</li>';
-
-		$config['prev_link'] = '&larr; Previous';
-		$config['prev_tag_open'] = '<li class="prev page">';
-		$config['prev_tag_close'] = '</li>';
-
-		$config['cur_tag_open'] = '<li class="active"><a href="">';
-		$config['cur_tag_close'] = '</a></li>';
-
-		$config['num_tag_open'] = '<li class="page">';
-		$config['num_tag_close'] = '</li>';
-		
-		$this->pagination->initialize($config);
-		$this->data['pagination'] = $this->pagination->create_links();
-	
-		$tmpl = array('table_open' => '<table class="table table-hover table-striped">');
-        $this->table->set_template($tmpl);
-		$this->table->set_empty("&nbsp;");
-		$this->table->set_heading('Category Name', 'Description','Action');
-		$i = 0 + $offset;
-		
-		
-		foreach ($category as $category)
-		{	
-		
-				$this->table->add_row( 
-									$category->med_category_name, 
-									$category->med_category_desc, 
-									anchor('app/medicine_category/edit/'.$category->cat_id,'Edit').'&nbsp|&nbsp;'.
-									anchor('app/medicine_category/delete/'.$category->cat_id,'Delete',array('class'=>'delete','onclick'=>"return confirm('Are you sure want to delete?')"))
-			);
-		}
-		$this->data['message'] = $this->session->flashdata('message');
-		$this->data['table'] = $this->table->generate();
-
-		$this->load->view('app/inventory/index',$this->data);	
-	}
-
-
-	public function add(){
-		// user restriction function
-				$this->session->set_userdata('page_name','add_medicine_category');
-				$page_id = $this->general_model->getPageID();
-				$userRole = $this->general_model->getUserLoggedIn($this->session->userdata('username'));
-				if(General::has_rights_to_access($page_id->page_id,$userRole->user_role) == FALSE){
-					redirect(base_url().'access_denied');
-				}
-				// end of user restriction function
-				
-		$this->load->view('app/medicine_category/add', $this->data);		
-	}
-	
-	public function validate_category(){
-		if($this->medicine_category_model->validate_category()){
-			$this->form_validation->set_message("validate_category","Category Master Already Exists.");
-			return false;
-		}else{
-			return true;
-		}
-	}
-	
-	public function save(){
-		$this->form_validation->set_rules("category","Category Name","trim|xss_clean|required|callback_validate_category");
-		$this->form_validation->set_error_delimiters("<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>","</div>");
-	
-		if($this->form_validation->run()){
-			
-			//save the data
-			$this->medicine_category_model->save();
-			
-			$value = $this->input->post('category');
-			General::logfile('Medicine Category','INSERT',$value);
-			
-			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Medicine Category successfully Added!</div>");
-			
-			//redirect
-			redirect(base_url().'app/medicine_category',$this->data);
-			
-			
-		}else{
-			$this->add();	
-		}
-	
-	}
-	
-	public function edit($id = 0){
-		if(isset($_POST['btnSubmit'])){
-			
-			$this->edit_save();
-			
-			
-		}else{
-			// user restriction function
-				$this->session->set_userdata('page_name','update_medical_category');
-				$page_id = $this->general_model->getPageID();
-				$userRole = $this->general_model->getUserLoggedIn($this->session->userdata('username'));
-				if(General::has_rights_to_access($page_id->page_id,$userRole->user_role) == FALSE){
-					redirect(base_url().'access_denied');
-				}
-				// end of user restriction function
-				
-			$this->data['medicine_category'] = $this->medicine_category_model->getCategory($id); 
-			$this->load->view('app/medicine_category/edit',$this->data);	
-		}
-	}
-	
-	public function validate_category_edit(){
-		if($this->medicine_category_model->validate_category_edit()){
-			$this->form_validation->set_message("validate_category_edit","Category Master Already Exists.");
-			return false;
-		}else{
-			return true;
-		}
-	}
-	
-	public function edit_save(){
-		$this->form_validation->set_rules("category","Category Name","trim|xss_clean|required|callback_validate_category_edit");
-		$this->form_validation->set_error_delimiters("<div class='alert alert-warning alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>","</div>");
-	
-		if($this->form_validation->run()){
-			
-			//save the data
-			$this->medicine_category_model->edit_save();
-			
-			$value = $this->input->post('category');
-			General::logfile('Medicine Category','UPDATE',$value);
-			
-			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Medicine Category successfully Updated!</div>");
-			
-			//redirect
-			redirect(base_url().'app/medicine_category',$this->data);
-			
-			
-		}else{
-			// user restriction function
-				$this->session->set_userdata('page_name','update_medical_category');
-				$page_id = $this->general_model->getPageID();
-				$userRole = $this->general_model->getUserLoggedIn($this->session->userdata('username'));
-				if(General::has_rights_to_access($page_id->page_id,$userRole->user_role) == FALSE){
-					redirect(base_url().'access_denied');
-				}
-				// end of user restriction function
-				
-			$this->data['medicine_category'] = $this->medicine_category_model->getCategory($this->input->post('id')); 
-			$this->load->view('app/medicine_category/edit',$this->data);	
-		}
-	
-	}
-
-
-	public function delete($id){
-				// user restriction function
-				$this->session->set_userdata('page_name','delete_medical_category');
-				$page_id = $this->general_model->getPageID();
-				$userRole = $this->general_model->getUserLoggedIn($this->session->userdata('username'));
-				if(General::has_rights_to_access($page_id->page_id,$userRole->user_role) == FALSE){
-					redirect(base_url().'access_denied');
-				}
-				// end of user restriction function
-			
-		$this->medicine_category_model->delete($id);
-		
-		$value = $id;
-		General::logfile('Medicine Category','DELETE',$value);
-				
-		$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Medicine Category successfully Deleted!</div>");
-			
-		//redirect
-		redirect(base_url().'app/medicine_category',$this->data);
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-	
+        General::variable();
+    }
+    
+    public function index(){
+        // Redirect to Pharmacy Dashboard as it's now the main inventory hub
+        redirect(base_url().'app/pharmacy');
+    }
+    
+    // --- Stock Transfer ---
+    
+    public function stock_transfer(){
+        $this->session->set_userdata(array(
+            'tab'           =>      'inventory',
+            'module'        =>      'stock_transfer',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
+            
+        $this->data['transfers'] = $this->inventory_model->get_stock_transfers(100);
+        $this->load->view('app/inventory/stock_transfer/index', $this->data);
+    }
+    
+    public function add_stock_transfer(){
+        $branch_code = $this->session->userdata('branch_code') ? $this->session->userdata('branch_code') : 'A';
+        $this->data['transfer_no'] = $this->inventory_model->get_transfer_no($branch_code);
+        $this->load->view('app/inventory/stock_transfer/add', $this->data);
+    }
+    
+    public function save_stock_transfer(){
+        $this->form_validation->set_rules("transfer_no", "Transfer No", "required");
+        
+        if($this->form_validation->run()){
+            $header = array(
+                'transfer_no' => $this->input->post('transfer_no'),
+                'from_branch' => $this->input->post('from_branch'),
+                'to_branch' => $this->input->post('to_branch'),
+                'transfer_date' => date('Y-m-d'),
+                'status' => 'Pending',
+                'remarks' => $this->input->post('remarks'),
+                'created_by' => $this->session->userdata('user_id'),
+                'created_date' => date('Y-m-d H:i:s'),
+                'InActive' => 0
+            );
+            
+            $details = array();
+            $items = $this->input->post('item_id');
+            $qtys = $this->input->post('qty');
+            
+            if($items){
+                foreach($items as $key => $id){
+                    if($qtys[$key] > 0){
+                        $details[] = array(
+                            'item_id' => $id,
+                            'qty_requested' => $qtys[$key],
+                            'qty_issued' => 0, 
+                            'InActive' => 0
+                        );
+                    }
+                }
+            }
+            
+            if($this->inventory_model->save_transfer($header, $details)){
+                $this->session->set_flashdata('message','<div class="alert alert-success alert-dismissable"><i class="fa fa-check"></i> Stock Transfer Saved Successfully!</div>');
+                redirect('app/inventory/stock_transfer');
+            } else {
+                $this->session->set_flashdata('message','<div class="alert alert-danger alert-dismissable"><i class="fa fa-ban"></i> Failed to save transfer.</div>');
+                redirect('app/inventory/stock_transfer');
+            }
+        } else {
+            $this->add_stock_transfer();
+        }
+    }
+    
+    public function view_transfer($id){
+        $this->data['header'] = $this->inventory_model->get_transfer($id);
+        $this->data['details'] = $this->inventory_model->get_transfer_details($id);
+        $this->load->view('app/inventory/stock_transfer/view', $this->data);
+    }
+    
+    public function receive_transfer($id){
+        $received_by = $this->session->userdata('user_id');
+        if($this->inventory_model->receive_transfer($id, $received_by)){
+             $this->session->set_flashdata('message','<div class="alert alert-success alert-dismissable"><i class="fa fa-check"></i> Stock Transfer Received Successfully!</div>');
+        } else {
+             $this->session->set_flashdata('message','<div class="alert alert-danger alert-dismissable"><i class="fa fa-ban"></i> Failed to receive transfer.</div>');
+        }
+        redirect('app/inventory/view_transfer/'.$id);
+    }
+    
+    public function cancel_transfer($id){
+        if($this->inventory_model->cancel_transfer($id)){
+             $this->session->set_flashdata('message','<div class="alert alert-success alert-dismissable"><i class="fa fa-check"></i> Stock Transfer Cancelled Successfully!</div>');
+        } else {
+             $this->session->set_flashdata('message','<div class="alert alert-danger alert-dismissable"><i class="fa fa-ban"></i> Failed to cancel transfer.</div>');
+        }
+        redirect('app/inventory/view_transfer/'.$id);
+    }
+    
+    public function print_transfer($id){
+        $this->data['header'] = $this->inventory_model->get_transfer($id);
+        $this->data['details'] = $this->inventory_model->get_transfer_details($id);
+        $this->load->view('app/inventory/stock_transfer/print', $this->data);
+    }
+    
+    // --- Stock Issuance ---
+    
+    public function stock_issuance(){
+        $this->session->set_userdata(array(
+            'tab'           =>      'inventory',
+            'module'        =>      'stock_issuance',
+            'subtab'        =>      '',
+            'submodule'     =>      ''));
+            
+        $this->data['issuances'] = $this->inventory_model->get_stock_issuances(100);
+        $this->load->view('app/inventory/stock_issuance/index', $this->data);
+    }
+    
+    public function add_stock_issuance(){
+        $branch_code = $this->session->userdata('branch_code') ? $this->session->userdata('branch_code') : 'A';
+        $this->data['issuance_no'] = $this->inventory_model->get_issuance_no($branch_code);
+        $this->load->view('app/inventory/stock_issuance/add', $this->data);
+    }
+    
+    public function save_stock_issuance(){
+        $this->form_validation->set_rules("issuance_no", "Issuance No", "required");
+        
+        if($this->form_validation->run()){
+            $header = array(
+                'issuance_no' => $this->input->post('issuance_no'),
+                'issue_date' => date('Y-m-d'),
+                'issued_to' => $this->input->post('issued_to_id'), // Use ID from hidden field
+                'remarks' => $this->input->post('remarks'),
+                'created_by' => $this->session->userdata('user_id'),
+                'created_date' => date('Y-m-d H:i:s'),
+                'status' => 'Active',
+                'InActive' => 0
+            );
+            
+            $details = array();
+            $items = $this->input->post('item_id');
+            $qtys = $this->input->post('qty');
+            
+            if($items){
+                foreach($items as $key => $id){
+                    if($qtys[$key] > 0){
+                        $details[] = array(
+                            'item_id' => $id,
+                            'qty' => $qtys[$key],
+                            'InActive' => 0
+                        );
+                    }
+                }
+            }
+            
+            if($this->inventory_model->save_issuance($header, $details)){
+                $this->session->set_flashdata('message','<div class="alert alert-success alert-dismissable"><i class="fa fa-check"></i> Stock Issuance Saved Successfully!</div>');
+                redirect('app/inventory/stock_issuance');
+            } else {
+                $this->session->set_flashdata('message','<div class="alert alert-danger alert-dismissable"><i class="fa fa-ban"></i> Failed to save issuance.</div>');
+                redirect('app/inventory/stock_issuance');
+            }
+        } else {
+            $this->add_stock_issuance();
+        }
+    }
+    
+    // AJAX Helpers
+    public function search_employees($keyword = ''){
+        $keyword = urldecode($keyword);
+        $employees = $this->inventory_model->search_employees($keyword);
+        $result = array();
+        foreach($employees as $emp){
+            $result[] = array(
+                'id' => $emp->user_id,
+                'name' => $emp->firstname . ' ' . $emp->lastname
+            );
+        }
+        echo json_encode($result);
+    }
+    
+    public function search_branches($keyword = ''){
+        $keyword = urldecode($keyword);
+        $branches = $this->inventory_model->search_branches($keyword);
+        $result = array();
+        foreach($branches as $br){
+            $result[] = array(
+                'id' => $br->branch_id,
+                'name' => $br->company_name . ' (' . $br->branch_code . ') - ' . $br->address
+            );
+        }
+        echo json_encode($result);
+    }
 }

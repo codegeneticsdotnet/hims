@@ -8,22 +8,30 @@ class Ipd_model extends CI_Model{
 	
 	public function get_ipd_counts(){
         $counts = array();
+        $branch_id = $this->session->userdata('branch_id');
         
         // Admitted Patients
         $this->db->where('patient_type', 'IPD');
         $this->db->where('nStatus', 'Pending');
         $this->db->where('InActive', 0);
+        $this->db->where('branch_id', $branch_id);
         $counts['admitted'] = $this->db->count_all_results('patient_details_iop');
         
         // Available Beds
-        $this->db->where('nStatus', 'Vacant');
-        $this->db->where('InActive', 0);
+        // Beds are linked to rooms, rooms are linked to branches
+        // We need to join room_master to check branch_id
+        $this->db->select('room_beds.room_bed_id');
+        $this->db->join('room_master', 'room_master.room_master_id = room_beds.room_master_id');
+        $this->db->where('room_beds.nStatus', 'Vacant');
+        $this->db->where('room_beds.InActive', 0);
+        $this->db->where('room_master.branch_id', $branch_id);
         $counts['available_beds'] = $this->db->count_all_results('room_beds');
         
         // Discharged Patients
         $this->db->where('patient_type', 'IPD');
         $this->db->where('nStatus', 'Discharged');
         $this->db->where('InActive', 0);
+        $this->db->where('branch_id', $branch_id);
         $counts['discharged'] = $this->db->count_all_results('patient_details_iop');
         
         return $counts;
@@ -37,16 +45,19 @@ class Ipd_model extends CI_Model{
 				C.category_name
 		");
 		
+		$branch_id = $this->session->userdata('branch_id');
+		$where_branch = " and A.branch_id = '".$branch_id."'";
+		
 		if($occupied == "all"){
-            $where = "A.category_id = '".$roomType."'";
+            $where = "A.category_id = '".$roomType."'".$where_branch;
         }else if($occupied == "occupied"){
-            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Occupied' ";
+            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Occupied' ".$where_branch;
         }else if($occupied == "unoccupied"){
-            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Vacant' ";
+            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Vacant' ".$where_branch;
         }else if($occupied == "maintenance"){
-            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Maintenance' ";
+            $where = "A.category_id = '".$roomType."' and D.nStatus = 'Maintenance' ".$where_branch;
         }else{
-            $where = "A.category_id = '".$roomType."'"; 
+            $where = "A.category_id = '".$roomType."'".$where_branch; 
         }
 		
 		$this->db->where($where);
@@ -109,11 +120,22 @@ class Ipd_model extends CI_Model{
 			'respiration'				=>		$this->input->post('respiration'),
 			'weight'					=>		$this->input->post('weight'),
 			'nStatus'					=>		'Pending',
+			'branch_id'					=>		$this->session->userdata('branch_id'),
 			'InActive'					=>		0
 		);	
 		
 		$this->db->insert("patient_details_iop",$this->data);
 	}
+
+
+    public function updateAutoNum(){
+        $this->db->where(array(
+            'cCode'     =>  'INPATIENTNO',
+            'InActive'  =>  0
+        )); 
+        $this->db->set('cValue', 'cValue+1', FALSE);
+        $this->db->update("system_option");
+    }
 	
 	public function getAll($limit = 10, $offset = 0){
 		if($this->input->post("cFrom") == ""){
@@ -142,16 +164,17 @@ class Ipd_model extends CI_Model{
 			G.bed_name,
 			H.room_name
 			",false);
+		$branch_id = $this->session->userdata('branch_id');
 		$where = "(
 				B.lastname like '%".$this->input->post("search")."%' or 
 				B.firstname like '%".$this->input->post("search")."%' or 
 				B.patient_no like '%".$this->input->post("search")."%' or 
 				A.IO_ID like '%".$this->input->post("search")."%'
 				) 
-				and A.department_id like '%".$this->input->post("department")."%' 
 				and E.user_id like '%".$this->input->post("doctor")."%' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."'  
 				and A.patient_type = 'IPD' 
+				and A.branch_id = '".$branch_id."' 
 				and A.InActive = 0";
 		$this->db->where($where);
 		$this->db->order_by('B.patient_no','asc');
@@ -190,16 +213,17 @@ class Ipd_model extends CI_Model{
 			D.dept_name,
 			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as 'doctor',
 			",false);
+		$branch_id = $this->session->userdata('branch_id');
 		$where = "(
 				B.lastname like '%".$this->input->post("search")."%' or 
 				B.firstname like '%".$this->input->post("search")."%' or 
 				B.patient_no like '%".$this->input->post("search")."%' or 
 				A.IO_ID like '%".$this->input->post("search")."%'
 				) 
-				and A.department_id like '%".$this->input->post("department")."%' 
 				and E.user_id like '%".$this->input->post("doctor")."%' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."'  
 				and A.patient_type = 'IPD' 
+				and A.branch_id = '".$branch_id."' 
 				and A.InActive = 0";
 		$this->db->where($where);
 		$this->db->order_by('B.lastname','asc');
@@ -238,6 +262,7 @@ class Ipd_model extends CI_Model{
 				H.room_name
 		",false);
 		$this->db->where("A.IO_ID",$iop_no);
+		$this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 		$this->db->join("users B","B.user_id = A.refferal_doctor","left outer");
 		$this->db->join("users C","C.user_id = A.doctor_id","left outer");
 		$this->db->join("system_parameters D","D.param_id = B.title","left outer");

@@ -157,6 +157,10 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Bin Location</label>
+                        <input type="text" name="bin_location" id="bin_location" class="form-control" placeholder="e.g. Rack 1, Shelf A">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -197,6 +201,7 @@
         $('#unit').val(item.unit_id);
         $('#price').val(item.price);
         $('#reorder_level').val(item.re_order_level);
+        $('#bin_location').val(item.bin_location);
         
         // Open Modal
         $('#addItemModal').modal('show');
@@ -211,6 +216,7 @@
         $('#unit').val('');
         $('#price').val('0.00');
         $('#reorder_level').val('10');
+        $('#bin_location').val('');
     }
 </script>
 

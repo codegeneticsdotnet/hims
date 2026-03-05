@@ -160,7 +160,7 @@ class Patient extends General{
 		
 		if($this->form_validation->run()){
 			// Generate Patient ID
-			$lastPatientID = $this->patient_model->lastPatientID();
+			$lastPatientID = $this->patient_model->lastPatientID()->patient_no;
 			
 			// Save Data
 			$this->data = array(
@@ -215,6 +215,9 @@ class Patient extends General{
 	
 		if($this->form_validation->run()){
 			
+			// Generate Patient ID
+			$lastPatientID = $this->patient_model->lastPatientID()->patient_no;
+			
 			//save the data
 			$this->patient_model->save();
 			
@@ -228,7 +231,7 @@ class Patient extends General{
 			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Patient successfully Added!</div>");
 			
 			//redirect
-			redirect(base_url().'app/patient');
+			redirect(base_url().'app/patient/view/'.$lastPatientID);
 			
 			
 		}else{

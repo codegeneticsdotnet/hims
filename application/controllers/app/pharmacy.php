@@ -46,6 +46,7 @@ class Pharmacy extends General{
                 'uom'               => $this->input->post('unit') ? $this->input->post('unit') : 0, // Ensure not null
                 'nPrice'            => $this->input->post('price'),
                 're_order_level'    => $this->input->post('reorder_level'),
+                'bin_location'      => $this->input->post('bin_location'),
                 'cType'             => 0, // Default value for cType
                 'InActive'          => 0
             );
@@ -208,6 +209,7 @@ class Pharmacy extends General{
         $this->db->where("A.patient_type", "IPD");
         $this->db->where("A.nStatus", "Pending");
         $this->db->where("A.InActive", 0);
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
         $this->db->group_start();
         $this->db->like("B.lastname", $keyword);
         $this->db->or_like("B.firstname", $keyword);
@@ -351,18 +353,17 @@ class Pharmacy extends General{
 	
 	public function pharmacy(){
 		$this->session->set_userdata(array(
-			'tab'			=>		'',
-			'module'		=>		'',
+			'tab'			=>		'pharmacy',
+			'module'		=>		'dashboard',
 			'subtab'		=>		'',
 			'submodule'	=>		''));
-		   // user restriction function
-		   $this->session->set_userdata('page_name','receipt_lists');
-		   $page_id = $this->general_model->getPageID();
-		   $userRole = $this->general_model->getUserLoggedIn($this->session->userdata('username'));
-		   //if(General::has_rights_to_access($page_id->page_id,$userRole->user_role) == FALSE){
-			//	   redirect(base_url().'access_denied');
-		   //}
-		   // end of user restriction function		 	
+            
+		// Load Inventory Data for Dashboard
+		$this->load->model("app/inventory_model");
+		$this->data['low_stock'] = $this->inventory_model->get_low_stock_items();
+		$this->data['expiring'] = $this->inventory_model->get_expiring_items(30);
+		$this->data['recent_transfers'] = $this->inventory_model->get_stock_transfers(5);
+		
 		$this->load->view('app/pharmacy/index',$this->data);	
 	}
 

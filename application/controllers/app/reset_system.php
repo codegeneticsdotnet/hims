@@ -46,6 +46,14 @@ class Reset_system extends General{
         // Disable foreign key checks to avoid constraint errors during truncation
         $this->db->query('SET FOREIGN_KEY_CHECKS = 0');
         
+        // NOTE: Master Data Tables EXCLUDED from reset:
+        // - room_master (Rooms)
+        // - medicine_drug_name (Medical Items - only stock reset)
+        // - company_info (Company Name)
+        // - company_branch (Company Branch)
+        // - users (Users)
+        // - department, designation, etc.
+
         // 1. Patient Records
         $this->db->truncate('patient_personal_info');
         $this->db->truncate('patient_attachment');

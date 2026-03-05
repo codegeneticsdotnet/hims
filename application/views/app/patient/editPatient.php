@@ -82,12 +82,6 @@
                                                         <?php echo form_input('lastname',set_value('lastname',$patientInfo->lastname),'id="lastname" class="form-control input-sm" placeholder="Last Name" style="width: 250px;" required');?>
                                                         </td>
                                                     </tr>
-                                                    <tr>
-                                                    	<td>Birthday <font color="#FF0000">*</font></td>
-                                                        <td>
-                                                        <input class="form-control input-sm" name="birthday" id="birthday" type="text" value="<?php echo date('m/d/Y', strtotime($patientInfo->birthday ?: date('Y-m-d'))); ?>" placeholder="From Date" style="width:150px;" required>
-                                                        </td>
-                                                    </tr>
 
                                                     <tr>
                                                     	<td width="12%">Gender  <font color="#FF0000">*</font></td>
@@ -107,6 +101,13 @@
                                                             </select>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                    	<td>Birthday <font color="#FF0000">*</font></td>
+                                                        <td>
+                                                        <input class="form-control input-sm" name="birthday" id="birthday" type="text" value="<?php echo date('m/d/Y', strtotime($patientInfo->birthday ?: date('Y-m-d'))); ?>" placeholder="From Date" style="width:150px;" required>
+                                                        </td>
+                                                    </tr>
+
                                                     <tr>
                                                     	<td>Birth Place </td>
                                                         <td>

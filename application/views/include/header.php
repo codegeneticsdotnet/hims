@@ -16,7 +16,7 @@
             <span class="icon-bar"></span>
         </a>
         <div class="logo2"> 
-                <?php echo $companyInfo->company_name?>
+                <?php echo $this->session->userdata('branch_name') . ' - ' . $this->session->userdata('branch_address');?>
         </div>
         <div class="navbar-right">
             <ul class="nav navbar-nav">

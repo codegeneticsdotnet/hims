@@ -49,8 +49,13 @@
 								<div class="form-group">
 									<label for="branch">Hospital Branch:</label>
 									<select name="branch" id="branch" style="width:100%" class="login branch-field" required>
-										<option value="CBH">Christ Bearer Hospital - San Carlos</option>
-										<option value="CPG">Christ Bearer Clinic - Pagal</option>
+                                        <?php if(isset($branches) && !empty($branches)): ?>
+                                            <?php foreach($branches as $branch): ?>
+                                                <option value="<?php echo $branch->branch_id;?>"><?php echo $branch->company_name;?> - <?php echo $branch->address;?></option>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+										    <option value="">No Active Branches</option>
+                                        <?php endif; ?>
 									</select>
 								</div> <!-- /branch -->
 								<div class="field">

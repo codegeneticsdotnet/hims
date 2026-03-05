@@ -49,6 +49,10 @@ class Lab_services_model extends CI_Model{
 
 		$this->db->where('A.InActive', 0);
 		$this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+		// Filter by Branch via IOP
+		$this->db->join("patient_details_iop C", "C.IO_ID = A.iop_id", "left");
+		$this->db->where("C.branch_id", $this->session->userdata('branch_id'));
+		
 		$this->db->order_by('A.request_date', 'DESC');
 		
 		$query = $this->db->get("lab_service_request A", $limit, $offset);
@@ -56,25 +60,27 @@ class Lab_services_model extends CI_Model{
 	}
 	
 	public function count_all(){
-		$this->db->where('InActive', 0);
+        $this->db->from("lab_service_request A");
+		$this->db->where('A.InActive', 0);
         
         // Date Filter
 		if($this->input->post('cFrom') && $this->input->post('cTo')){
-			$this->db->where("request_date BETWEEN '".$this->input->post('cFrom')." 00:00:00' AND '".$this->input->post('cTo')." 23:59:59'");
+			$this->db->where("A.request_date BETWEEN '".$this->input->post('cFrom')." 00:00:00' AND '".$this->input->post('cTo')." 23:59:59'");
 		}
 
          if($this->input->post('search')){
             $search = $this->input->post('search');
             $this->db->group_start();
-            $this->db->like('request_no', $search);
-            $this->db->or_like('patient_no', $search);
-            // Can't easily join in count_all usually in CI unless using Active Record fully before get
-            // But for simple count, let's stick to base table or do a join if needed.
-            // Simplified for now.
+            $this->db->like('A.request_no', $search);
+            $this->db->or_like('A.patient_no', $search);
              $this->db->group_end();
         }
+        
+        // Filter by Branch
+        $this->db->join("patient_details_iop C", "C.IO_ID = A.iop_id", "left");
+        $this->db->where("C.branch_id", $this->session->userdata('branch_id'));
 
-		return $this->db->count_all_results("lab_service_request");
+		return $this->db->count_all_results();
 	}
 
     public function getRequestDetails($id){
@@ -161,24 +167,8 @@ class Lab_services_model extends CI_Model{
         else if($type == 'Ultrasound') $prefix = 'U';
         else return false;
 
-        $this->db->select('request_no');
-        $this->db->where('request_type', $type);
-        $this->db->like('request_no', $prefix, 'after');
-        $this->db->order_by('request_id', 'DESC');
-        $this->db->limit(1);
-        $query = $this->db->get('lab_service_request');
-
-        if($query->num_rows() > 0){
-            $row = $query->row();
-            $last_no = $row->request_no;
-            // Extract number part (assuming L00000001 format)
-            $num = (int) substr($last_no, 1);
-            $new_num = $num + 1;
-        } else {
-            $new_num = 1;
-        }
-
-        return $prefix . str_pad($new_num, 8, '0', STR_PAD_LEFT);
+        $this->load->model('general_model');
+        return $this->general_model->generateID($prefix, 'lab_service_request', 'request_no');
     }
 
     public function getParticulars($search, $category){

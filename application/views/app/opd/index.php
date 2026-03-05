@@ -29,7 +29,6 @@
                                             <tr>
                                             	<td>From Date</td>
                                                 <td>To Date</td>
-                                                <td>Department</td>
                                                 <td>Consultant Doctor</td>
                                                 <td>OPD/LastName/FirstName</td>
                                                 <td></td>
@@ -37,21 +36,6 @@
                                             <tr>
                                             	<td><input class="form-control input-sm" name="cFrom" id="cFrom" type="text" value="<?php echo date("Y-m-d");?>" placeholder="From Date Registration" style="width: 130px;" required></td>
                                                 <td><input class="form-control input-sm" name="cTo" id="cTo" type="text" value="<?php echo date("Y-m-d");?>" placeholder="to Date Registration" style="width: 130px;" required></td>
-                                            	<td>
-                                                <select name="department" id="department" class="form-control input-sm" style="width: 200px;">
-                                                            	<option value="">All Department</option>
-                                                            	<?php 
-																foreach($departmentList as $departmentList){
-																if($_POST['department'] == $departmentList->department_id){
-																	$selected = "selected='selected'";
-																}else{
-																	$selected = "";
-																}
-																?>
-                                                            	<option value="<?php echo $departmentList->department_id;?>" <?php echo $selected;?>><?php echo $departmentList->dept_name;?></option>
-                                                                <?php }?>
-                                                            </select>
-                                                </td>
                                                 <td>
                                                 <select name="doctor" id="doctor" class="form-control input-sm" style="width: 200px;">
                                                             	<option value="">All Doctors</option>

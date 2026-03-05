@@ -20,9 +20,6 @@
 					 if(document.getElementById("bed_name").value == ""){
 						 	alert("Please select Bed No. to admit patient.");
 						 	return false;
-					 	}else if(document.getElementById("department").value == ""){
-						 	alert("Please select Department.");
-						 	return false;
 					 	}else if(document.getElementById("doctor").value == ""){
 						 	alert("Please select Doctor Incharge.");
 						 	return false;
@@ -36,25 +33,11 @@
 				 }
                  </script>
                  <?php
-													$userID = $lastIPDNo->ipdNo;
-													$userID2 = $lastIPDNo->ipdNo;
-													if(strlen($userID) == 1){
-														$userID = "00000".$userID;
-													}else if(strlen($userID) == 2){
-														$userID = "0000".$userID;
-													}else if(strlen($userID) == 3){
-														$userID = "000".$userID;
-													}else if(strlen($userID) == 4){
-														$userID = "00".$userID;
-													}else if(strlen($userID) == 5){
-														$userID = "0".$userID;
-													}else if(strlen($userID) == 6){
-														$userID = $userID;
-													}
+													$newIPDNo = $lastIPDNo->ipdNo;
 													?>
                  <form method="post" action="<?php echo base_url();?>app/ipd/save_ipd" onSubmit="return validate_form();">
                  <input type="hidden" name="patient_no" value="<?php echo $patientInfo->patient_no?>">
-                 <input type="hidden" name="iopNo2" value="<?php echo $userID2?>">
+                 <input type="hidden" name="iopNo2" value="<?php echo $newIPDNo?>">
                  <input type="hidden" name="room_idfor" id="room_idfor">
                  
                 <?php echo validation_errors();?>
@@ -98,24 +81,17 @@
                             <div class="box-footer clearfix">
                                 <div class="form-group">
                                 	<label for="exampleInputEmail1">IOP No.</label>	
-                                     <input type="text" name="iopNo" id="iopNo" value="IP-<?php echo $userID?>" class="form-control input-sm" readonly>
+                                     <input type="text" name="iopNo" id="iopNo" value="<?php echo $newIPDNo?>" class="form-control input-sm" readonly>
                                 </div>
                             	
                                 <div class="form-group">
+                                    <input type="hidden" name="department" value="46">
+                                	<!--
                                 	<label for="exampleInputEmail1">Department</label>
-                                	<select name="department" id="department" class="form-control input-sm">
-                                                            	<option value="">- Department -</option>
-                                                            	<?php 
-																foreach($departmentList as $departmentList){
-																if($_POST['department'] == $departmentList->department_id){
-																	$selected = "selected='selected'";
-																}else{
-																	$selected = "";
-																}
-																?>
-                                                            	<option value="<?php echo $departmentList->department_id;?>" <?php echo $selected;?>><?php echo $departmentList->dept_name;?></option>
-                                                                <?php }?>
+                                	<select name="department_display" id="department_display" class="form-control input-sm" disabled>
+                                                            	<option value="">- IN PATIENT -</option>
                                                             </select>
+                                    -->
                                 </div>
                                 
                                 <div class="form-group">

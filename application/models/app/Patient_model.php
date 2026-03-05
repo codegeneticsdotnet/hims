@@ -60,12 +60,31 @@ class Patient_model extends CI_Model{
 	}
 	
 	public function lastPatientID(){
-		$this->db->select("(cValue + 1) as patient_no");
+		$this->db->select("cValue");
 		$this->db->where("cCode","patient_no");
-		$query = $this->db->get("system_option");	
-		return $query->row();
+		$query = $this->db->get("system_option");
+		$row = $query->row();
+        $last_seq = $row->cValue;
+        
+        $branch_code = $this->session->userdata('branch_code');
+        if(empty($branch_code)) $branch_code = 'A';
+        
+        $ym = date('ym');
+        $new_seq = str_pad($last_seq + 1, 4, '0', STR_PAD_LEFT);
+        
+        return (object) array('patient_no' => 'P' . $branch_code . $ym . $new_seq);
 	}
-	
+    
+    public function updateAutoNum(){
+        // Increment the sequence in system_option
+		$this->db->where(array(
+			'cCode'			=>		'patient_no',
+			'InActive'		=>		0
+		));
+        $this->db->set('cValue', 'cValue+1', FALSE);
+		$this->db->update("system_option");
+	}
+    
 	public function validate_email(){
 		$this->db->where(array(
 			'email_address'		=>		$this->input->post('email'),
@@ -111,7 +130,7 @@ class Patient_model extends CI_Model{
 		$insurance_comp = $this->input->post('insurance_comp');
 		
 		$this->data = array(
-			'patient_no'		=>		$this->input->post('patientID'),
+			'patient_no'		=>		$this->lastPatientID()->patient_no,
 			'title'				=>		empty($title) ? 0 : $title,
 			'lastname'			=>		strtoupper($this->input->post('lastname')),
 			'firstname'			=>		strtoupper($this->input->post('firstname')),
@@ -139,16 +158,6 @@ class Patient_model extends CI_Model{
 			'InActive'			=>		0
 		);
 		$this->db->insert("patient_personal_info",$this->data);
-	}
-	
-	public function updateAutoNum(){
-		$this->db->where(array(
-			'cCode'			=>		'patient_no',
-			'InActive'		=>		0
-		));	
-		$this->data = array('cValue'	=>		$this->input->post('userID2'));
-		$this->db->update("system_option",$this->data);
-	//	redirect('/app/opd/search_result?search=' . $this->input->post('lastname'), 'refresh');
 	}
 	
 	public function getPatient($id){

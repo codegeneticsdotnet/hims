@@ -65,7 +65,8 @@ class Pharmacy_model extends CI_Model{
                 A.uom as unit_id,
 				A.nPrice as price,
 				A.nStock as stock_on_hand,
-                A.re_order_level
+                A.re_order_level,
+                A.bin_location
 		",false);
 		$where = " (A.drug_name LIKE '%" . $this->session->userdata("search_item") . "%' or 
 					A.drug_desc LIKE '%" . $this->session->userdata("search_item") . "%')
@@ -97,52 +98,22 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function generateDoctorOrderNo(){
-        $this->db->select("cValue");
-        $this->db->where("cCode", "doctor_order_no");
-        $query = $this->db->get("system_option");
-        
-        $val = 1;
-        if($query->num_rows() > 0){
-             $val = $query->row()->cValue + 1;
-             $this->db->where("cCode", "doctor_order_no");
-             $this->db->update("system_option", array("cValue" => $val));
-        } else {
-             $data = array('cCode' => 'doctor_order_no', 'cValue' => '1', 'InActive' => 0);
-             $this->db->insert('system_option', $data);
-        }
-        
-        return 'DO-' . str_pad($val, 8, '0', STR_PAD_LEFT);
+        $this->load->model('general_model');
+        return $this->general_model->generateID('DO', 'iop_medication', 'doctor_order_no');
     }
-        public function getPOSInvoiceNo(){
-        $this->db->select("cValue");
-        $this->db->where("cCode", "pharmacy_invoice_no");
-        $query = $this->db->get("system_option");
-        if($query->num_rows() > 0){
-             $val = $query->row()->cValue + 1;
-             // PA + YY + MM + 0001
-             return 'PA' . date('ym') . str_pad($val, 4, '0', STR_PAD_LEFT);
-        }
-        return 'PA' . date('ym') . '0001';
+
+    public function getPOSInvoiceNo(){
+        $this->load->model('general_model');
+        return $this->general_model->generateID('PA', 'pharmacy_sales', 'invoice_no');
     }
     
     public function getInventoryRefNo(){
-        $this->db->select("cValue");
-        $this->db->where("cCode", "pharmacy_rr_no");
-        $query = $this->db->get("system_option");
-        if($query->num_rows() > 0){
-             $val = $query->row()->cValue + 1;
-             // RA + YY + MM + 0001
-             return 'RA' . date('ym') . str_pad($val, 4, '0', STR_PAD_LEFT);
-        }
-        return 'RA' . date('ym') . '0001';
+        $this->load->model('general_model');
+        return $this->general_model->generateID('RA', 'pharmacy_inventory_in', 'ref_no');
     }
     
     public function updatePOSInvoiceNo($new_no){
-        // Format is PA24020001
-        // Length of PA + YY + MM is 2 + 2 + 2 = 6 chars
-        $val = intval(substr($new_no, 6)); 
-        $this->db->where("cCode", "pharmacy_invoice_no");
-        $this->db->update("system_option", array("cValue" => $val));
+        // Deprecated: using generateID based on table max ID
     }
     
     public function savePOS($header, $details, $ipd_meds = array()){
@@ -180,11 +151,7 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function updateInventoryRefNo($new_no){
-        // Format is RA24020001
-        // Length of RA + YY + MM is 2 + 2 + 2 = 6 chars
-        $val = intval(substr($new_no, 6)); 
-        $this->db->where("cCode", "pharmacy_rr_no");
-        $this->db->update("system_option", array("cValue" => $val));
+        // Deprecated: using generateID based on table max ID
     }
     
     public function saveInventoryIn($header, $details){
@@ -365,16 +332,8 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function getAdjustmentRefNo(){
-        $prefix = "AA" . date('ym');
-        $query = $this->db->query("SELECT reference_no FROM pharmacy_adjustments WHERE reference_no LIKE '$prefix%' ORDER BY adjust_id DESC LIMIT 1");
-        if($query->num_rows() > 0){
-            $row = $query->row();
-            $last_no = substr($row->reference_no, -4);
-            $new_no = $prefix . str_pad($last_no + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $new_no = $prefix . '0001';
-        }
-        return $new_no;
+        $this->load->model('general_model');
+        return $this->general_model->generateID('AA', 'pharmacy_adjustments', 'reference_no');
     }
     
     public function saveAdjustment($header, $details){
@@ -399,15 +358,8 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function getReturnNo(){
-        $query = $this->db->query("SELECT return_no FROM pharmacy_returns ORDER BY return_id DESC LIMIT 1");
-        if($query->num_rows() > 0){
-            $row = $query->row();
-            $last_no = substr($row->return_no, 2);
-            $new_no = 'RT' . str_pad($last_no + 1, 8, '0', STR_PAD_LEFT);
-        } else {
-            $new_no = 'RT00000001';
-        }
-        return $new_no;
+        $this->load->model('general_model');
+        return $this->general_model->generateID('RT', 'pharmacy_returns', 'return_no');
     }
     
     public function getSaleByInvoice($invoice_no){

@@ -14,7 +14,8 @@ class Room_master_model extends CI_Model{
 				C.floor_name like '%".$this->session->userdata("search_room_master")."%' or 
 				B.category_name like '%".$this->session->userdata("search_room_master")."%'
 				) 
-				and A.InActive = 0";
+				and A.InActive = 0
+				and A.branch_id = ".$this->session->userdata('branch_id');
 		$this->db->where($where);
 		$this->db->join("room_category B","B.category_id = A.category_id","left outer");
 		$this->db->join("floor C","C.floor_id = A.floor","left outer");
@@ -30,7 +31,8 @@ class Room_master_model extends CI_Model{
 				C.floor_name like '%".$this->session->userdata("search_room_master")."%' or 
 				B.category_name like '%".$this->session->userdata("search_room_master")."%'
 				) 
-				and A.InActive = 0";
+				and A.InActive = 0
+				and A.branch_id = ".$this->session->userdata('branch_id');
 		$this->db->where($where);
 		$this->db->join("room_category B","B.category_id = A.category_id","left outer");
 		$this->db->join("floor C","C.floor_id = A.floor","left outer");
@@ -44,6 +46,7 @@ class Room_master_model extends CI_Model{
 			'category_id'			=>		$this->input->post('roomType'),
 			'floor'					=>		$this->input->post('floor'),
 			'room_master_id !='		=>		$this->input->post('id'),
+			'branch_id'				=>		$this->session->userdata('branch_id'),
 			'InActive'				=>		0
 		));
 		$query = $this->db->get("room_master");
@@ -59,6 +62,7 @@ class Room_master_model extends CI_Model{
 			'room_name'		=>		$this->input->post('room_name'),
 			'category_id'	=>		$this->input->post('roomType'),
 			'floor'			=>		$this->input->post('floor'),
+			'branch_id'		=>		$this->session->userdata('branch_id'),
 			'InActive'		=>		0
 		));
 		$query = $this->db->get("room_master");
@@ -75,6 +79,7 @@ class Room_master_model extends CI_Model{
 			'room_name'		=>		$this->input->post('room_name'),
 			'floor'			=>		$this->input->post('floor'),
 			'room_rates'	=>		$this->input->post('room_rates'),
+			'branch_id'		=>		$this->session->userdata('branch_id'),
 			'InActive'		=>		0
 		);	
 		$this->db->insert("room_master",$this->data);

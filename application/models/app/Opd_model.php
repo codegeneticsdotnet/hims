@@ -34,6 +34,7 @@ class Opd_model extends CI_Model{
 		$this->db->where("A.date_visit", $today);
 		$this->db->where("A.doctor_id !=", 0);
 		$this->db->where("A.InActive", 0);
+		$this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 		$this->db->where("D.dept_name", "- OUT PATIENT DEPARTMENT -");
 		$query1 = $this->db->get("patient_details_iop A");
 		$doctor_patients = $query1->row()->doctor_patients;
@@ -45,6 +46,7 @@ class Opd_model extends CI_Model{
 		$this->db->where("A.patient_type", "OPD");
 		$this->db->where("A.date_visit", $today);
 		$this->db->where("A.InActive", 0);
+		$this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 		$this->db->where("D.dept_name", "LABORATORY");
 		$query2 = $this->db->get("patient_details_iop A");
 		$lab_requests = $query2->row()->lab_requests;
@@ -55,6 +57,7 @@ class Opd_model extends CI_Model{
 		$this->db->where("A.patient_type", "OPD");
 		$this->db->where("A.date_visit", $today);
 		$this->db->where("A.InActive", 0);
+		$this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 		$this->db->where("D.dept_name", "X-RAY");
 		$query3 = $this->db->get("patient_details_iop A");
 		$xray_requests = $query3->row()->xray_requests;
@@ -65,6 +68,7 @@ class Opd_model extends CI_Model{
 		$this->db->where("A.patient_type", "OPD");
 		$this->db->where("A.date_visit", $today);
 		$this->db->where("A.InActive", 0);
+		$this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 		$this->db->where("D.dept_name", "ULTRASOUND");
 		$query4 = $this->db->get("patient_details_iop A");
 		$ultrasound_requests = $query4->row()->ultrasound_requests;
@@ -105,6 +109,7 @@ class Opd_model extends CI_Model{
 		//$this->db->where("A.nStatus", "Pending");
 		$this->db->where("A.date_visit", $today);
 		$this->db->where("A.InActive", 0);
+		$this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 		$this->db->order_by("A.time_visit", "DESC");
 		$query = $this->db->get();
 		return $query->result();
@@ -135,16 +140,17 @@ class Opd_model extends CI_Model{
 			concat(ifnull(F.cValue,''),' ',ifnull(E.firstname,''),' ',ifnull(E.middlename,''),' ',ifnull(E.lastname,'')) as 'doctor',
 			A.nStatus,
 			",false);
+		$branch_id = $this->session->userdata('branch_id');
 		$where = "(
 				B.lastname like '%".$this->input->post("search")."%' or 
 				B.firstname like '%".$this->input->post("search")."%' or 
 				B.patient_no like '%".$this->input->post("search")."%' or 
 				A.IO_ID like '%".$this->input->post("search")."%'
 				) 
-				and A.department_id like '%".$this->input->post("department")."%' 
 				and E.user_id like '%".$this->input->post("doctor")."%' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."'  
 				and A.patient_type = 'OPD' 
+				and A.branch_id = '".$branch_id."' 
 				and A.InActive = 0";
 		$this->db->where($where);
 		$this->db->order_by('B.patient_no','asc');
@@ -181,16 +187,17 @@ class Opd_model extends CI_Model{
 			D.dept_name,
 			concat(F.cValue,' ',E.firstname,' ',E.middlename,' ',E.lastname) as 'doctor',
 			",false);
+		$branch_id = $this->session->userdata('branch_id');
 		$where = "(
 				B.lastname like '%".$this->input->post("search")."%' or 
 				B.firstname like '%".$this->input->post("search")."%' or 
 				B.patient_no like '%".$this->input->post("search")."%' or 
 				A.IO_ID like '%".$this->input->post("search")."%'
 				) 
-				and A.department_id like '%".$this->input->post("department")."%' 
 				and E.user_id like '%".$this->input->post("doctor")."%' 
 				and A.date_visit between '".$cFrom."' and '".$cTo."'  
 				and A.patient_type = 'OPD' 
+				and A.branch_id = '".$branch_id."' 
 				and A.InActive = 0";
 		$this->db->where($where);
 		$this->db->order_by('B.lastname','asc');
@@ -299,11 +306,21 @@ class Opd_model extends CI_Model{
 			'respiration'				=>		$this->input->post('respiration'),
 			'weight'					=>		$this->input->post('weight'),
 			'nStatus'					=>		'Pending',
+			'branch_id'					=>		$this->session->userdata('branch_id'),
 			'InActive'					=>		0
 		);	
 		
 		$this->db->insert("patient_details_iop",$this->data);
 	}
+
+    public function updateAutoNum(){
+        $this->db->where(array(
+            'cCode'     =>  'OUTPATIENTNO',
+            'InActive'  =>  0
+        )); 
+        $this->db->set('cValue', 'cValue+1', FALSE);
+        $this->db->update("system_option");
+    }
 	
 	public function save_vital(){
 		$this->data = array(

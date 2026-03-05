@@ -46,6 +46,7 @@ class Nurse_module extends General{
         $this->db->where("A.patient_type", "IPD");
         $this->db->where("A.nStatus", "Pending");
         $this->db->where("A.InActive", 0);
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
         $this->db->order_by("H.room_name", "ASC");
         $this->db->order_by("G.bed_name", "ASC");
         

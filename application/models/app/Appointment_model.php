@@ -189,10 +189,8 @@ class Appointment_model extends CI_Model{
 	}
 	
 	public function lastPatientID(){
-		$this->db->select("(cValue + 1) as patient_no");
-		$this->db->where("cCode","patient_no");
-		$query = $this->db->get("system_option");	
-		return $query->row();
+		$this->load->model('general_model');
+		return (object) array('patient_no' => $this->general_model->generateID('P', 'patient_personal_info', 'patient_no'));
 	}
 	
 	public function validate_email(){
@@ -259,12 +257,7 @@ class Appointment_model extends CI_Model{
 	}
 	
 	public function updateAutoNum(){
-		$this->db->where(array(
-			'cCode'			=>		'patient_no',
-			'InActive'		=>		0
-		));	
-		$this->data = array('cValue'	=>		$this->input->post('userID2'));
-		$this->db->update("system_option",$this->data);
+		// Deprecated: using generateID based on table max ID
 	}
 	
 	public function getPatient($id){

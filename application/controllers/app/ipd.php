@@ -121,7 +121,7 @@ class Ipd extends General{
 		$tmpl = array('table_open' => '<table class="table table-hover table-striped">');
         $this->table->set_template($tmpl);
 		$this->table->set_empty("&nbsp;");
-		$this->table->set_heading('IPD No','Patient No','Patient Name','Date Admit','Department','Room & Bed No.','Incharge Doctor','Status');
+		$this->table->set_heading('IPD No','Patient No','Patient Name','Date Admit','Branch Code','Room & Bed No.','Incharge Doctor','Status');
 		//$i = 0 + $offset;
 		
 		
@@ -140,7 +140,7 @@ class Ipd extends General{
 									$patient->patient_no,
 									$patient->name, 
 									date('M d, Y',strtotime($patient->date_visit))." ".date('H:i:s',strtotime($patient->time_visit)), 
-									$patient->dept_name, 
+									$this->session->userdata('branch_code'), 
 									"Rm ".$patient->room_name." Bed No.".$patient->bed_name, 
 									$patient->doctor,
 									$nStatus,
@@ -255,13 +255,12 @@ class Ipd extends General{
 			
 			
 			
-			$this->db->where(array("cCode"=>"INPATIENTNO", 'InActive' => 0));
-			$this->db->update('system_option',array('cValue'=>$this->input->post('iopNo2')));
+			$this->ipd_model->updateAutoNum();
 			
 			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>IPD Patient successfully saved!</div>");
 			
 			//redirect
-			redirect(base_url().'app/ipd/index',$this->data);
+			redirect(base_url().'app/ipd/view/'.$this->input->post('iopNo').'/'.$this->input->post('patient_no'));
 			
 			
 		}else{

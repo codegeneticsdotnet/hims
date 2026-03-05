@@ -25,13 +25,23 @@ class Login extends General{
                 'is_logged_in'      =>      false,
 				'user_id'			=>		''
         ));
-        $this->session->sess_destroy();    
+        $this->session->sess_destroy();
+        
+        // Load branches for dropdown
+        $this->load->model('app/company_branch_model');
+        $this->data['branches'] = $this->company_branch_model->getAll();
+        
 		$this->load->view("login",$this->data);		
 	}
 
 	function loginNow($username,$password){
 		$this->data['usernamelogin'] = $username;
 		$this->data['passwordlogin'] = $password;
+        
+        // Load branches for dropdown
+        $this->load->model('app/company_branch_model');
+        $this->data['branches'] = $this->company_branch_model->getAll();
+        
 		$this->load->view("login",$this->data);		
 	}
 	
@@ -52,8 +62,14 @@ class Login extends General{
 		if($this->form_validation->run()){
 			
 			$user_info = $this->general_model->getUserLoggedIn($this->input->post('username'));
-			$branch = $this->input->post('branch');
-			$branch_name = ($branch == 'CBH') ? 'Christ Bearer Hospital - San Carlos' : 'Christ Bearer Clinic - Pagal';
+			$branch_id = $this->input->post('branch');
+            
+            // Get Branch Info
+            $this->load->model('app/company_branch_model');
+            $branch_info = $this->company_branch_model->getBranch($branch_id);
+            $branch_code = $branch_info ? $branch_info->branch_code : '';
+			$branch_name = $branch_info ? $branch_info->company_name : '';
+            $branch_address = $branch_info ? $branch_info->address : '';
 			
 			$this->data = $this->session->set_userdata(array(
                     'username'          =>          $this->input->post('username'),
@@ -61,8 +77,10 @@ class Login extends General{
                     'is_logged_in'      =>          true,
 					'user_id'			=>			$user_info->user_id,
 					'department'		=>			$user_info->department_id,
-					'branch_code'       =>          $branch,
-					'branch_name'       =>          $branch_name
+					'branch_code'       =>          $branch_code,
+                    'branch_id'         =>          $branch_id,
+					'branch_name'       =>          $branch_name,
+                    'branch_address'    =>          $branch_address
              )); 
 			 
 			 $userModule = $this->login_model->getMyModule($this->session->userdata('user_id'));

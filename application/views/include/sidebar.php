@@ -237,7 +237,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                             <a href="<?php echo base_url()?>app/dashboard">
                                 <i class="fa fa-dashboard"></i> <span>Dashboard</span>
                             </a>
-                        </li>     
+                        </li>
                         
                         <!--START OF Patient Management-->
                         <?php if($hasAccesstoPatient){?>
@@ -246,12 +246,6 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                                     <i class="fa fa-user-md"></i> <span>Patient Management</span>
                                 </a>
                             </li>
-                            <li class="<?php echo $clinic;?>">
-                                <a href="<?php echo base_url()?>app/clinic/dashboard">
-                                    <i class="fa fa-stethoscope"></i> <span>Clinic Dashboard</span>
-                                </a>
-                            </li>
-
                             <?php if($hasAccesstoOPDRegistration == TRUE && $hasAccesstoOPDEnquiry == TRUE){?>
                             <li class="<?php echo $opd;?>">
                                 <a href="<?php echo base_url()?>app/opd/dashboard">
@@ -269,7 +263,17 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                             </li>
                             <?php }?>
                             <!--END OF IPD-->
-
+                            <li class="<?php echo $clinic;?>">
+                                <a href="<?php echo base_url()?>app/clinic/dashboard">
+                                    <i class="fa fa-stethoscope"></i> <span>Clinic Dashboard</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url()?>app/doctor/dashboard">
+                                    <i class="fa fa-user-md"></i> <span>Doctor Dashboard</span>
+                                </a>
+                            </li>     
+                            
                         <?php }?>
                         
                         
@@ -312,23 +316,10 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         
                         <!--START OF Nurse Module-->
                         <?php if($hasAccesstoNurse){?>
-                        <li class="treeview <?php echo $nurse_module;?>">
-                            <a href="#">
+                        <li class="<?php echo $nurse_module;?>">
+                            <a href="<?php echo base_url()?>app/nurse_module/dashboard">
                                 <i class="fa fa-plus-square"></i> <span> Nurse Module</span>
-                                <i class="fa fa-angle-left pull-right"></i>
                             </a>
-                            <ul class="treeview-menu">
-                                <li><a href="<?php echo base_url()?>app/nurse_module/dashboard"><i class="fa fa-angle-double-right"></i>Dashboard</a></li>
-                                <!--<li <?php echo $nurse_diagnosis;?>><a href="<?php echo base_url()?>app/nurse_module/diagnosis">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Diagnosis</a></li>-->
-                                <?php if($hasAccesstoNurseMedication){?><li <?php echo $nurse_medication;?>><a href="<?php echo base_url()?>app/nurse_module/medication">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Patient Medication</a></li><?php }?>
-                                <?php if($hasAccesstoNurseInOutTake){?><li <?php echo $nurse_intake_output;?>><a href="<?php echo base_url()?>app/nurse_module/intake_output">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Intake/Output Record</a></li><?php }?>
-                                <?php if($hasAccesstoNurseProgressNote){?><li <?php echo $nurse_progress_note;?>><a href="<?php echo base_url()?>app/nurse_module/nurse_progress_note">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Nurse Progress Note</a></li><?php }?>
-                                <?php if($hasAccesstoNurseVitalSign){?><li <?php echo $nurse_vital_sign;?>><a href="<?php echo base_url()?>app/nurse_module/vitalSign">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Vital Sign</a></li><?php }?>
-                                <?php if($hasAccesstoNurseBedSide){?><li <?php echo $nurse_bed_side?>><a href="<?php echo base_url()?>app/nurse_module/bed_side_procedure">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Bed Side Procedure</a></li><?php }?>
-                                <?php if($hasAccesstoNurseIPRoomTransfer){?><li <?php echo $nurse_room_transfer?>><a href="<?php echo base_url()?>app/nurse_module/room_transfer">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>IP Room Transfer</a></li><?php }?>
-                                <?php if($hasAccesstoNursePatientHistory){?><li <?php echo $nurse_patientHistory?>><a href="<?php echo base_url()?>app/nurse_module/patientHistory">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Patient History</a></li><?php }?>
-                                <?php if($hasAccesstoNurseDischarge){?><li <?php echo $nurse_discharge_summary?>><a href="<?php echo base_url()?>app/nurse_module/discharge_summary">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-double-right"></i>Discharge Summary</a></li><?php }?>
-                            </ul>
                         </li>
                         <?php }?>
                         <!--START OF Nurse Module-->
@@ -350,18 +341,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                         <?php }?>
                         <!--END OF Doctor-->
                         
-                        <?php if($hasAccesstoEMR){?>
-                        <li class="treeview <?php echo $emr;?>">
-                            <a href="#">
-                                <i class="fa fa-book"></i> <span> EMR Sheet</span>
-                                <i class="fa fa-angle-left pull-right"></i>
-                            </a>
-                            <ul class="treeview-menu">
-                                <?php if($hasAccesstoEMROPD){?><li <?php echo $opd_emr;?>><a href="<?php echo base_url()?>app/emr/opd"><i class="fa fa-angle-double-right"></i>Out-Patient EMR</a></li> <?php }?>
-                                <?php if($hasAccesstoEMRIPD){?><li <?php echo $ipd_emr;?>><a href="<?php echo base_url()?>app/emr/ipd"><i class="fa fa-angle-double-right"></i>In-Patient EMR</a></li><?php }?>
-                            </ul>
-                        </li>
-                        <?php }?>
+                        
                         <!--END OF Consultant-->
                         
                         
@@ -389,6 +369,7 @@ if($this->session->userdata('module') == "change_pwd"){$change_pwd_mod = "class=
                             </a>
                             <ul class="treeview-menu">
                                 <?php if($hasAccesstoAdminCompanyInfo){?><li <?php echo $company_information;?>><a href="<?php echo base_url()?>app/company_information"><i class="fa fa-angle-double-right"></i>Company Information</a></li> <?php }?>
+                                <li class="<?php echo ($this->session->userdata('module') == 'company_branch') ? 'active' : '';?>"><a href="<?php echo base_url()?>app/company_branch"><i class="fa fa-angle-double-right"></i>Company Branch</a></li>
                                 <?php if($hasAccesstoAdminDepartment){?><li <?php echo $department_mod;?>><a href="<?php echo base_url()?>app/department"><i class="fa fa-angle-double-right"></i>Department Master</a></li> <?php }?>
                                 <?php if($hasAccesstoAdminDesignation){?><li <?php echo $designation_mod;?>><a href="<?php echo base_url()?>app/designation"><i class="fa fa-angle-double-right"></i>Designation Master</a></li>  <?php }?> 
                                 <?php if($hasAccesstoAdminBillGroupName){?><li <?php echo $group_name_mod;?>><a href="<?php echo base_url()?>app/bill_group_name"><i class="fa fa-angle-double-right"></i>Bill Group Name Master</a></li> <?php }?>

@@ -83,14 +83,7 @@
                             		
                                     
                             						<?php
-													$userID = $lastOPDNo->opdNo;
-													$userID2 = $lastOPDNo->opdNo;
-                                                    
-                                                    // Generate New Case No Format: S + Branch + YYMM + Seq
-                                                    $branch = "01"; // Default Branch Code
-                                                    $ym = date('ym');
-                                                    $seq = str_pad($userID, 5, "0", STR_PAD_LEFT);
-                                                    $newCaseNo = "S" . $branch . $ym . $seq;
+													$newCaseNo = $lastOPDNo->opdNo;
 													?>
                                  <?php echo validation_errors();?>                  
                                 <div class="nav-tabs-custom">
@@ -101,7 +94,7 @@
                                         <li><a href="#tab_2" data-toggle="tab">Patient History</a></li>
                                         -->
                                 	</ul>
-                                    <input type="hidden" name="userID2" value="<?php echo $userID2?>">
+                                    <input type="hidden" name="userID2" value="<?php echo $newCaseNo?>">
                                     <div class="tab-content">
                                     	<div class="tab-pane active" id="tab_1">
                                         	<table width="100%" cellpadding="3" cellspacing="3">
@@ -129,24 +122,18 @@
                                     </td>
                                 </tr>
                                 -->
+                                <!--
                                 <tr>
                                 	<td>Department</td>
                                     <td>
-                          						<select name="department" id="department" class="form-control input-sm" style="width: 200px;" required>
-                                      	<option value="">- Department -</option>
-                                      	<?php 
-        																foreach($departmentList as $departmentList){
-        																if($_POST['department'] == $departmentList->department_id){
-        																	$selected = "selected='selected'";
-        																}else{
-        																	$selected = "";
-        																}
-        																?>
-                                      	<option value="<?php echo $departmentList->department_id;?>" <?php echo $selected;?>><?php echo $departmentList->dept_name;?></option>
-                                          <?php }?>
+                                    <input type="hidden" name="department" value="45">
+                          						<select name="department_display" id="department_display" class="form-control input-sm" style="width: 200px;" disabled>
+                                      	<option value="45">- OUT PATIENT DEPARTMENT -</option>
                                       </select>
                                     </td>
                                 </tr>
+                                -->
+                                <input type="hidden" name="department" value="45">
                                 <tr>
                                 	<td>Consultant Doctor</td>
                                     <td>
@@ -194,7 +181,7 @@
                                     </div>
                                 </div>
                             	
-                                 <input type="hidden" name="userID2" value="<?php echo $userID2;?>">
+                                 <input type="hidden" name="userID2" value="<?php echo $newCaseNo;?>">
                                  
                                      
                                 

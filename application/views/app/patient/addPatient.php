@@ -7,7 +7,7 @@
                 <section class="content">
                     <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                         <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-                        <li><a href="#">Patient Management</a></li>
+                        <li><a href="<?php echo base_url()?>/app/patient/index"">Patient Management</a></li>
                         <li class="active">Patient Registration</li>
                     </ol>
                  
@@ -54,19 +54,8 @@
                                                     </tr>
                                                     <?php
                           													$userID = $lastPatientID->patient_no;
-                          													$userID2 = $lastPatientID->patient_no;
-                          													if(strlen($userID) == 1){
-                          														$userID = "000".$userID;
-                          													}else if(strlen($userID) == 2){
-                          														$userID = "00".$userID;
-                          													}else if(strlen($userID) == 3){
-                          														$userID = "0".$userID;
-                          													}else{
-                          														$userID = $userID;
-                          													}
-                                                                            $userID = date('ym') . $userID;
                           													?>
-                                                    <input type="hidden" name="userID2" value="<?php echo $userID2;?>">
+                                                    <input type="hidden" name="userID2" value="<?php echo $userID;?>">
                                                     <tr>
                                                     	<td width="12%">Patient ID</td>
                                                         <td width="88%" colspan="3"><input class="form-control input-sm" name="patientID" id="patientID" type="text" style="width: 100px;" required readonly value="<?php echo $userID;?>"></td>
@@ -119,12 +108,6 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                    	<td>Birthday <font color="#FF0000">*</font></td>
-                                                        <td colspan="3">
-                                                        <?php echo form_input('birthday',set_value('birthday'),'id="birthday" class="form-control input-sm" placeholder="MM-DD-YYYY" style="width: 150px;" required');?> 
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
                                                     	<td width="12%">Gender  <font color="#FF0000">*</font></td>
                                                         <td width="88%" colspan="3">
                                                         	<select name="gender" id="gender" class="form-control input-sm" required style="width: 150px;">
@@ -142,6 +125,13 @@
                                                             </select>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                    	<td>Birthday <font color="#FF0000">*</font></td>
+                                                        <td colspan="3">
+                                                        <?php echo form_input('birthday',set_value('birthday'),'id="birthday" class="form-control input-sm" placeholder="MM-DD-YYYY" style="width: 150px;" required');?> 
+                                                        </td>
+                                                    </tr>
+                                                    
                                                     <tr>
                                                     	<td width="14%">Phone No (Mobile) </td>
                                                         <td width="86%" colspan="3"> 

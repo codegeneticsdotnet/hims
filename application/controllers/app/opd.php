@@ -231,7 +231,7 @@ class Opd extends General{
 		$tmpl = array('table_open' => '<table class="table table-hover table-striped">');
         $this->table->set_template($tmpl);
 		$this->table->set_empty("&nbsp;");
-		$this->table->set_heading('OPD No','Patient No','Patient Name','Age','Visit Date Time','Department','Consultant Doctor','Status','');
+		$this->table->set_heading('OPD No','Patient No','Patient Name','Age','Visit Date Time','Branch Code','Consultant Doctor','Status','');
 		//echo $offset;
 		$i = 0 ;
 		
@@ -252,7 +252,7 @@ class Opd extends General{
 									$patient->name, 
 									$patient->age, 
 									date('M d, Y',strtotime($patient->date_visit))." ".date('H:i:s',strtotime($patient->time_visit)), 
-									$patient->dept_name, 
+									$this->session->userdata('branch_code'), 
 									$patient->doctor,
 									$nStatus,
 									$discharge
@@ -289,8 +289,7 @@ class Opd extends General{
 			// Only save vital signs if they are provided (which they aren't in the simplified form)
 			// $this->opd_model->save_vital();
 			
-			$this->db->where(array("cCode"=>"OUTPATIENTNO", 'InActive' => 0));
-			$this->db->update('system_option',array('cValue'=>$this->input->post('userID2')));
+			$this->opd_model->updateAutoNum();
 			
 			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>OPD Patient successfully saved!</div>");
 			

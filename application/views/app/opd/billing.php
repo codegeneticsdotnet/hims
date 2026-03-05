@@ -196,21 +196,7 @@
                                                 </script>
                                         
                                         		<?php
-													$userID = $invoice_no->invoice_no;
-													$userID2 = $invoice_no->invoice_no;
-													if(strlen($userID) == 1){
-														$userID = "00000".$userID;
-													}else if(strlen($userID) == 2){
-														$userID = "0000".$userID;
-													}else if(strlen($userID) == 3){
-														$userID = "000".$userID;
-													}else if(strlen($userID) == 4){
-														$userID = "00".$userID;
-													}else if(strlen($userID) == 5){
-														$userID = "0".$userID;
-													}else if(strlen($userID) == 6){
-														$userID = $userID;
-													}
+													$newInvoiceNo = $invoice_no->invoice_no;
 													?>
                                                
                                                
@@ -221,8 +207,8 @@
                                                
                                                 <div class="form-group">
                                             		<label for="exampleInputEmail1">Invoice No.</label>
-                                            		 <input type="text" value="SI-<?php echo $userID;?>" name="invoiceno" id="invoiceno" class="form-control input-sm" style="width:250px;" readonly>
-                                                    <input type="hidden" value="<?php echo $userID2;?>" name="invoiceno2" id="invoiceno2" class="form-control input-sm" style="width:250px;" readonly>
+                                            		 <input type="text" value="<?php echo $newInvoiceNo;?>" name="invoiceno" id="invoiceno" class="form-control input-sm" style="width:250px;" readonly>
+                                                    <input type="hidden" value="<?php echo $newInvoiceNo;?>" name="invoiceno2" id="invoiceno2" class="form-control input-sm" style="width:250px;" readonly>
                                         		</div>
                                                 
                                                 <div class="form-group">
