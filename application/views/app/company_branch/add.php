@@ -38,6 +38,28 @@
                     </div>
                 </div>
                 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Branch Name</label>
+                            <input type="text" name="branch_name" class="form-control" placeholder="Branch Name">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Branch Color</label>
+                            <select name="branch_color" class="form-control">
+                                <option value="skin-blue">Blue (Default)</option>
+                                <option value="skin-black">Black</option>
+                                <option value="skin-green">Green</option>
+                                <option value="skin-purple">Purple</option>
+                                <option value="skin-red">Red</option>
+                                <option value="skin-yellow">Yellow</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label>Address</label>
                     <textarea name="address" class="form-control" rows="3" placeholder="Address"></textarea>

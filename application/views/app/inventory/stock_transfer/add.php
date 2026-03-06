@@ -64,34 +64,47 @@
             </div>
         </div>
         
-        <div class="box box-info">
-            <div class="box-header">
-                <h3 class="box-title">Items to Transfer</h3>
-                <div class="box-tools pull-right">
-                    <button type="button" class="btn btn-success btn-sm" onclick="addItemRow()"><i class="fa fa-plus"></i> Add Item</button>
+                <div class="col-md-12">
+                    <div class="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">Items to Transfer</h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <input type="text" id="search_item" class="form-control" placeholder="Search Item..." autocomplete="off">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
+                                        </span>
+                                    </div>
+                                    <div id="search_result" style="position: absolute; z-index: 1000; background: #fff; width: 93%; border: 1px solid #ccc; display: none; max-height: 200px; overflow-y: auto;"></div>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="transfer_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>Current Stock (Main)</th>
+                                            <th>Bin Location</th>
+                                            <th>Qty to Transfer</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transfer_body">
+                                        <tr id="empty_row"><td colspan="5" class="text-center">No items added.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-primary pull-right">Save Transfer</button>
+                            <a href="<?php echo base_url()?>app/inventory/stock_transfer" class="btn btn-default">Cancel</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="box-body table-responsive">
-                <table class="table table-bordered" id="transfer_table">
-                    <thead>
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Current Stock (Main)</th>
-                            <th>Bin Location</th>
-                            <th>Qty to Transfer</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows will be added here -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="box-footer">
-                <button type="submit" class="btn btn-primary pull-right">Save Transfer</button>
-                <a href="<?php echo base_url()?>app/inventory/stock_transfer" class="btn btn-default">Cancel</a>
-            </div>
-        </div>
         
         </form>
 
@@ -104,188 +117,156 @@
 <script src="<?php echo base_url();?>public/js/AdminLTE/app.js" type="text/javascript"></script>
 
 <script>
-var allItems = [];
-
-$(document).ready(function(){
-    // Load items once
-    $.ajax({
-        url: '<?php echo base_url()?>app/inventory/get_items_json',
-        type: 'GET',
-        dataType: 'json',
-        success: function(data){
-            allItems = data;
-            addItemRow(); // Add first row
-        }
-    });
+    var allItems = [];
     
     // Branch Search Logic (From)
-    $('#from_branch_search').keyup(function(){
-        var query = $(this).val();
-        if(query.length > 1){
-            $.ajax({
-                url: '<?php echo base_url()?>app/inventory/search_branches/' + query,
-                type: 'GET',
-                dataType: 'json',
-                success: function(data){
-                    var html = '';
-                    // Add Main Inventory Option
-                    html += '<a href="#" class="list-group-item from-branch-item" data-id="0" data-name="Main Inventory (Central Pharmacy)">Main Inventory (Central Pharmacy)</a>';
-                    
-                    if(data.length > 0){
-                        for(var i=0; i<data.length; i++){
-                            html += '<a href="#" class="list-group-item from-branch-item" data-id="'+data[i].id+'" data-name="'+data[i].name+'">'+data[i].name+'</a>';
+    $(document).ready(function(){
+        // Branch Search Logic (From)
+        $('#from_branch_search').keyup(function(){
+            var query = $(this).val();
+            if(query.length > 1){
+                $.ajax({
+                    url: '<?php echo base_url()?>app/inventory/search_branches/' + query,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data){
+                        var html = '';
+                        // Add Main Inventory Option
+                        html += '<a href="#" class="list-group-item from-branch-item" data-id="0" data-name="Main Inventory (Central Pharmacy)">Main Inventory (Central Pharmacy)</a>';
+                        
+                        if(data.length > 0){
+                            for(var i=0; i<data.length; i++){
+                                html += '<a href="#" class="list-group-item from-branch-item" data-id="'+data[i].id+'" data-name="'+data[i].name+'">'+data[i].name+'</a>';
+                            }
                         }
+                        $('#from_branch_suggestions').html(html).show();
                     }
-                    $('#from_branch_suggestions').html(html).show();
-                }
-            });
-        } else {
-            $('#from_branch_suggestions').hide();
-        }
-    });
-    
-    $(document).on('click', '.from-branch-item', function(e){
-        e.preventDefault();
-        $('#from_branch_search').val($(this).data('name'));
-        $('#from_branch_id').val($(this).data('id'));
-        $('#from_branch_suggestions').hide();
-    });
-    
-    // Branch Search Logic (To)
-    $('#to_branch_search').keyup(function(){
-        var query = $(this).val();
-        if(query.length > 1){
-            $.ajax({
-                url: '<?php echo base_url()?>app/inventory/search_branches/' + query,
-                type: 'GET',
-                dataType: 'json',
-                success: function(data){
-                    var html = '';
-                    if(data.length > 0){
-                        for(var i=0; i<data.length; i++){
-                            html += '<a href="#" class="list-group-item to-branch-item" data-id="'+data[i].id+'" data-name="'+data[i].name+'">'+data[i].name+'</a>';
-                        }
-                    } else {
-                        html += '<a href="#" class="list-group-item disabled">No results found</a>';
-                    }
-                    $('#to_branch_suggestions').html(html).show();
-                }
-            });
-        } else {
-            $('#to_branch_suggestions').hide();
-        }
-    });
-    
-    $(document).on('click', '.to-branch-item', function(e){
-        e.preventDefault();
-        $('#to_branch_search').val($(this).data('name'));
-        $('#to_branch_id').val($(this).data('id'));
-        $('#to_branch_suggestions').hide();
-    });
-});
-
-function addItemRow(){
-    var tbody = document.getElementById('transfer_table').getElementsByTagName('tbody')[0];
-    var row = tbody.insertRow(tbody.rows.length);
-    var rowIndex = tbody.rows.length - 1;
-    var datalistId = 'item_list_' + rowIndex;
-    
-    var options = '';
-    for(var i=0; i<allItems.length; i++){
-        options += '<option value="'+allItems[i].drug_name+'" data-id="'+allItems[i].drug_id+'">';
-    }
-    
-    row.innerHTML = `
-        <td style="position: relative;">
-            <input type="text" class="form-control item-search" onkeyup="searchItem(this)" placeholder="Type item name..." autocomplete="off">
-            <div class="search-results" style="position: absolute; z-index: 1000; background: #fff; width: 100%; border: 1px solid #ccc; display: none; max-height: 200px; overflow-y: auto;"></div>
-            <input type="hidden" name="item_id[]" class="item-id" required>
-        </td>
-        <td><input type="text" class="form-control stock-display" readonly></td>
-        <td><input type="text" class="form-control bin-display" readonly></td>
-        <td><input type="number" name="qty[]" class="form-control" min="1" step="0.01" required></td>
-        <td><button type="button" class="btn btn-danger btn-xs" onclick="removeRow(this)"><i class="fa fa-times"></i></button></td>
-    `;
-}
-
-function searchItem(input){
-    var keyword = $(input).val();
-    var resultsDiv = $(input).siblings('.search-results');
-    
-    if(keyword.length > 1){
-        var html = '<ul class="list-group" style="margin-bottom: 0;">';
-        var found = false;
-        
-        for(var i=0; i<allItems.length; i++){
-            if(allItems[i].drug_name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1){
-                html += '<li class="list-group-item" style="cursor: pointer;" onclick="selectItem(this, ' + allItems[i].drug_id + ')">' + allItems[i].drug_name + ' (Stock: ' + allItems[i].nStock + ')</li>';
-                found = true;
+                });
+            } else {
+                $('#from_branch_suggestions').hide();
             }
+        });
+        
+        $(document).on('click', '.from-branch-item', function(e){
+            e.preventDefault();
+            $('#from_branch_search').val($(this).data('name'));
+            $('#from_branch_id').val($(this).data('id'));
+            $('#from_branch_suggestions').hide();
+        });
+        
+        // Branch Search Logic (To)
+        $('#to_branch_search').keyup(function(){
+            var query = $(this).val();
+            if(query.length > 1){
+                $.ajax({
+                    url: '<?php echo base_url()?>app/inventory/search_branches/' + query,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data){
+                        var html = '';
+                        if(data.length > 0){
+                            for(var i=0; i<data.length; i++){
+                                html += '<a href="#" class="list-group-item to-branch-item" data-id="'+data[i].id+'" data-name="'+data[i].name+'">'+data[i].name+'</a>';
+                            }
+                        } else {
+                            html += '<a href="#" class="list-group-item disabled">No results found</a>';
+                        }
+                        $('#to_branch_suggestions').html(html).show();
+                    }
+                });
+            } else {
+                $('#to_branch_suggestions').hide();
+            }
+        });
+        
+        $(document).on('click', '.to-branch-item', function(e){
+            e.preventDefault();
+            $('#to_branch_search').val($(this).data('name'));
+            $('#to_branch_id').val($(this).data('id'));
+            $('#to_branch_suggestions').hide();
+        });
+        
+        // Item Search Logic (New)
+        $('#search_item').keyup(function(){
+            var keyword = $(this).val();
+            if(keyword.length > 2){
+                $.ajax({
+                    url: "<?php echo base_url();?>app/pharmacy/get_items/" + keyword,
+                    type: "GET",
+                    dataType: "JSON",
+                    success: function(data){
+                        var html = '<ul class="list-group" style="margin-bottom: 0;">';
+                        if(data.length > 0){
+                            $.each(data, function(i, item){
+                                html += '<li class="list-group-item" style="cursor: pointer;" onclick="addItem(' + item.item_id + ', \'' + item.item_name.replace(/'/g, "\\'") + '\', ' + item.stock_on_hand + ', \'' + (item.bin_location ? item.bin_location : '') + '\')">' + item.item_name + ' (Stock: ' + item.stock_on_hand + ')</li>';
+                            });
+                        } else {
+                            html += '<li class="list-group-item">No items found</li>';
+                        }
+                        html += '</ul>';
+                        $('#search_result').html(html).show();
+                    }
+                });
+            } else {
+                $('#search_result').hide();
+            }
+        });
+    });
+
+    function addItem(id, name, stock, bin){
+        $('#search_result').hide();
+        $('#search_item').val('');
+        $('#empty_row').remove();
+        
+        var html = '<tr>';
+        html += '<td>' + name + '<input type="hidden" name="item_id[]" value="' + id + '"></td>';
+        html += '<td>' + stock + '</td>';
+        html += '<td>' + bin + '</td>';
+        html += '<td><input type="number" name="qty[]" class="form-control input-sm" value="1" min="1" step="0.01" style="width: 100px;" required></td>';
+        html += '<td><a href="#" class="text-danger" onclick="removeRow(this)"><i class="fa fa-times"></i></a></td>';
+        html += '</tr>';
+        
+        $('#transfer_body').append(html);
+    }
+    
+    function removeRow(btn){
+        $(btn).closest('tr').remove();
+        if($('#transfer_body tr').length == 0){
+             $('#transfer_body').append('<tr id="empty_row"><td colspan="5" class="text-center">No items added.</td></tr>');
+        }
+    }
+    
+    function validateForm(){
+        if($('#transfer_body tr').length == 0 || $('#transfer_body tr#empty_row').length > 0){
+            alert('Please add items to transfer.');
+            return false;
         }
         
-        if(!found){
-            html += '<li class="list-group-item">No items found</li>';
+        if($('#to_branch_id').val() == ''){
+            alert("Please select a destination branch.");
+            return false;
         }
         
-        html += '</ul>';
-        resultsDiv.html(html).show();
-    } else {
-        resultsDiv.hide();
+        return true;
     }
     
-    // Clear ID if text is cleared
-    if(keyword == ''){
-        $(input).siblings('.item-id').val('');
-        var row = $(input).closest('tr');
-        row.find('.stock-display').val('');
-        row.find('.bin-display').val('');
-    }
-}
-
-function selectItem(element, itemId){
-    var item = allItems.find(x => x.drug_id == itemId);
-    var container = $(element).closest('td');
-    var input = container.find('.item-search');
-    var idInput = container.find('.item-id');
-    var resultsDiv = container.find('.search-results');
-    var row = container.closest('tr');
-    
-    if(item){
-        input.val(item.drug_name);
-        idInput.val(item.drug_id);
-        row.find('.stock-display').val(item.nStock);
-        row.find('.bin-display').val(item.bin_location ? item.bin_location : '');
-        resultsDiv.hide();
-    }
-}
-
-// Close search results when clicking outside
-$(document).mouseup(function(e){
-    var container = $(".search-results");
-    if (!container.is(e.target) && container.has(e.target).length === 0){
-        container.hide();
-    }
-});
-
-function removeRow(btn){
-    var row = btn.parentNode.parentNode;
-    row.parentNode.removeChild(row);
-}
-
-function validateForm(){
-    var rows = document.getElementById('transfer_table').getElementsByTagName('tbody')[0].rows;
-    if(rows.length == 0){
-        alert("Please add at least one item.");
-        return false;
-    }
-    
-    if($('#to_branch_id').val() == ''){
-        alert("Please select a destination branch.");
-        return false;
-    }
-    
-    return true;
-}
+    // Close search results when clicking outside
+    $(document).mouseup(function(e){
+        var container = $("#search_result");
+        if (!container.is(e.target) && container.has(e.target).length === 0){
+            container.hide();
+        }
+        
+        var branchContainer = $("#from_branch_suggestions");
+        if (!branchContainer.is(e.target) && branchContainer.has(e.target).length === 0){
+            branchContainer.hide();
+        }
+        
+        var toBranchContainer = $("#to_branch_suggestions");
+        if (!toBranchContainer.is(e.target) && toBranchContainer.has(e.target).length === 0){
+            toBranchContainer.hide();
+        }
+    });
 </script>
 
 </body>

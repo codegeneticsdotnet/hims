@@ -68,6 +68,14 @@ class Lab_services extends General {
         $req_type = $this->input->get('request');
         $this->data['request_type'] = $req_type;
         
+        // Pre-fill patient info if patient_no is passed
+        $patient_no = $this->input->get('patient_no');
+        $this->data['patient_no'] = $patient_no;
+        $this->data['patient_info'] = null;
+        if($patient_no){
+            $this->data['patient_info'] = $this->patient_model->getPatientInfo($patient_no);
+        }
+        
         $this->data['request_no'] = ''; // Will be populated via AJAX based on category selection
         $this->load->view('app/lab_services/add_request', $this->data);
     }

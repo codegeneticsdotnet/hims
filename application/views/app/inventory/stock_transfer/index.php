@@ -19,6 +19,19 @@
         <?php echo $this->session->flashdata('message');?>
         
         <div class="box">
+            <div class="box-header">
+                <form action="" method="post" class="form-inline" style="padding: 10px;">
+                    <div class="form-group">
+                        <label for="start_date">From:</label>
+                        <input type="date" name="start_date" class="form-control" value="<?php echo $start_date;?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">To:</label>
+                        <input type="date" name="end_date" class="form-control" value="<?php echo $end_date;?>" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Filter</button>
+                </form>
+            </div>
             <div class="box-body table-responsive">
                 <table class="table table-hover table-striped">
                     <thead>
@@ -36,8 +49,8 @@
                         <?php if(!empty($transfers)): ?>
                             <?php foreach($transfers as $trans): ?>
                             <tr>
-                                <td><?php echo $trans->transfer_no;?></td>
-                                <td><?php echo date('M d, Y', strtotime($trans->created_date));?></td>
+                                <td><a href="<?php echo base_url()?>app/inventory/view_transfer/<?php echo $trans->transfer_id;?>"><?php echo $trans->transfer_no;?></a></td>
+                                <td><?php echo date('M d, Y h:i A', strtotime($trans->created_date));?></td>
                                 <td><?php echo $trans->from_branch ? $trans->from_branch_name : 'Main Inventory (Central Pharmacy)';?></td>
                                 <td><?php echo $trans->to_branch_name;?></td>
                                 <td><?php echo $trans->remarks;?></td>

@@ -24,6 +24,8 @@ class Company_branch_model extends CI_Model{
         
         $data = array(
             'company_name'  => $this->input->post('company_name'),
+            'branch_name'   => $this->input->post('branch_name'),
+            'branch_color'  => $this->input->post('branch_color'),
             'address'       => $this->input->post('address'),
             'branch_code'   => $this->input->post('branch_code'),
             'contact_no'    => $this->input->post('contact_no'),
@@ -42,6 +44,8 @@ class Company_branch_model extends CI_Model{
         
         $data = array(
             'company_name'  => $this->input->post('company_name'),
+            'branch_name'   => $this->input->post('branch_name'),
+            'branch_color'  => $this->input->post('branch_color'),
             'address'       => $this->input->post('address'),
             'branch_code'   => $this->input->post('branch_code'),
             'contact_no'    => $this->input->post('contact_no'),

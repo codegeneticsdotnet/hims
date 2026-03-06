@@ -74,7 +74,28 @@ class Roles_model extends CI_Model{
 	}
 	
 	public function getPageModule(){
-		$query = $this->db->query("select distinct page_module as page_module from pages where InActive = 0 order by page_module asc");	
+		// Custom sort order based on sidebar hierarchy
+		$sql = "SELECT DISTINCT page_module 
+				FROM pages 
+				WHERE InActive = 0 
+				ORDER BY FIELD(page_module, 
+					'patient_management', 
+					'opd', 
+					'ipd', 
+					'clinic', 
+					'doctor', 
+					'lab_services', 
+					'billing', 
+					'pharmacy', 
+					'room_management', 
+					'nurse_module', 
+					'user_management', 
+					'administrator', 
+					'report_generation', 
+					'user_profile'
+				) ASC, page_module ASC";
+		
+		$query = $this->db->query($sql);	
 		return $query->result();
 	}
 	
@@ -92,6 +113,17 @@ class Roles_model extends CI_Model{
 		));
 		$query = $this->db->get("user_roles_pages");
 		return $query->row();
+	}
+	
+	public function getUsersByRole($role_id){
+		$this->db->select("A.*, B.dept_name, C.designation as designation_name");
+		$this->db->from("users A");
+		$this->db->join("department B", "B.department_id = A.department", "left");
+		$this->db->join("designation C", "C.designation_id = A.designation", "left");
+		$this->db->where("A.user_role", $role_id);
+		$this->db->where("A.InActive", 0);
+		$query = $this->db->get();
+		return $query->result();
 	}
 	
 

@@ -54,7 +54,10 @@ class Pharmacy_model extends CI_Model{
         }
     }
 
-	public function getItems($limit = 10, $offset = 0){
+    public function getItems($limit = 10, $offset = 0){
+        $branch_id = $this->session->userdata('branch_id');
+        $branch_id = $this->db->escape($branch_id); // Safe escaping
+        
 		$this->db->select("
 				A.drug_id as itemcode,
 				A.drug_name as itemname,
@@ -64,7 +67,16 @@ class Pharmacy_model extends CI_Model{
 				C.cValue as unit,
                 A.uom as unit_id,
 				A.nPrice as price,
-				A.nStock as stock_on_hand,
+				(
+                    COALESCE((SELECT SUM(qty) FROM pharmacy_inventory_details pid JOIN pharmacy_inventory_in pii ON pii.inv_id = pid.inv_id WHERE pid.drug_id = A.drug_id AND pii.InActive = 0 AND (pii.branch_id = $branch_id OR pii.branch_id IS NULL)), 0)
+                    - COALESCE((SELECT SUM(qty) FROM pharmacy_sales_details psd JOIN pharmacy_sales ps ON ps.sale_id = psd.sale_id WHERE psd.drug_id = A.drug_id AND ps.InActive = 0 AND (ps.branch_id = $branch_id OR ps.branch_id IS NULL)), 0)
+                    + COALESCE((SELECT SUM(qty) FROM pharmacy_return_details prd JOIN pharmacy_returns pr ON pr.return_id = prd.return_id WHERE prd.drug_id = A.drug_id AND pr.InActive = 0 AND (pr.branch_id = $branch_id OR pr.branch_id IS NULL)), 0)
+                    + COALESCE((SELECT SUM(CASE WHEN pad.type = 'IN' THEN pad.adjust_qty ELSE -pad.adjust_qty END) FROM pharmacy_adjustment_details pad JOIN pharmacy_adjustments pa ON pa.adjust_id = pad.adjust_id WHERE pad.drug_id = A.drug_id AND pa.InActive = 0 AND (pa.branch_id = $branch_id OR pa.branch_id IS NULL)), 0)
+                    + COALESCE((SELECT SUM(psd.qty) FROM pharmacy_sales_details psd JOIN pharmacy_void_logs pvl ON pvl.sale_id = psd.sale_id WHERE psd.drug_id = A.drug_id AND pvl.InActive = 0 AND (pvl.branch_id = $branch_id OR pvl.branch_id IS NULL)), 0)
+                    - COALESCE((SELECT SUM(sid.qty) FROM stock_issuance_details sid JOIN stock_issuance si ON si.issuance_id = sid.issuance_id WHERE sid.item_id = A.drug_id AND si.InActive = 0 AND (si.branch_id = $branch_id OR si.branch_id IS NULL)), 0)
+                    - COALESCE((SELECT SUM(std.qty_requested) FROM stock_transfer_details std JOIN stock_transfer st ON st.transfer_id = std.transfer_id WHERE std.item_id = A.drug_id AND st.InActive = 0 AND st.from_branch = $branch_id), 0)
+                    + COALESCE((SELECT SUM(std.qty_requested) FROM stock_transfer_details std JOIN stock_transfer st ON st.transfer_id = std.transfer_id WHERE std.item_id = A.drug_id AND st.InActive = 0 AND st.status = 'Received' AND st.to_branch = $branch_id), 0)
+                ) as stock_on_hand,
                 A.re_order_level,
                 A.bin_location
 		",false);
@@ -81,11 +93,23 @@ class Pharmacy_model extends CI_Model{
 	}
     
     public function searchItems($keyword){
+        $branch_id = $this->session->userdata('branch_id');
+        $branch_id = $this->db->escape($branch_id); // Safe escaping
+        
         $this->db->select("
             A.drug_id as item_id,
             A.drug_name as item_name,
             A.nPrice as price,
-            A.nStock as stock_on_hand,
+            (
+                COALESCE((SELECT SUM(qty) FROM pharmacy_inventory_details pid JOIN pharmacy_inventory_in pii ON pii.inv_id = pid.inv_id WHERE pid.drug_id = A.drug_id AND pii.InActive = 0 AND (pii.branch_id = $branch_id OR pii.branch_id IS NULL)), 0)
+                - COALESCE((SELECT SUM(qty) FROM pharmacy_sales_details psd JOIN pharmacy_sales ps ON ps.sale_id = psd.sale_id WHERE psd.drug_id = A.drug_id AND ps.InActive = 0 AND (ps.branch_id = $branch_id OR ps.branch_id IS NULL)), 0)
+                + COALESCE((SELECT SUM(qty) FROM pharmacy_return_details prd JOIN pharmacy_returns pr ON pr.return_id = prd.return_id WHERE prd.drug_id = A.drug_id AND pr.InActive = 0 AND (pr.branch_id = $branch_id OR pr.branch_id IS NULL)), 0)
+                + COALESCE((SELECT SUM(CASE WHEN pad.type = 'IN' THEN pad.adjust_qty ELSE -pad.adjust_qty END) FROM pharmacy_adjustment_details pad JOIN pharmacy_adjustments pa ON pa.adjust_id = pad.adjust_id WHERE pad.drug_id = A.drug_id AND pa.InActive = 0 AND (pa.branch_id = $branch_id OR pa.branch_id IS NULL)), 0)
+                + COALESCE((SELECT SUM(psd.qty) FROM pharmacy_sales_details psd JOIN pharmacy_void_logs pvl ON pvl.sale_id = psd.sale_id WHERE psd.drug_id = A.drug_id AND pvl.InActive = 0 AND (pvl.branch_id = $branch_id OR pvl.branch_id IS NULL)), 0)
+                - COALESCE((SELECT SUM(sid.qty) FROM stock_issuance_details sid JOIN stock_issuance si ON si.issuance_id = sid.issuance_id WHERE sid.item_id = A.drug_id AND si.InActive = 0 AND (si.branch_id = $branch_id OR si.branch_id IS NULL)), 0)
+                - COALESCE((SELECT SUM(std.qty_requested) FROM stock_transfer_details std JOIN stock_transfer st ON st.transfer_id = std.transfer_id WHERE std.item_id = A.drug_id AND st.InActive = 0 AND st.from_branch = $branch_id), 0)
+                + COALESCE((SELECT SUM(std.qty_requested) FROM stock_transfer_details std JOIN stock_transfer st ON st.transfer_id = std.transfer_id WHERE std.item_id = A.drug_id AND st.InActive = 0 AND st.status = 'Received' AND st.to_branch = $branch_id), 0)
+            ) as stock_on_hand,
             D.med_category_name as category
         ", false);
         $this->db->like("A.drug_name", $keyword);
@@ -117,6 +141,9 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function savePOS($header, $details, $ipd_meds = array()){
+        // Add branch_id
+        $header['branch_id'] = $this->session->userdata('branch_id');
+        
         // Save Header
         $this->db->insert("pharmacy_sales", $header);
         $sale_id = $this->db->insert_id();
@@ -126,7 +153,7 @@ class Pharmacy_model extends CI_Model{
             $detail['sale_id'] = $sale_id;
             $this->db->insert("pharmacy_sales_details", $detail);
             
-            // Deduct Stock
+            // Deduct Stock (Global - Legacy)
             $this->db->set('nStock', 'nStock - ' . $detail['qty'], FALSE);
             $this->db->where('drug_id', $detail['drug_id']);
             $this->db->update('medicine_drug_name');
@@ -155,6 +182,9 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function saveInventoryIn($header, $details){
+        // Add branch_id
+        $header['branch_id'] = $this->session->userdata('branch_id');
+        
         // Save Header
         $this->db->insert("pharmacy_inventory_in", $header);
         $inv_id = $this->db->insert_id();
@@ -164,7 +194,7 @@ class Pharmacy_model extends CI_Model{
             $detail['inv_id'] = $inv_id;
             $this->db->insert("pharmacy_inventory_details", $detail);
             
-            // Increase Stock in medicine_drug_name table
+            // Increase Stock in medicine_drug_name table (Global - Legacy)
             // IMPORTANT: Ensure nStock is treated as numeric
             $this->db->query("UPDATE medicine_drug_name SET nStock = nStock + " . intval($detail['qty']) . " WHERE drug_id = " . intval($detail['drug_id']));
         }
@@ -254,6 +284,8 @@ class Pharmacy_model extends CI_Model{
 	}
     
     public function getItemLedger($item_id){
+        $branch_id = $this->session->userdata('branch_id');
+        
         // Inventory In
         $sql = "SELECT 
                     A.date_received as ref_date, 
@@ -267,7 +299,7 @@ class Pharmacy_model extends CI_Model{
                 FROM pharmacy_inventory_in A 
                 JOIN pharmacy_inventory_details B ON A.inv_id = B.inv_id 
                 JOIN medicine_drug_name C ON B.drug_id = C.drug_id
-                WHERE B.drug_id = ? AND A.InActive = 0";
+                WHERE B.drug_id = ? AND A.InActive = 0 AND (A.branch_id = ? OR A.branch_id IS NULL)";
         
         // Sales (Out)
         $sql .= " UNION ALL SELECT 
@@ -281,7 +313,7 @@ class Pharmacy_model extends CI_Model{
                     NULL as expiry_date
                 FROM pharmacy_sales A 
                 JOIN pharmacy_sales_details B ON A.sale_id = B.sale_id 
-                WHERE B.drug_id = ? AND A.InActive = 0";
+                WHERE B.drug_id = ? AND A.InActive = 0 AND (A.branch_id = ? OR A.branch_id IS NULL)";
                 
         // Returns (In)
         $sql .= " UNION ALL SELECT 
@@ -295,7 +327,7 @@ class Pharmacy_model extends CI_Model{
                     NULL as expiry_date
                 FROM pharmacy_returns A 
                 JOIN pharmacy_return_details B ON A.return_id = B.return_id 
-                WHERE B.drug_id = ? AND A.InActive = 0";
+                WHERE B.drug_id = ? AND A.InActive = 0 AND (A.branch_id = ? OR A.branch_id IS NULL)";
                 
         // Adjustments
         $sql .= " UNION ALL SELECT 
@@ -309,7 +341,7 @@ class Pharmacy_model extends CI_Model{
                     NULL as expiry_date
                 FROM pharmacy_adjustments A 
                 JOIN pharmacy_adjustment_details B ON A.adjust_id = B.adjust_id 
-                WHERE B.drug_id = ? AND A.InActive = 0";
+                WHERE B.drug_id = ? AND A.InActive = 0 AND (A.branch_id = ? OR A.branch_id IS NULL)";
                 
         // Void (In) - Show reversal of sales
         $sql .= " UNION ALL SELECT 
@@ -323,11 +355,65 @@ class Pharmacy_model extends CI_Model{
                     NULL as expiry_date
                 FROM pharmacy_void_logs A 
                 JOIN pharmacy_sales_details B ON A.sale_id = B.sale_id 
-                WHERE B.drug_id = ? AND A.InActive = 0";
+                WHERE B.drug_id = ? AND A.InActive = 0 AND (A.branch_id = ? OR A.branch_id IS NULL)";
+
+        // Stock Issuance (Out)
+        $sql .= " UNION ALL SELECT 
+                    A.issue_date as ref_date, 
+                    A.issuance_no as ref_no, 
+                    'Stock Issuance' as type, 
+                    0 as amount, 
+                    0 as qty_in, 
+                    B.qty as qty_out, 
+                    A.remarks,
+                    NULL as expiry_date
+                FROM stock_issuance A 
+                JOIN stock_issuance_details B ON A.issuance_id = B.issuance_id 
+                WHERE B.item_id = ? AND A.InActive = 0 AND (A.branch_id = ? OR A.branch_id IS NULL)";
+
+        // Stock Transfer (Out - Source)
+        $sql .= " UNION ALL SELECT 
+                    A.created_date as ref_date, 
+                    CONCAT('S-', SUBSTRING(C.company_name, 1, 1), SUBSTRING(A.transfer_no, 4)) as ref_no, 
+                    'Stock Transfer' as type, 
+                    0 as amount, 
+                    0 as qty_in, 
+                    B.qty_requested as qty_out, 
+                    CONCAT('Transfer to ', D.company_name) as remarks,
+                    NULL as expiry_date
+                FROM stock_transfer A 
+                JOIN stock_transfer_details B ON A.transfer_id = B.transfer_id 
+                JOIN company_branch C ON C.branch_id = A.from_branch
+                JOIN company_branch D ON D.branch_id = A.to_branch
+                WHERE B.item_id = ? AND A.InActive = 0 AND A.from_branch = ?";
+
+        // Stock Transfer (In - Destination)
+        $sql .= " UNION ALL SELECT 
+                    A.received_date as ref_date, 
+                    CONCAT('S+', SUBSTRING(C.company_name, 1, 1), SUBSTRING(A.transfer_no, 4)) as ref_no, 
+                    'Stock Transfer' as type, 
+                    0 as amount, 
+                    B.qty_requested as qty_in, 
+                    0 as qty_out, 
+                    CONCAT('Received from ', C.company_name) as remarks,
+                    NULL as expiry_date
+                FROM stock_transfer A 
+                JOIN stock_transfer_details B ON A.transfer_id = B.transfer_id 
+                JOIN company_branch C ON C.branch_id = A.from_branch
+                WHERE B.item_id = ? AND A.InActive = 0 AND A.status = 'Received' AND A.to_branch = ?";
                 
         $sql .= " ORDER BY ref_date ASC";
         
-        $query = $this->db->query($sql, array($item_id, $item_id, $item_id, $item_id, $item_id));
+        $query = $this->db->query($sql, array(
+            $item_id, $branch_id, 
+            $item_id, $branch_id, 
+            $item_id, $branch_id, 
+            $item_id, $branch_id, 
+            $item_id, $branch_id,
+            $item_id, $branch_id, // For Stock Issuance
+            $item_id, $branch_id, // For Stock Transfer Out
+            $item_id, $branch_id  // For Stock Transfer In
+        ));
         return $query->result();
     }
     
@@ -337,6 +423,9 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function saveAdjustment($header, $details){
+        // Add branch_id
+        $header['branch_id'] = $this->session->userdata('branch_id');
+        
         $this->db->trans_start();
         $this->db->insert('pharmacy_adjustments', $header);
         $adjust_id = $this->db->insert_id();
@@ -345,7 +434,7 @@ class Pharmacy_model extends CI_Model{
             $item['adjust_id'] = $adjust_id;
             $this->db->insert('pharmacy_adjustment_details', $item);
             
-            // Update Stock
+            // Update Stock (Global - Legacy)
             if($item['type'] == 'IN'){
                 $this->db->query("UPDATE medicine_drug_name SET nStock = nStock + " . $item['adjust_qty'] . " WHERE drug_id = " . $item['drug_id']);
             } else {
@@ -379,6 +468,9 @@ class Pharmacy_model extends CI_Model{
     }
     
     public function saveReturn($header, $details){
+        // Add branch_id
+        $header['branch_id'] = $this->session->userdata('branch_id');
+        
         $this->db->trans_start();
         $this->db->insert('pharmacy_returns', $header);
         $return_id = $this->db->insert_id();
@@ -387,7 +479,7 @@ class Pharmacy_model extends CI_Model{
             $item['return_id'] = $return_id;
             $this->db->insert('pharmacy_return_details', $item);
             
-            // Update Stock
+            // Update Stock (Global - Legacy)
             $this->db->query("UPDATE medicine_drug_name SET nStock = nStock + " . $item['qty'] . " WHERE drug_id = " . $item['drug_id']);
         }
         
@@ -413,11 +505,12 @@ class Pharmacy_model extends CI_Model{
             'date_voided' => date('Y-m-d H:i:s'),
             'voided_by' => $user_id,
             'reason' => $reason,
-            'InActive' => 0
+            'InActive' => 0,
+            'branch_id' => $this->session->userdata('branch_id')
         );
         $this->db->insert('pharmacy_void_logs', $log);
         
-        // 4. Restore Stock
+        // 4. Restore Stock (Global - Legacy)
         $details = $this->getSaleDetails($sale->sale_id);
         foreach($details as $item){
             $this->db->query("UPDATE medicine_drug_name SET nStock = nStock + " . $item->qty . " WHERE drug_id = " . $item->drug_id);

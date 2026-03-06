@@ -538,13 +538,12 @@ class Pharmacy extends General{
     public function get_item_ledger($item_id){
         $ledger = $this->pharmacy_model->getItemLedger($item_id);
         
-        // Add current stock to the response
-        $this->db->select('nStock');
-        $this->db->where('drug_id', $item_id);
-        $query = $this->db->get('medicine_drug_name');
+        // Calculate stock from ledger
         $stock = 0;
-        if($query->num_rows() > 0){
-            $stock = $query->row()->nStock;
+        if($ledger){
+            foreach($ledger as $row){
+                $stock += ($row->qty_in - $row->qty_out);
+            }
         }
         
         echo json_encode(array('ledger' => $ledger, 'current_stock' => $stock));
@@ -740,6 +739,10 @@ class Pharmacy extends General{
             'submodule'     =>      ''));
         $this->data['pharmacy_mod'] = 'active';
         $this->load->view('app/pharmacy/void_transaction', $this->data);
+    }
+
+    public function stock_issuance(){
+        redirect(base_url().'app/inventory/stock_issuance');
     }
     
     public function save_void(){

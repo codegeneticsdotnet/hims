@@ -39,7 +39,7 @@
 						<a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/inventory_in">
                             <i class="fa fa-truck"></i> Receiving
                         </a>
-                        <a class="btn btn-app" href="<?php echo base_url()?>app/inventory/stock_issuance">
+                        <a class="btn btn-app" href="<?php echo base_url()?>app/pharmacy/stock_issuance">
                             <i class="fa fa-sign-out"></i> Issuance
                         </a>
                         <a class="btn btn-app" href="<?php echo base_url()?>app/inventory/stock_transfer">

@@ -132,6 +132,12 @@ $(document).ready(function(){
     
     // Auto-populate request no if category is pre-selected
     updateRequestNo();
+    
+    // Pre-fill patient info if available from controller
+    <?php if(isset($patient_info) && $patient_info){ ?>
+        $('#patient_no').val('<?php echo $patient_info->patient_no; ?>');
+        $('#patient_search').val('<?php echo $patient_info->patient_no . ' - ' . $patient_info->firstname . ' ' . $patient_info->lastname; ?>');
+    <?php } ?>
 
     // Patient Search
     $('#patient_search').keyup(function(){

@@ -1,13 +1,13 @@
  <script language="javascript">
     setTimeout(function timeru(){$('.alert').fadeOut(1000)}, 3000);
 </script> 
-<header class="header" style="background:green;border-bottom:2px solid #CCC">
+<header class="header">
     <a href="<?php echo base_url()?>app/dashboard" class="logo">
         <!-- Add the class icon to your logo image or logo icon to add the margining -->
         <div class="logo-pms"><img src="<?php echo base_url()?>public/company_logo/<?php echo $companyInfo->logo?>" height="42"></div>
     </a>
     <!-- Header Navbar: style can be found in header.less -->
-    <nav class="navbar navbar-static-top" role="navigation" style="background: url('<?php echo base_url()?>public/img/new/header_bar_bg_02.jpg') repeat-x; background-size: 100% 100%; border-bottom:1px solid #CCC; background:darkgreen;">
+    <nav class="navbar navbar-static-top" role="navigation">
         <!-- Sidebar toggle button-->
         <a href="#" class="navbar-btn sidebar-toggle" data-toggle="offcanvas" role="button">
             <span class="sr-only">Toggle navigation</span>
@@ -28,7 +28,16 @@
                     </a>
                     <ul class="dropdown-menu">
                         <!-- User image -->
-                        <li class="user-header bg-light-blue">
+                        <?php
+                        $branch_color = $this->session->userdata('branch_color');
+                        $bg_color = 'bg-light-blue'; // Default
+                        if($branch_color == 'skin-green') $bg_color = 'bg-green';
+                        if($branch_color == 'skin-red') $bg_color = 'bg-red';
+                        if($branch_color == 'skin-purple') $bg_color = 'bg-purple';
+                        if($branch_color == 'skin-yellow') $bg_color = 'bg-yellow';
+                        if($branch_color == 'skin-black') $bg_color = 'bg-black';
+                        ?>
+                        <li class="user-header <?php echo $bg_color; ?>">
                             <?php if($userInfo->picture == ""){?>
                     	<img src="<?php echo base_url()?>public/user_picture/no_avatar.gif" class="img-circle" alt="User Image" />
                     <?php }else{?>

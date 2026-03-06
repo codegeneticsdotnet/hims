@@ -44,6 +44,7 @@ class Ipd extends General{
         $this->db->where("A.patient_type", "IPD");
         $this->db->where("A.nStatus", "Pending");
         $this->db->where("A.InActive", 0);
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
         $this->db->order_by("A.date_visit", "DESC");
         $this->db->limit(5);
         $query = $this->db->get("patient_details_iop A");

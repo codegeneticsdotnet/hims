@@ -120,6 +120,7 @@ class Roles extends General{
 	public function view($id){
 		$this->data['roles'] = $this->roles_model->getRole($id); 
 		$this->data['links'] = $this->roles_model->getPageModule();
+		$this->data['users'] = $this->roles_model->getUsersByRole($id); // Fetch users
 		$this->data['message'] = $this->session->flashdata('message');	
 		$this->load->view('app/roles/view', $this->data);		
 	}

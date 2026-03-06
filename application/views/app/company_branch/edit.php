@@ -40,6 +40,28 @@
                     </div>
                 </div>
                 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Branch Name</label>
+                            <input type="text" name="branch_name" value="<?php echo $branch->branch_name;?>" class="form-control" placeholder="Branch Name">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Branch Color</label>
+                            <select name="branch_color" class="form-control">
+                                <option value="skin-blue" <?php if($branch->branch_color == "skin-blue"){echo "selected";}?>>Blue (Default)</option>
+                                <option value="skin-black" <?php if($branch->branch_color == "skin-black"){echo "selected";}?>>Black</option>
+                                <option value="skin-green" <?php if($branch->branch_color == "skin-green"){echo "selected";}?>>Green</option>
+                                <option value="skin-purple" <?php if($branch->branch_color == "skin-purple"){echo "selected";}?>>Purple</option>
+                                <option value="skin-red" <?php if($branch->branch_color == "skin-red"){echo "selected";}?>>Red</option>
+                                <option value="skin-yellow" <?php if($branch->branch_color == "skin-yellow"){echo "selected";}?>>Yellow</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label>Address</label>
                     <textarea name="address" class="form-control" rows="3" placeholder="Address"><?php echo $branch->address;?></textarea>

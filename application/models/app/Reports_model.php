@@ -19,10 +19,28 @@ class Reports_model extends CI_Model{
             C.reason_discount
 		",false);
 		$where = "DATE_FORMAT(A.dDate,  '%Y-%m-%d') between '".$this->input->post('cFrom')."' and '".$this->input->post('cTo')."' and A.InActive = 0 and B.InActive = 0";
-		$this->db->where($where);	
+		$this->db->where($where);
+        
+        // Filter by Branch (Check both OPD Visit and Lab Request sources)
+        $this->db->group_start();
+            // 1. Match OPD/IPD Visit Branch
+            $this->db->where("D.branch_id", $this->session->userdata('branch_id'));
+            
+            // 2. Match Lab Request Branch
+            $this->db->or_where("L.branch_id", $this->session->userdata('branch_id'));
+            
+            // 3. Legacy/Orphan (Show if NO branch info found in either source)
+            $this->db->or_group_start();
+                $this->db->where("D.branch_id IS NULL");
+                $this->db->where("L.branch_id IS NULL");
+            $this->db->group_end();
+        $this->db->group_end();
+        
 		$this->db->order_by("A.dDate","ASC");
 		$this->db->join("patient_personal_info B","B.patient_no = A.patient_no","left outer");
         $this->db->join("iop_billing C","C.invoice_no = A.invoice_no","left outer");
+        $this->db->join("patient_details_iop D","D.IO_ID = A.iop_id","left outer");
+        $this->db->join("lab_service_request L","L.request_no = A.iop_id","left outer");
 		$query = $this->db->get("iop_receipt A");
 		return $query->result();
 	}
@@ -31,7 +49,21 @@ class Reports_model extends CI_Model{
 		$this->db->select("sum(A.total_amount) as total_amount,sum(A.discount) as discount,sum(A.subtotal) as subtotal");
 		$where = "DATE_FORMAT(A.dDate,'%Y-%m-%d') between '".$this->input->post('cFrom')."' and '".$this->input->post('cTo')."' and A.InActive = 0 and B.InActive = 0";
 		$this->db->where($where);	
+        
+        // Filter by Branch (Check both OPD Visit and Lab Request sources)
+        $this->db->group_start();
+            $this->db->where("D.branch_id", $this->session->userdata('branch_id'));
+            $this->db->or_where("L.branch_id", $this->session->userdata('branch_id'));
+            
+            $this->db->or_group_start();
+                $this->db->where("D.branch_id IS NULL");
+                $this->db->where("L.branch_id IS NULL");
+            $this->db->group_end();
+        $this->db->group_end();
+        
 		$this->db->join("patient_personal_info B","B.patient_no = A.patient_no","left outer");
+        $this->db->join("patient_details_iop D","D.IO_ID = A.iop_id","left outer");
+        $this->db->join("lab_service_request L","L.request_no = A.iop_id","left outer");
 		$query = $this->db->get("iop_receipt A");
 		return $query->row();
 	}

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIMS User Manual</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-links li {
+            margin-bottom: 10px;
+        }
+
+        .nav-links button {
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+            background: none;
+            border: none;
+            color: #ecf0f1;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .nav-links button:hover, .nav-links button.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .role-badge {
+            display: inline-block;
+            background-color: #f1c40f;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            vertical-align: middle;
+            font-weight: bold;
+        }
+
+        .role-badge.secretary { background-color: #9b59b6; }
+        .role-badge.doctor { background-color: #2ecc71; }
+        .role-badge.lab { background-color: #e67e22; }
+        .role-badge.billing { background-color: #e74c3c; }
+        .role-badge.pharmacist { background-color: #1abc9c; }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+            position: relative;
+        }
+
+        .step-list li {
+            margin-bottom: 20px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .step-list li::before {
+            content: "➜";
+            position: absolute;
+            left: 0;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .step-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #eef2f7;
+            border-radius: 6px;
+        }
+
+        .flow-step {
+            background: white;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .arrow {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>HIMS Manual</h2>
+        <ul class="nav-links">
+            <li><button onclick="showSection('intro')" class="active">Introduction</button></li>
+            <li><button onclick="showSection('login')">1. User Login</button></li>
+            <li><button onclick="showSection('patient')">2. Patient Entry</button></li>
+            <li><button onclick="showSection('opd')">3. OPD Registration</button></li>
+            <li><button onclick="showSection('consultation')">4. OPD Consultation</button></li>
+            <li><button onclick="showSection('lab')">5. Laboratory Services</button></li>
+            <li><button onclick="showSection('pharmacy')">6. Pharmacy Sales</button></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        
+        <!-- Introduction -->
+        <section id="intro" class="section active">
+            <h1>Welcome to HIMS User Manual</h1>
+            <p>This interactive manual provides step-by-step instructions for the Hospital Information Management System (HIMS). Use the sidebar to navigate through different modules and workflows.</p>
+            
+            <div class="step-box">
+                <strong>Quick Tip:</strong> Look for the colored badges to identify which user role is responsible for each action.
+            </div>
+
+            <div style="margin-top: 30px;">
+                <span class="role-badge secretary">Secretary / Info</span>
+                <span class="role-badge doctor">Doctor</span>
+                <span class="role-badge lab">Laboratory</span>
+                <span class="role-badge billing">Billing</span>
+                <span class="role-badge pharmacist">Pharmacist</span>
+            </div>
+        </section>
+
+        <!-- 1. User Login -->
+        <section id="login" class="section">
+            <h1>1. User Login</h1>
+            <p>Accessing the system securely.</p>
+
+            <div class="flow-diagram">
+                <span class="flow-step">Open System</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">Select Branch</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">Enter Credentials</span>
+            </div>
+
+            <h3>Steps:</h3>
+            <ul class="step-list">
+                <li>Select your designated <strong>Branch</strong> from the dropdown menu.</li>
+                <li>Enter your registered <strong>Username</strong> and <strong>Password</strong>.</li>
+                <li>Click <strong>Login</strong> to access your dashboard.</li>
+            </ul>
+        </section>
+
+        <!-- 2. Patient Entry -->
+        <section id="patient" class="section">
+            <h1>2. Patient Entry <span class="role-badge secretary">Secretary</span></h1>
+            <p>Creating a new patient record in the master database.</p>
+
+            <div class="flow-diagram">
+                <span class="flow-step">Dashboard</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">Patient Management</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">Add New Patient</span>
+            </div>
+
+            <h3>Workflow:</h3>
+            <div class="step-box">
+                <ol>
+                    <li>Log in as Secretary/Information user.</li>
+                    <li>Navigate to <strong>Dashboard</strong> > <strong>Patient Management</strong>.</li>
+                    <li>Click <strong>Add New Patient</strong>.</li>
+                    <li>Fill in required demographics (Name, Age, Contact, Address).</li>
+                    <li>Save to generate a unique Patient ID.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- 3. OPD Registration -->
+        <section id="opd" class="section">
+            <h1>3. OPD Registration <span class="role-badge secretary">Secretary</span></h1>
+            <p>Registering an existing patient for an Out-Patient Department visit.</p>
+
+            <div class="flow-diagram">
+                <span class="flow-step">Patient Entry</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">OPD Module</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">Add OPD Patient</span>
+            </div>
+
+            <h3>Steps:</h3>
+            <ul class="step-list">
+                <li>Ensure the patient is registered in the system (see Patient Entry).</li>
+                <li>Go to the <strong>OPD</strong> module.</li>
+                <li>Click <strong>Add OPD Patient</strong>.</li>
+                <li><strong>Search</strong> for the patient by name or ID.</li>
+                <li>Encode the <strong>Attending Doctor</strong> and the patient's <strong>Medical Concern</strong> (Chief Complaint).</li>
+                <li>Save the registration.</li>
+            </ul>
+        </section>
+
+        <!-- 4. OPD Patient Consultation -->
+        <section id="consultation" class="section">
+            <h1>4. OPD Patient Consultation</h1>
+            <p>The clinical workflow involving Clinic Staff, Doctors, and Billing.</p>
+
+            <h3>A. Clinic Assessment <span class="role-badge secretary">Clinic Staff</span></h3>
+            <div class="step-box">
+                <strong>Path:</strong> OPD Registration > Clinic Dashboard<br>
+                1. Select the patient from the list.<br>
+                2. Encode <strong>Vital Signs</strong> (BP, Temp, Weight, etc.).<br>
+                3. Upload any previous <strong>Image Records</strong> if available.<br>
+                4. Proceed to Billing or Doctor.
+            </div>
+
+            <h3>B. Doctor Consultation <span class="role-badge doctor">Doctor</span></h3>
+            <div class="step-box">
+                <strong>Path:</strong> OPD Registration > Doctor Dashboard<br>
+                1. Select patient from queue.<br>
+                2. Review history and vitals.<br>
+                3. Click <strong>Diagnostics</strong> to request labs (if needed).<br>
+                4. Click <strong>Add Diagnosis</strong> to record findings.<br>
+                5. Mark as <strong>Discharge / Bill</strong> to finish consultation.
+            </div>
+
+            <h3>C. Billing <span class="role-badge billing">Billing / Pharmacist</span></h3>
+            <div class="step-box">
+                <strong>Path:</strong> Discharge / Bill > Billing > POS<br>
+                1. Navigate to <strong>Billing</strong> module.<br>
+                2. Select <strong>OPD to Bill</strong> list.<br>
+                3. Open <strong>POS</strong> (Point of Sale) for the patient.<br>
+                4. Process payment for Consultation Fee and other charges.
+            </div>
+        </section>
+
+        <!-- 5. OPD Laboratory Services -->
+        <section id="lab" class="section">
+            <h1>5. OPD Laboratory Services</h1>
+            <p>Handling lab requests, payments, and result processing.</p>
+
+            <h3>A. Request Creation <span class="role-badge lab">Laboratory</span></h3>
+            <div class="step-box">
+                <strong>Path:</strong> OPD Registration > Laboratory Dashboard<br>
+                1. Select patient.<br>
+                2. Click <strong>Create Request</strong>.<br>
+                3. Select tests to be performed.<br>
+                4. Advise patient to proceed to <strong>Lab Payment</strong>.
+            </div>
+
+            <h3>B. Payment <span class="role-badge billing">Billing</span></h3>
+            <div class="step-box">
+                <strong>Path:</strong> Billing > POS<br>
+                1. Cashier opens patient's bill.<br>
+                2. Collects payment for Lab Request.<br>
+                3. System updates status to "Paid" / "Process Request".
+            </div>
+
+            <h3>C. Process Request <span class="role-badge lab">Laboratory</span></h3>
+            <div class="step-box">
+                <strong>Path:</strong> Laboratory Dashboard > Search Patient<br>
+                1. Verify payment status.<br>
+                2. Perform tests.<br>
+                3. Update Status to <strong>Active</strong> (Processing) and then <strong>Done</strong> (Results Ready).
+            </div>
+        </section>
+
+        <!-- 6. Pharmacy Sales -->
+        <section id="pharmacy" class="section">
+            <h1>6. OPD Pharmacy Sales / Walk-In <span class="role-badge pharmacist">Pharmacist</span></h1>
+            <p>Dispensing medication for walk-in patients or OPD prescriptions.</p>
+
+            <div class="flow-diagram">
+                <span class="flow-step">POS</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">Search Items</span>
+                <span class="arrow">➜</span>
+                <span class="flow-step">Payment</span>
+            </div>
+
+            <h3>Steps:</h3>
+            <ul class="step-list">
+                <li>Open the <strong>POS</strong> module.</li>
+                <li><strong>Search Items:</strong> Type drug name or generic name.</li>
+                <li>Add items to cart (quantity and dosage).</li>
+                <li><strong>Process Payment:</strong> Accept cash/card.</li>
+                <li>Print Receipt and Dispense items.</li>
+            </ul>
+        </section>
+
+        <div class="footer">
+            <p>&copy; 2026 HIMS System Manual. Generated automatically.</p>
+        </div>
+
+    </main>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from nav buttons
+            document.querySelectorAll('.nav-links button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Highlight active button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

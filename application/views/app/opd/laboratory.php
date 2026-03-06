@@ -195,7 +195,8 @@
                                     	<div class="tab-pane active" id="tab_1">
                                         	<?php if($this->session->userdata('emr_viewing') == ""){?>	
                                         	<?php if($getOPDPatient->nStatus == "Pending"){?>
-                                            <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Add Laboratory</a>
+                                            <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Add Laboratory Results</a>
+                                            <a href="<?php echo base_url()?>app/lab_services/add_request?patient_no=<?php echo $getOPDPatient->patient_no;?>&ref=opd" class="btn btn-warning"><i class="fa fa-flask"></i> Create Lab Request</a>
                                             
                                             <?php }}?>
                                             <a href="<?php echo base_url()?>app/ipd_print/print_laboratory/<?php echo $getOPDPatient->IO_ID;?>/<?php echo $getOPDPatient->patient_no;?>" class="btn btn-default" target="_blank"><i class="fa fa-print"></i> Print</a>

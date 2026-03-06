@@ -19,6 +19,19 @@
         <?php echo $this->session->flashdata('message');?>
         
         <div class="box">
+            <div class="box-header">
+                <form action="" method="post" class="form-inline" style="padding: 10px;">
+                    <div class="form-group">
+                        <label for="start_date">From:</label>
+                        <input type="date" name="start_date" class="form-control" value="<?php echo $start_date;?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">To:</label>
+                        <input type="date" name="end_date" class="form-control" value="<?php echo $end_date;?>" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Filter</button>
+                </form>
+            </div>
             <div class="box-body table-responsive">
                 <table class="table table-hover table-striped">
                     <thead>
@@ -28,21 +41,26 @@
                             <th>Issued To</th>
                             <th>Remarks</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if(!empty($issuances)): ?>
                             <?php foreach($issuances as $iss): ?>
                             <tr>
-                                <td><?php echo $iss->issuance_no;?></td>
-                                <td><?php echo date('M d, Y', strtotime($iss->issue_date));?></td>
+                                <td><a href="<?php echo base_url()?>app/inventory/view_issuance/<?php echo $iss->issuance_id;?>"><?php echo $iss->issuance_no;?></a></td>
+                                <td><?php echo date('M d, Y h:i A', strtotime($iss->issue_date));?></td>
                                 <td><?php echo $iss->issued_to_name;?></td>
                                 <td><?php echo $iss->remarks;?></td>
                                 <td><span class="label label-success"><?php echo $iss->status;?></span></td>
+                                <td>
+                                    <a href="<?php echo base_url()?>app/inventory/view_issuance/<?php echo $iss->issuance_id;?>" class="btn btn-xs btn-info"><i class="fa fa-eye"></i> View</a>
+                                    <a href="<?php echo base_url()?>app/inventory/print_issuance/<?php echo $iss->issuance_id;?>" target="_blank" class="btn btn-xs btn-default"><i class="fa fa-print"></i> Print</a>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="5" class="text-center">No issuances found.</td></tr>
+                            <tr><td colspan="6" class="text-center">No issuances found.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

@@ -49,9 +49,10 @@ class Lab_services_model extends CI_Model{
 
 		$this->db->where('A.InActive', 0);
 		$this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
-		// Filter by Branch via IOP
-		$this->db->join("patient_details_iop C", "C.IO_ID = A.iop_id", "left");
-		$this->db->where("C.branch_id", $this->session->userdata('branch_id'));
+        // Filter by Branch
+        // Previously we joined patient_details_iop, but now we have branch_id in lab_service_request
+        // We can trust A.branch_id directly.
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 		
 		$this->db->order_by('A.request_date', 'DESC');
 		
@@ -77,8 +78,7 @@ class Lab_services_model extends CI_Model{
         }
         
         // Filter by Branch
-        $this->db->join("patient_details_iop C", "C.IO_ID = A.iop_id", "left");
-        $this->db->where("C.branch_id", $this->session->userdata('branch_id'));
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
 
 		return $this->db->count_all_results();
 	}
@@ -214,6 +214,7 @@ class Lab_services_model extends CI_Model{
             'status' => $status,
             'created_by' => $this->session->userdata('user_id'), // Assuming user_id is in session
             'created_date' => date('Y-m-d H:i:s'),
+            'branch_id' => $this->session->userdata('branch_id'),
             'InActive' => 0
         );
         $this->db->insert('lab_service_request', $data);

@@ -58,8 +58,10 @@ class Billing_new_model extends CI_Model{
         $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
         $this->db->join("iop_billing C", "C.iop_id = A.request_no", "left");
         // Join to get Branch ID
-        $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
-        $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+        //$this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+        
+        // Filter by Branch directly
+        $this->db->where("A.branch_id", $this->session->userdata('branch_id'));
         
         $this->db->where_in("A.status", array("Pending", "Paid", "Cancelled")); // Include Cancelled
         $this->db->where("A.InActive", 0);
@@ -95,43 +97,42 @@ class Billing_new_model extends CI_Model{
         $items = array();
         
         // 1. Lab Requests (Pending or Active/Done for IPD)
-        $this->db->select("
-            A.detail_id as item_id,
-            concat('Lab: ', B.particular_name) as item_name,
-            A.amount as price,
-            A.qty,
-            (A.amount * A.qty) as total,
-            C.status,
-            'Laboratory' as category
-        ", false);
-        $this->db->from("lab_service_request_details A");
-        $this->db->join("bill_particular B", "B.particular_id = A.particular_id", "left");
-        $this->db->join("lab_service_request C", "C.request_id = A.request_id", "left");
-        // Always join patient details to filter by branch
-        $this->db->join("patient_details_iop P", "P.IO_ID = C.iop_id", "left");
-        $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+        // Using direct SQL to ensure joins are preserved correctly
+        $branch_id = $this->session->userdata('branch_id');
+        $sql = "
+            SELECT 
+                A.detail_id as item_id,
+                concat('Lab: ', B.particular_name) as item_name,
+                A.amount as price,
+                A.qty,
+                (A.amount * A.qty) as total,
+                C.status,
+                'Laboratory' as category
+            FROM `lab_service_request_details` `A`
+            LEFT JOIN `bill_particular` `B` ON `B`.`particular_id` = `A`.`particular_id`
+            LEFT JOIN `lab_service_request` `C` ON `C`.`request_id` = `A`.`request_id`
+            LEFT JOIN `patient_details_iop` `P` ON `P`.`IO_ID` = `C`.`iop_id`
+            WHERE 
+                (C.branch_id = ? OR C.branch_id IS NULL)
+                AND A.InActive = 0
+                AND C.InActive = 0
+                AND C.status NOT IN ('Paid', 'Cancelled')
+        ";
         
-        $this->db->where("A.InActive", 0);
-        $this->db->where("C.InActive", 0);
+        $params = array($branch_id);
         
-        // Filter by status: For OPD, usually 'Pending'. For IPD, 'Active'/'Done' but not 'Paid'.
-        // Let's grab everything not 'Paid' or 'Cancelled'.
-        $this->db->where_not_in("C.status", array("Paid", "Cancelled"));
-        
-        // Fix for IO_ID filtering
         if($io_id){
-             $this->db->group_start();
-             $this->db->where("C.request_no", $io_id);
-             $this->db->or_where("C.iop_id", $io_id);
-             // Include all requests for this patient to ensure nothing is missed
-             $this->db->or_where("C.patient_no", $patient_no);
-             $this->db->or_where("P.patient_no", $patient_no);
-             $this->db->group_end();
+            $sql .= " AND (C.request_no = ? OR C.iop_id = ? OR C.patient_no = ? OR P.patient_no = ?)";
+            $params[] = $io_id;
+            $params[] = $io_id;
+            $params[] = $patient_no;
+            $params[] = $patient_no;
         } else {
-             $this->db->where("C.patient_no", $patient_no);
+            $sql .= " AND C.patient_no = ?";
+            $params[] = $patient_no;
         }
         
-        $query = $this->db->get();
+        $query = $this->db->query($sql, $params);
         if($query->num_rows() > 0){
              $items = array_merge($items, $query->result());
         }
@@ -166,7 +167,13 @@ class Billing_new_model extends CI_Model{
             
             // Allow fetching by IO_ID OR Patient linkage
             $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            
+            $this->db->group_start();
             $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            $this->db->or_where("P.branch_id IS NULL"); // Allow if branch is missing (legacy)
+            $this->db->or_where("A.iop_id", "");
+            $this->db->or_where("A.iop_id IS NULL");
+            $this->db->group_end();
             
             $this->db->group_start();
             $this->db->where("A.iop_id", $io_id);
@@ -185,48 +192,105 @@ class Billing_new_model extends CI_Model{
         
         // 3. Room Charges (IPD only)
         if($is_ipd){
+            // Get all room transfers to calculate days
             $this->db->select("
-                A.transfer_id as item_id,
-                concat('Room: ', B.room_name) as item_name,
-                B.room_rates as price,
-                1 as qty,
-                B.room_rates as total,
-                'Pending' as status,
-                'Room' as category
-            ", false);
+                A.transfer_id,
+                A.dDate,
+                A.dDateTime,
+                B.room_name,
+                B.room_rates
+            ");
             $this->db->from("iop_room_transfer A");
             $this->db->join("room_master B", "B.room_master_id = A.room_master_id", "left");
             $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            
+            $this->db->group_start();
             $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            $this->db->or_where("P.branch_id IS NULL");
+            $this->db->group_end();
             
             $this->db->where("A.iop_id", $io_id);
             $this->db->where("A.InActive", 0);
-            $query = $this->db->get();
-            // Note: In real app, we calculate days * rate. For now, flat rate per transfer or assume 1 day for simplicity unless we have check-in/out dates.
-            if($query->num_rows() > 0){
-                $items = array_merge($items, $query->result());
+            $this->db->order_by("A.dDateTime", "ASC");
+            $transfers = $this->db->get()->result();
+            
+            $count = count($transfers);
+            for($i = 0; $i < $count; $i++){
+                $current = $transfers[$i];
+                $start_time = strtotime($current->dDateTime);
+                
+                // Determine end time
+                if(isset($transfers[$i+1])){
+                    // If there is a next transfer, end time is next transfer start
+                    $end_time = strtotime($transfers[$i+1]->dDateTime);
+                } else {
+                    // If last transfer, end time is Now or Discharge Date
+                    // Check if patient is discharged
+                    $this->db->select("nStatus, dDate, dDateTime"); // Assuming dDateTime is discharge time if available, else use date
+                    $this->db->where("IO_ID", $io_id);
+                    $patient = $this->db->get("patient_details_iop")->row();
+                    
+                    if($patient->nStatus == 'Discharged'){
+                        // Use discharge date (need to verify where discharge date is stored, likely not in dDate of iop but separate log or field)
+                        // For now assuming we use current time if not found or Date Visit + length? 
+                        // Let's use NOW() if not discharged, or Discharge Date.
+                        // Assuming 'date_discharge' exists or similar? 
+                        // If not, let's use current time for billing estimation.
+                        $end_time = time(); 
+                    } else {
+                        $end_time = time();
+                    }
+                }
+                
+                // Calculate Days
+                // Logic: Count nights passed? Or 24h blocks?
+                // Standard: 1 day minimum. 
+                // Difference in seconds
+                $diff = $end_time - $start_time;
+                $days = ceil($diff / (60 * 60 * 24)); 
+                if($days < 1) $days = 1; // Minimum 1 day charge
+                
+                // Add to items
+                $obj = new stdClass();
+                $obj->item_id = $current->transfer_id;
+                $obj->item_name = 'Room: ' . $current->room_name . ' (' . date('M d', $start_time) . ' - ' . date('M d', $end_time) . ')';
+                $obj->price = $current->room_rates;
+                $obj->qty = $days;
+                $obj->total = $current->room_rates * $days;
+                $obj->status = 'Pending';
+                $obj->category = 'Room Charges';
+                
+                $items[] = $obj;
             }
         }
         
-        // 4. Doctor's Consultation Fee (OPD)
-        // If this is an OPD visit, check if we should add a consultation fee
-        // Or if there are specific billable services added
-        if(!$is_ipd && $io_id){
-             // Maybe fetch from a 'bill_services' table or similar if implemented
-             // For now, let's look for 'iop_bed_side_procedure' which seems to hold other services too based on opd_model
+        // 4. Doctor's Consultation / Bed Side Procedures / Misc Charges
+        if($io_id){
              $this->db->select("
                 A.bed_pro_id as item_id,
-                concat('Service: ', B.particular_name) as item_name,
+                concat(IFNULL(G.group_name, 'Service'), ': ', B.particular_name) as item_name,
                 B.charge_amount as price,
                 A.qty,
                 (B.charge_amount * A.qty) as total,
                 'Pending' as status,
-                'Services' as category
+                CASE 
+                    WHEN G.group_name LIKE '%Ambulance%' THEN 'Ambulance'
+                    WHEN G.group_name LIKE '%Oxygen%' THEN 'Oxygen'
+                    WHEN G.group_name IS NOT NULL THEN G.group_name
+                    ELSE 'Services' 
+                END as category
             ", false);
             $this->db->from("iop_bed_side_procedure A");
             $this->db->join("bill_particular B", "B.particular_id = A.cItem_id", "left");
+            $this->db->join("bill_group_name G", "G.group_id = B.group_id", "left");
             $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            
+            $this->db->group_start();
             $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            $this->db->or_where("P.branch_id IS NULL");
+            $this->db->or_where("A.iop_id", "");
+            $this->db->or_where("A.iop_id IS NULL");
+            $this->db->group_end();
             
             $this->db->where("A.iop_id", $io_id);
             $this->db->where("A.InActive", 0);
@@ -236,22 +300,30 @@ class Billing_new_model extends CI_Model{
             }
         }
         
-        // 5. Doctor's Fee from Discharge Advice (OPD)
+        // 5. Doctor's Fee from Discharge Advice
         if($io_id){
              $this->db->select("
                 A.advice_id as item_id,
-                'Doctor Fee' as item_name,
+                concat('Professional Fee: ', IFNULL(concat(D.firstname, ' ', D.lastname), 'Doctor')) as item_name,
                 A.doctor_fee as price,
                 1 as qty,
                 A.doctor_fee as total,
                 'Pending' as status,
-                'Services' as category
+                'Professional Fees' as category
             ", false);
             $this->db->join("patient_details_iop P", "P.IO_ID = A.iop_id", "left");
+            $this->db->join("users D", "D.user_id = P.doctor_id", "left"); // Get Attending Doctor
+            
+            $this->db->group_start();
             $this->db->where("P.branch_id", $this->session->userdata('branch_id'));
+            $this->db->or_where("P.branch_id IS NULL");
+            $this->db->or_where("A.iop_id", "");
+            $this->db->or_where("A.iop_id IS NULL");
+            $this->db->group_end();
             
             $this->db->where("A.iop_id", $io_id);
             $this->db->where("A.InActive", 0);
+            $this->db->where("A.doctor_fee >", 0); // Only if fee is set
             $query = $this->db->get("iop_discharge_advice A");
             
             if($query->num_rows() > 0){

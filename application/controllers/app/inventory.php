@@ -31,7 +31,17 @@ class Inventory extends General{
             'subtab'        =>      '',
             'submodule'     =>      ''));
             
-        $this->data['transfers'] = $this->inventory_model->get_stock_transfers(100);
+        $start_date = $this->input->post('start_date');
+        $end_date = $this->input->post('end_date');
+        
+        if(!$start_date){
+            $start_date = date('Y-m-d', strtotime('-7 days'));
+            $end_date = date('Y-m-d');
+        }
+        
+        $this->data['start_date'] = $start_date;
+        $this->data['end_date'] = $end_date;
+        $this->data['transfers'] = $this->inventory_model->get_stock_transfers(100, 0, $start_date, $end_date);
         $this->load->view('app/inventory/stock_transfer/index', $this->data);
     }
     
@@ -49,7 +59,9 @@ class Inventory extends General{
                 'transfer_no' => $this->input->post('transfer_no'),
                 'from_branch' => $this->input->post('from_branch'),
                 'to_branch' => $this->input->post('to_branch'),
-                'transfer_date' => date('Y-m-d'),
+                'from_dept' => 0,
+                'to_dept' => 0,
+                'transfer_date' => date('Y-m-d H:i:s'),
                 'status' => 'Pending',
                 'remarks' => $this->input->post('remarks'),
                 'created_by' => $this->session->userdata('user_id'),
@@ -126,7 +138,17 @@ class Inventory extends General{
             'subtab'        =>      '',
             'submodule'     =>      ''));
             
-        $this->data['issuances'] = $this->inventory_model->get_stock_issuances(100);
+        $start_date = $this->input->post('start_date');
+        $end_date = $this->input->post('end_date');
+        
+        if(!$start_date){
+            $start_date = date('Y-m-d', strtotime('-7 days'));
+            $end_date = date('Y-m-d');
+        }
+        
+        $this->data['start_date'] = $start_date;
+        $this->data['end_date'] = $end_date;
+        $this->data['issuances'] = $this->inventory_model->get_stock_issuances(100, 0, $start_date, $end_date);
         $this->load->view('app/inventory/stock_issuance/index', $this->data);
     }
     
@@ -140,13 +162,26 @@ class Inventory extends General{
         $this->form_validation->set_rules("issuance_no", "Issuance No", "required");
         
         if($this->form_validation->run()){
+            // Get Issued To Name
+            $issued_to_name = "";
+            $issued_to_id = $this->input->post('issued_to_id');
+            if($issued_to_id){
+                $this->db->select("concat(firstname, ' ', lastname) as name");
+                $this->db->where("user_id", $issued_to_id);
+                $query = $this->db->get("users");
+                if($query->num_rows() > 0){
+                    $issued_to_name = $query->row()->name;
+                }
+            }
+
             $header = array(
                 'issuance_no' => $this->input->post('issuance_no'),
-                'issue_date' => date('Y-m-d'),
-                'issued_to' => $this->input->post('issued_to_id'), // Use ID from hidden field
-                'remarks' => $this->input->post('remarks'),
+                'issue_date' => date('Y-m-d H:i:s'),
+                'issued_to' => $issued_to_id, // Use ID from hidden field
+                'remarks' => "Issued to " . $issued_to_name . " " . $this->input->post('remarks'),
                 'created_by' => $this->session->userdata('user_id'),
                 'created_date' => date('Y-m-d H:i:s'),
+                'branch_id' => $this->session->userdata('branch_id'),
                 'status' => 'Active',
                 'InActive' => 0
             );
@@ -179,6 +214,18 @@ class Inventory extends General{
         }
     }
     
+    public function view_issuance($id){
+        $this->data['header'] = $this->inventory_model->get_issuance($id);
+        $this->data['details'] = $this->inventory_model->get_issuance_details($id);
+        $this->load->view('app/inventory/stock_issuance/view', $this->data);
+    }
+    
+    public function print_issuance($id){
+        $this->data['header'] = $this->inventory_model->get_issuance($id);
+        $this->data['details'] = $this->inventory_model->get_issuance_details($id);
+        $this->load->view('app/inventory/stock_issuance/print', $this->data);
+    }
+
     // AJAX Helpers
     public function search_employees($keyword = ''){
         $keyword = urldecode($keyword);
@@ -204,5 +251,11 @@ class Inventory extends General{
             );
         }
         echo json_encode($result);
+    }
+    
+    public function get_items_json(){
+        // Get all items with stock
+        $items = $this->pharmacy_model->getItems(1000, 0); // Get reasonable amount
+        echo json_encode($items);
     }
 }

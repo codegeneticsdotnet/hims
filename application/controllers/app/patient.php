@@ -170,7 +170,7 @@ class Patient extends General{
 				'firstname'			=>		strtoupper($this->input->post('firstname')),
 				'middlename'		=>		strtoupper($this->input->post('middlename')),
 				'gender'			=>		$this->input->post('gender'),
-				'civil_status'		=>		$this->input->post('civil_status'),
+				'civil_status'		=>		$this->input->post('civil_status') ? $this->input->post('civil_status') : 0,
 				'birthday'			=>		$this->input->post('birthday'),
 				'birthplace'		=>		'',
 				'fathers_name'		=>		'',

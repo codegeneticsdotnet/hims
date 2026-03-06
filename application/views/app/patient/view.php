@@ -18,19 +18,12 @@
                     
                     	 <div class="box">
                          		
-                         		<div class="box-header">
-                                    <h3 class="box-title">
-                                    <a href="<?php echo base_url();?>app/patient/" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back</a>	
-                                    <a href="<?php echo base_url();?>app/patient/edit/<?php echo $patientInfo->patient_no?>" class="btn btn-primary"><i class="fa fa-edit"></i> Edit Information</a>
-                                    </h3>
-                                    
-                                    <div class="box-tools">
-                                        <div class="input-group">
-                                            
-                                        </div>
-                                    </div>
-                                    
-                                </div><!-- /.box-header -->
+                <div class="box-header">
+                	<!-- <h3 class="box-title">Responsive Hover Table</h3> -->
+                    <a href="javascript:history.go(-1)" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back</a>
+                    <a href="<?php echo base_url();?>app/patient/add" class="btn btn-primary"><i class="fa fa-plus"></i> Add New Patient</a>
+                    <a href="<?php echo base_url();?>app/patient/edit/<?php echo $patientInfo->patient_no;?>" class="btn btn-primary"><i class="fa fa-pencil"></i> Edit</a>
+                </div>
 								
                         	<div class="box-body table-responsive">
                             

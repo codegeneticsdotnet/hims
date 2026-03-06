@@ -17,11 +17,12 @@
         <link href="<?php echo base_url();?>public/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
         <link href="<?php echo base_url();?>public/css/ionicons.min.css" rel="stylesheet" type="text/css" />
         <link href="<?php echo base_url();?>public/css/AdminLTE.css" rel="stylesheet" type="text/css" />
+        <link href="<?php echo base_url();?>public/css/skins.css" rel="stylesheet" type="text/css" />
         <link href="<?php echo base_url();?>public/css/timepicker/bootstrap-timepicker.css" rel="stylesheet" type="text/css" />
         <link href="<?php echo base_url();?>public/datepicker/css/datepicker.css" rel="stylesheet" >
         <link href="<?php echo base_url();?>public/css/bootstrap-select/bootstrap-select.min.css" rel="stylesheet" >
     </head>
-    <body class="skin-blue">
+    <body class="<?php echo $this->session->userdata('branch_color') ? $this->session->userdata('branch_color') : 'skin-blue';?>">
         <!-- header logo: style can be found in header.less -->
         <?php require_once(APPPATH.'views/include/header.php');?>
         

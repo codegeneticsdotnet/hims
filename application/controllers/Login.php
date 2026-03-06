@@ -70,6 +70,7 @@ class Login extends General{
             $branch_code = $branch_info ? $branch_info->branch_code : '';
 			$branch_name = $branch_info ? $branch_info->company_name : '';
             $branch_address = $branch_info ? $branch_info->address : '';
+            $branch_color = $branch_info ? $branch_info->branch_color : 'skin-blue';
 			
 			$this->data = $this->session->set_userdata(array(
                     'username'          =>          $this->input->post('username'),
@@ -80,7 +81,8 @@ class Login extends General{
 					'branch_code'       =>          $branch_code,
                     'branch_id'         =>          $branch_id,
 					'branch_name'       =>          $branch_name,
-                    'branch_address'    =>          $branch_address
+                    'branch_address'    =>          $branch_address,
+                    'branch_color'      =>          $branch_color
              )); 
 			 
 			 $userModule = $this->login_model->getMyModule($this->session->userdata('user_id'));
