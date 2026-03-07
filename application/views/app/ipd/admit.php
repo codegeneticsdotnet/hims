@@ -35,7 +35,10 @@
                  <?php
 													$newIPDNo = $lastIPDNo->ipdNo;
 													?>
-                 <form method="post" action="<?php echo base_url();?>app/ipd/save_ipd" onSubmit="return validate_form();">
+                 <?php 
+                 $attributes = array('onSubmit' => 'return validate_form();');
+                 echo form_open('app/ipd/save_ipd', $attributes); 
+                 ?>
                  <input type="hidden" name="patient_no" value="<?php echo $patientInfo->patient_no?>">
                  <input type="hidden" name="iopNo2" value="<?php echo $newIPDNo?>">
                  <input type="hidden" name="room_idfor" id="room_idfor">
@@ -290,7 +293,7 @@
                         </div>
                     </div>
                  </div>
-                 </form>
+                 <?php echo form_close(); ?>
                  
                 </section><!-- /.content -->
             </aside><!-- /.right-side -->

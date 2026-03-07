@@ -187,9 +187,15 @@
                                         <td><?php echo $row->patient_name;?></td>
                                         <td><?php echo date('M d', strtotime($row->date_visit));?></td>
                                         <td>
-                                            <a href="<?php echo base_url()?>app/billing_new/create_bill/<?php echo $row->patient_no;?>/IPD/<?php echo $row->IO_ID;?>" class="btn btn-primary btn-xs">
-                                                Bill
-                                            </a>
+                                            <?php if(isset($row->bill_status) && $row->bill_status == 'Paid'): ?>
+                                                <a href="<?php echo base_url()?>app/reports/receipt/<?php echo $row->invoice_no;?>" target="_blank" class="btn btn-default btn-xs">
+                                                    <i class="fa fa-print"></i> Paid (View)
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="<?php echo base_url()?>app/billing_new/create_bill/<?php echo $row->patient_no;?>/IPD/<?php echo $row->IO_ID;?>" class="btn btn-primary btn-xs">
+                                                    Bill
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach;?>

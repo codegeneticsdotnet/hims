@@ -7,15 +7,32 @@ class Login_model extends CI_Model{
 	}
 	
 	public function validate_login(){
-		$this->db->select("username,password");
+        $username = $this->input->post('username');
+        $password = $this->input->post('password');
+        
+		$this->db->select("user_id, username, password");
 		$this->db->where(array(
-                'username'      =>      $this->input->post('username'),
-                'password'      =>      md5($this->input->post('password')),
+                'username'      =>      $username,
 				'InActive'		=>		0
         ));
         $query = $this->db->get('users');
 		if($query->num_rows() == 1){
-			return true;
+            $user = $query->row();
+            
+            // Check if password matches (BCRYPT)
+            if(password_verify($password, $user->password)){
+                return true;
+            } 
+            // Check if password matches (MD5 - Legacy Support & Auto Upgrade)
+            else if($user->password === md5($password)){
+                // Password matches old MD5, so we upgrade it to BCRYPT now
+                $new_hash = password_hash($password, PASSWORD_BCRYPT);
+                $this->db->where('user_id', $user->user_id);
+                $this->db->update('users', array('password' => $new_hash));
+                return true;
+            }
+            
+            return false;
         }else{
             return false;
         }

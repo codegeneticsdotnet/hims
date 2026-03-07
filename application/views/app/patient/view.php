@@ -1,29 +1,34 @@
-                <?php require_once(APPPATH.'views/include/head.php');?>
-                <!-- Content Header (Page header) -->
-                <section class="content-header">
-                    <h1>Patient Information Details</h1>
-                </section>
-                <!-- Main content -->
-                <section class="content">
-                    <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
-                        <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+<?php require_once(APPPATH.'views/include/head.php');?>
+
+    <!-- Right side column. Contains the navbar and content of the page -->
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <h1>Patient Information Details</h1>
+        </h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
+                    <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li><a href="#">Patient Management</a></li>
                         <li><a href="<?php echo base_url()?>app/patient">Patient Master</a></li>
                         <li class="active">Patient Information Details</li>
                     </ol>
-                 
+                  <div class="box-header">
+                	<!-- <h3 class="box-title">Responsive Hover Table</h3> -->
+                    <a href="javascript:history.go(-1)" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back</a>
+                    <a href="<?php echo base_url();?>app/patient/add" class="btn btn-primary"><i class="fa fa-plus"></i> Add New Patient</a>
+                    <a href="<?php echo base_url();?>app/patient/edit/<?php echo $patientInfo->patient_no;?>" class="btn btn-primary"><i class="fa fa-pencil"></i> Edit</a>
+                </div> <br />
                  
                  <div class="row">
                  	<div class="col-md-12">
                     
                     	 <div class="box">
                          		
-                <div class="box-header">
-                	<!-- <h3 class="box-title">Responsive Hover Table</h3> -->
-                    <a href="javascript:history.go(-1)" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back</a>
-                    <a href="<?php echo base_url();?>app/patient/add" class="btn btn-primary"><i class="fa fa-plus"></i> Add New Patient</a>
-                    <a href="<?php echo base_url();?>app/patient/edit/<?php echo $patientInfo->patient_no;?>" class="btn btn-primary"><i class="fa fa-pencil"></i> Edit</a>
-                </div>
+               
 								
                         	<div class="box-body table-responsive">
                             

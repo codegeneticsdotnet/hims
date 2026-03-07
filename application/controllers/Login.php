@@ -46,9 +46,33 @@ class Login extends General{
 	}
 	
 	function validate_credentials(){
+        // Check Brute Force
+        $ip_address = $this->input->ip_address();
+        $username = $this->input->post('username');
+        
+        // Count attempts in last 15 minutes
+        $this->db->where('ip_address', $ip_address);
+        $this->db->where('time >', time() - 900); // 15 mins
+        $attempts = $this->db->count_all_results('login_attempts');
+        
+        if($attempts >= 5){
+            $this->form_validation->set_message("validate_credentials", "Too many failed login attempts. Please try again in 15 minutes.");
+            return false;
+        }
+        
 		if($this->login_model->validate_login()){
+            // Clear failed attempts on success
+            $this->db->where('ip_address', $ip_address);
+            $this->db->delete('login_attempts');
 			return true;	
 		}else{
+            // Record failed attempt
+            $this->db->insert('login_attempts', array(
+                'ip_address' => $ip_address,
+                'login' => $username,
+                'time' => time()
+            ));
+            
 			$this->form_validation->set_message("validate_credentials","Invalid Login");
 			return false;
 		}

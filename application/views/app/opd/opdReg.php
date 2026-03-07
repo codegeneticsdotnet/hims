@@ -71,14 +71,7 @@
                  	
                      <div class="col-md-12">
                     	 <div class="box">
-                         	 <div class="box-header">
-                             	<div class="box-footer clearfix">
-                            	
-                                            <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
-                                            <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
-                                 
-                            	</div>
-                             </div>
+                         	
                         	<div class="box-body table-responsive">
                             		
                                     
@@ -157,6 +150,15 @@
                                 <tr>
                                 	<td valign="top">Medical Concerns</td>
                                 	<td><textarea name="complaints" id="complaints" class="form-control input-sm" style="width: 60%;" rows="3" placeholder="Enter patient's medical concerns, complaints, or reason for visit..."></textarea></td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                    <td>
+                                         <div class="box-header">
+                             	            <button class="btn btn-primary" name="btnSubmit" id="btnSubmit" type="submit"><i class="fa fa-save"></i> Save</button>
+                                            <a href="<?php echo base_url();?>app/patient" class="btn btn-default">Cancel</a>
+                                        </div>
+                                    </td>
                                 </tr>
                                 
                                 </table>

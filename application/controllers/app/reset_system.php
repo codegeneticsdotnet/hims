@@ -7,6 +7,7 @@ class Reset_system extends General{
 	public function __construct(){
 		parent::__construct();
 		$this->load->model("app/general_model");
+		$this->load->helper('form');
         if(General::is_logged_in() == FALSE){
             redirect(base_url().'login');    
         }
@@ -27,15 +28,51 @@ class Reset_system extends General{
     public function process(){
         $password = $this->input->post('password');
         
+        // Brute Force Protection
+        $ip_address = $this->input->ip_address();
+        // Count attempts in last 15 minutes for system reset
+        $this->db->where('ip_address', $ip_address);
+        $this->db->where('time >', time() - 900); // 15 mins
+        $this->db->where('login', 'system_reset'); // Special identifier
+        $attempts = $this->db->count_all_results('login_attempts');
+        
+        if($attempts >= 3){ // Strict limit of 3 attempts
+            $this->session->set_flashdata('message', '<div class="alert alert-danger">Too many failed attempts. Security lockout active for 15 minutes.</div>');
+            redirect(base_url().'app/reset_system');
+            return;
+        }
+
         // Check if password matches the logged in user's password (or a specific admin password)
         // Here we verify against the logged in user's password
         $user_id = $this->session->userdata('user_id');
         $user = $this->db->get_where('users', array('user_id' => $user_id))->row();
         
-        if($user && $user->password == md5($password)){ // Assuming MD5 as per legacy systems, or simple check
+        // Verify password (Bcrypt with MD5 fallback)
+        $is_valid = false;
+        if($user) {
+            if(password_verify($password, $user->password)) {
+                $is_valid = true;
+            } else if($user->password === md5($password)) {
+                $is_valid = true;
+            }
+        }
+        
+        if($is_valid){
+            // Clear failed attempts on success
+            $this->db->where('ip_address', $ip_address);
+            $this->db->where('login', 'system_reset');
+            $this->db->delete('login_attempts');
+
             $this->do_reset();
             $this->session->set_flashdata('message', '<div class="alert alert-success">System Reset Successfully! All records have been cleared.</div>');
         } else {
+            // Record failed attempt
+            $this->db->insert('login_attempts', array(
+                'ip_address' => $ip_address,
+                'login' => 'system_reset',
+                'time' => time()
+            ));
+
             $this->session->set_flashdata('message', '<div class="alert alert-danger">Invalid Password! Reset aborted.</div>');
         }
         

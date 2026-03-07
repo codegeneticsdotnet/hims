@@ -29,7 +29,10 @@
 			<div class="col-md-12">
 				<div class="account-container">
 					<div class="content clearfix" >
-						<form action="<?php echo base_url()?>login/validate_login" method="post" id="frmLogin" name="frmLogin">
+						<?php 
+                        $attributes = array('id' => 'frmLogin', 'name' => 'frmLogin');
+                        echo form_open('login/validate_login', $attributes); 
+                        ?>
 							<div class="logo-pms" style="text-align:center;margin-top:-40px;"><img src="<?php echo base_url()?>public/company_logo/<?php echo $companyInfo->logo?>" width="128" height="128"></div>	
 							<div class="login-fields">
 								<p style="margin-top:5px;text-align:center;font-weight:bold;font-size:1.2em;color:darkgreen;">CHRIST BEARER INFIRMARY HOSPITAL</p>
@@ -72,7 +75,7 @@
 							<div class="login-actions">
 								<button class="button btn btn-primary btn-large">Log In</button>
 							</div> <!-- .actions -->
-						</form>						
+						<?php echo form_close(); ?>						
 					</div> <!-- /content -->
 				</div> <!-- /account-container -->
 			</div>

@@ -1,12 +1,16 @@
 <?php require_once(APPPATH.'views/include/head.php');?>
 
-    <aside class="right-side">                
-        <section class="content-header">
+    <!-- Right side column. Contains the navbar and content of the page -->
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
             <h1>
                 System Reset
-                <small>Clear All Records</small>
             </h1>
-            <ol class="breadcrumb">
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <ol class="breadcrumb" style="margin-bottom: 5px; background-color: transparent; padding-left: 0; padding-top: 0; padding-bottom: 0;">
                 <li><a href="<?php echo base_url()?>app/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
                 <li><a href="#">Admin</a></li>
                 <li class="active">Reset System</li>
@@ -35,13 +39,13 @@
                             
                             <hr>
                             
-                            <form action="<?php echo base_url()?>app/reset_system/process" method="post" onsubmit="return confirm('Are you absolutely sure you want to reset the system? This cannot be undone.');">
+                            <?php echo form_open('app/reset_system/process', array('onsubmit' => "return confirm('Are you absolutely sure you want to reset the system? This cannot be undone.');")); ?>
                                 <div class="form-group">
                                     <label>Enter Admin Password to Confirm</label>
                                     <input type="password" name="password" class="form-control input-lg text-center" placeholder="Password" required>
                                 </div>
                                 <button type="submit" class="btn btn-danger btn-lg btn-block"><i class="fa fa-trash-o"></i> RESET SYSTEM NOW</button>
-                            </form>
+                            <?php echo form_close(); ?>
                         </div>
                     </div>
                 </div>

@@ -104,7 +104,12 @@
                                                     <tr>
                                                     	<td>Birthday <font color="#FF0000">*</font></td>
                                                         <td>
-                                                        <input class="form-control input-sm" name="birthday" id="birthday" type="text" value="<?php echo date('m/d/Y', strtotime($patientInfo->birthday ?: date('Y-m-d'))); ?>" placeholder="From Date" style="width:150px;" required>
+                                                            <div class="input-group" style="width: 150px;">
+                                                                <input class="form-control input-sm" name="birthday" id="birthday" type="text" value="<?php echo date('m/d/Y', strtotime($patientInfo->birthday ?: date('Y-m-d'))); ?>" placeholder="MM/DD/YYYY" required>
+                                                                <div class="input-group-btn">
+                                                                    <button type="button" class="btn btn-default btn-sm"><i class="fa fa-calendar"></i></button>
+                                                                </div>
+                                                            </div>
                                                         </td>
                                                     </tr>
 
@@ -304,7 +309,7 @@
                             
                         </div>
                     </div>
-                     </form>
+                     <?php echo form_close(); ?>
                  </div>
                  
                  
@@ -312,6 +317,7 @@
             </aside><!-- /.right-side -->
         </div><!-- ./wrapper -->        
         <script src="<?php echo base_url();?>public/js/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
         <script src="<?php echo base_url();?>public/js/bootstrap.min.js" type="text/javascript"></script>     
         <script src="<?php echo base_url();?>public/js/AdminLTE/app.js" type="text/javascript"></script>
          <!-- BDAY -->
@@ -319,11 +325,17 @@
         <script type="text/javascript">
             // When the document is ready
             $(document).ready(function () {
-                
+                $('#birthday').mask('00/00/0000');
                 $('#birthday').datepicker({
                     format: "mm/dd/yyyy"
-                });  
-            
+                }).on('changeDate', function(e) {
+                    // Re-validate or process if needed
+                });
+                
+                // Open calendar when button is clicked
+                $('.input-group-btn .btn').click(function() {
+                    $('#birthday').datepicker('show');
+                });
             });
         </script>
         <!-- END BDAY -->

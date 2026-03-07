@@ -198,8 +198,12 @@ class Patient extends General{
 			
 			$this->session->set_flashdata('message',"<div class='alert alert-success alert-dismissable'><i class='fa fa-check'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Patient successfully Added!</div>");
 			
-			// Redirect to OPD Registration for the new patient
-			redirect(base_url().'app/opd/opd_reg/'.$lastPatientID);
+			// Redirect based on source
+			if($this->input->post('redirect_to') == 'ipd'){
+			    redirect(base_url().'app/ipd/admit/'.$lastPatientID);
+			} else {
+			    redirect(base_url().'app/opd/opd_reg/'.$lastPatientID);
+			}
 			
 		}else{
 			$this->session->set_flashdata('message',"<div class='alert alert-danger alert-dismissable'><i class='fa fa-warning'></i><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>Error saving patient!</div>");

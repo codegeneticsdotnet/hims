@@ -81,9 +81,15 @@ class Billing_new_model extends CI_Model{
             A.patient_no,
             concat(B.firstname,' ',B.lastname) as patient_name,
             A.date_visit,
-            A.nStatus
+            A.nStatus,
+            CASE 
+                WHEN C.invoice_no IS NOT NULL THEN 'Paid'
+                ELSE A.nStatus 
+            END as bill_status,
+            C.invoice_no
         ", false);
         $this->db->join("patient_personal_info B", "B.patient_no = A.patient_no", "left");
+        $this->db->join("iop_billing C", "C.iop_id = A.IO_ID", "left");
         $this->db->where("A.patient_type", "IPD");
         $this->db->where("A.nStatus", "Pending"); // Currently admitted
         $this->db->where("A.InActive", 0);
@@ -226,7 +232,7 @@ class Billing_new_model extends CI_Model{
                 } else {
                     // If last transfer, end time is Now or Discharge Date
                     // Check if patient is discharged
-                    $this->db->select("nStatus, dDate, dDateTime"); // Assuming dDateTime is discharge time if available, else use date
+                    $this->db->select("nStatus, date_visit, time_visit"); 
                     $this->db->where("IO_ID", $io_id);
                     $patient = $this->db->get("patient_details_iop")->row();
                     
